@@ -62,47 +62,9 @@ def extract_workflow(record):
     We will first map the ugly numerical ids to action readable ids which are simple to read by humans"""
     nodes, outgoing, incoming = build_graph(record)
 
-    #in the BPMN data, some steps are encoded as conditions on gateway-to-gateway edges
-    #rather than as Activity nodes. For example "Funds for Purchase Reserved" or "Receive Invoice"
-    #appear only as edge labels between XOR gateways, not as actual nodes.
-    #we fix this by inserting synthetic action nodes for these edges so they appear as real actions
-    #in the workflow. This turns: XOR_split --"Funds Reserved"--> XOR_join
-    #into: XOR_split --> funds_reserved --> XOR_join
-    gateway_types = {'XOR', 'AND', 'OR'}
-    synthetic_counter = 0
-    edges_to_replace = []
-    for src_rid, edges in list(outgoing.items()):
-        src_node = nodes.get(src_rid)
-        if not src_node or src_node['type'] not in gateway_types:
-            continue
-        for tgt_rid, cond in edges:
-            tgt_node = nodes.get(tgt_rid)
-            if not tgt_node or tgt_node['type'] not in gateway_types:
-                continue
-            if not cond.strip():
-                continue
-            #this is a gateway-to-gateway edge with a condition -> insert synthetic action
-            edges_to_replace.append((src_rid, tgt_rid, cond))
-
-    for src_rid, tgt_rid, cond in edges_to_replace:
-        synthetic_rid = f"synthetic_{synthetic_counter}"
-        synthetic_counter += 1
-        #create a synthetic Activity node from the condition text
-        nodes[synthetic_rid] = {
-            'type': 'Activity',
-            'resourceId': synthetic_rid,
-            'NodeText': cond.strip(),
-            'agent': '',
-        }
-        #remove old edge src->tgt and replace with src->synthetic and synthetic->tgt
-        outgoing[src_rid] = [(t, c) for t, c in outgoing[src_rid] if not (t == tgt_rid and c == cond)]
-        incoming[tgt_rid] = [(s, c) for s, c in incoming[tgt_rid] if not (s == src_rid and c == cond)]
-        #add new edges: src->synthetic (no condition, the action IS the event)
-        #and synthetic->tgt (no condition)
-        outgoing[src_rid].append((synthetic_rid, ''))
-        incoming[synthetic_rid] = [(src_rid, '')]
-        outgoing[synthetic_rid] = [(tgt_rid, '')]
-        incoming[tgt_rid].append((synthetic_rid, ''))
+    #gateway-to-gateway edge labels (e.g. "Funds Reserved", "Order Accepted") are conditions/states
+    #not actions. They stay as gateway branch conditions and are NOT converted to action nodes.
+    #only real Activity nodes from the BPMN data become actions.
 
     #"sid-A9CAFE2A-85FF-4974-81FD-F086D4281922": "must_found_more_funds"
     #for readability reasons
@@ -157,9 +119,7 @@ def extract_workflow(record):
                 successors.append(rid_to_id[tgt])
             elif tgt_node['type'] in ('XOR', 'AND', 'OR'):
                 successors.append(f"gateway_{tgt_node['type'].lower()}_{list(nodes.keys()).index(tgt)}")
-            elif tgt_node['type'] == 'EndNode':
-                #EndNode without text = just a structural end marker
-                successors.append("end")
+            #unnamed EndNodes are implicit termination, not listed in successors
 
         #now we finally build the final action object with all information
         #like cleaned readbale id, the actor, outgoing and incoming edges
@@ -167,6 +127,10 @@ def extract_workflow(record):
         #to avoid duplication and confusion during training/validation
         #postconditions represent the state achieved after completing this action
         #this is useful for process supervision to track what has been done
+        #deduplicate while preserving order (e.g. two edges from same gateway)
+        predecessors = list(dict.fromkeys(predecessors))
+        successors = list(dict.fromkeys(successors))
+
         action = {
             "id": action_id,
             "name": node['NodeText'].strip(),
@@ -213,7 +177,10 @@ def extract_workflow(record):
             elif tgt_node['type'] in ('XOR', 'AND', 'OR'):
                 next_id = f"gateway_{tgt_node['type'].lower()}_{list(nodes.keys()).index(tgt)}"
             elif tgt_node['type'] == 'EndNode':
-                next_id = "end"
+                #unnamed EndNode = implicit termination, skip this branch
+                #the condition info is still visible in the other branches' conditions
+                #and termination is implicit via available_next: [] in execution_states
+                continue
             else:
                 next_id = tgt
 
@@ -234,7 +201,8 @@ def extract_workflow(record):
             elif src_node['type'] in ('XOR', 'AND', 'OR'):
                 incoming_from.append(f"gateway_{src_node['type'].lower()}_{list(nodes.keys()).index(src)}")
 
-
+        #deduplicate while preserving order (e.g. two edges from same gateway)
+        incoming_from = list(dict.fromkeys(incoming_from))
 
         #as we did for nodes now we build the gateaway object with id, type, incooming agdes and branches
         gateway = {
@@ -347,12 +315,11 @@ def extract_workflow(record):
 
         #EndNode: mark the path as complete
         #named EndNodes (with text) get added as actions (e.g. "loan_application_rejected")
-        #unnamed EndNodes get "end" appended so it appears in execution_states
-        #showing that the process can terminate at this point
+        #unnamed EndNodes just terminate the path (no "end" token in the path)
         if node['type'] == 'EndNode':
             if current_rid in rid_to_id:
                 return [path + [rid_to_id[current_rid]]]
-            return [path + ["end"]]
+            return [path]
 
         #if activity node add it to the current path and follow outgoing edges
         #StartNodes with text are also treated as actions (e.g. "Loan application received")
@@ -525,6 +492,7 @@ def extract_workflow(record):
                 state_map[completed] = set()
             if next_action:
                 state_map[completed].add(next_action)
+            #paths that terminate here naturally have available_next: [] (implicit end)
 
     #convert to list format
     execution_states = []
@@ -554,7 +522,7 @@ def extract_workflow(record):
 with open(processed_dir / 'merged_train.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
-samples = [extract_workflow(data[i]) for i in range(2,4)]
+samples = [extract_workflow(data[i]) for i in range(2)]
 
 output_path = output_dir / 'workflow_samples.json'
 with open(output_path, 'w', encoding='utf-8') as f:
