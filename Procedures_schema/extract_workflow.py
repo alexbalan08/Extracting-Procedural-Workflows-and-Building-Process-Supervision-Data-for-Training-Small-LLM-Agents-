@@ -62,23 +62,68 @@ def extract_workflow(record):
     We will first map the ugly numerical ids to action readable ids which are simple to read by humans"""
     nodes, outgoing, incoming = build_graph(record)
 
+    #in the BPMN data, some steps are encoded as conditions on gateway-to-gateway edges
+    #rather than as Activity nodes. For example "Funds for Purchase Reserved" or "Receive Invoice"
+    #appear only as edge labels between XOR gateways, not as actual nodes.
+    #we fix this by inserting synthetic action nodes for these edges so they appear as real actions
+    #in the workflow. This turns: XOR_split --"Funds Reserved"--> XOR_join
+    #into: XOR_split --> funds_reserved --> XOR_join
+    gateway_types = {'XOR', 'AND', 'OR'}
+    synthetic_counter = 0
+    edges_to_replace = []
+    for src_rid, edges in list(outgoing.items()):
+        src_node = nodes.get(src_rid)
+        if not src_node or src_node['type'] not in gateway_types:
+            continue
+        for tgt_rid, cond in edges:
+            tgt_node = nodes.get(tgt_rid)
+            if not tgt_node or tgt_node['type'] not in gateway_types:
+                continue
+            if not cond.strip():
+                continue
+            #this is a gateway-to-gateway edge with a condition -> insert synthetic action
+            edges_to_replace.append((src_rid, tgt_rid, cond))
+
+    for src_rid, tgt_rid, cond in edges_to_replace:
+        synthetic_rid = f"synthetic_{synthetic_counter}"
+        synthetic_counter += 1
+        #create a synthetic Activity node from the condition text
+        nodes[synthetic_rid] = {
+            'type': 'Activity',
+            'resourceId': synthetic_rid,
+            'NodeText': cond.strip(),
+            'agent': '',
+        }
+        #remove old edge src->tgt and replace with src->synthetic and synthetic->tgt
+        outgoing[src_rid] = [(t, c) for t, c in outgoing[src_rid] if not (t == tgt_rid and c == cond)]
+        incoming[tgt_rid] = [(s, c) for s, c in incoming[tgt_rid] if not (s == src_rid and c == cond)]
+        #add new edges: src->synthetic (no condition, the action IS the event)
+        #and synthetic->tgt (no condition)
+        outgoing[src_rid].append((synthetic_rid, ''))
+        incoming[synthetic_rid] = [(src_rid, '')]
+        outgoing[synthetic_rid] = [(tgt_rid, '')]
+        incoming[tgt_rid].append((synthetic_rid, ''))
+
     #"sid-A9CAFE2A-85FF-4974-81FD-F086D4281922": "must_found_more_funds"
     #for readability reasons
     seen_ids = set()
     rid_to_id = {}
 
+    #we also include StartNodes and EndNodes that have text (e.g. "Loan application received",
+    #"Order declined") since these represent meaningful actions/events in the workflow
+    #without this, ~1500 start events and ~2300 end events would be lost
+    actionable_types = {'Activity', 'StartNode', 'EndNode'}
     for rid, node in nodes.items():
-        if node['type'] == 'Activity':
+        if node['type'] in actionable_types and node['NodeText'].strip():
             rid_to_id[rid] = make_action_id(node['NodeText'], seen_ids)
 
-    #we retrieve all unique actors 
+    #we retrieve all unique actors
     actors = list(dict.fromkeys(n['agent'] for n in record['step_nodes'] if n['agent'].strip()))
 
-    #we build actions from activity nodes
+    #we build actions from activity nodes AND from start/end nodes that have text
     actions = []
     for rid, node in nodes.items():
-        #for now we skip other types of nodes such as start/end
-        if node['type'] != 'Activity':
+        if node['type'] not in actionable_types or not node['NodeText'].strip():
             continue
 
         action_id = rid_to_id[rid]
@@ -90,39 +135,36 @@ def extract_workflow(record):
             src_node = nodes.get(src)
             if not src_node:
                 continue
-            if src_node['type'] == 'Activity':
+            #if the source is an actionable node with text, reference its action id
+            if src_node['type'] in actionable_types and src_node['NodeText'].strip():
                 predecessors.append(rid_to_id[src])
             elif src_node['type'] in ('XOR', 'AND', 'OR'):
                 predecessors.append(f"gateway_{src_node['type'].lower()}_{list(nodes.keys()).index(src)}")
             elif src_node['type'] == 'StartNode':
+                #StartNode without text = just a structural start marker
                 predecessors.append("start")
 
         #we need to find what comes after so basiclaly everything that points FROM this action node
         #and we append what comes after depending on its node type
-        #now inistead of start we need to check the end node 
+        #now inistead of start we need to check the end node
         successors = []
         for tgt, cond in outgoing.get(rid, []):
             tgt_node = nodes.get(tgt)
             if not tgt_node:
                 continue
-            if tgt_node['type'] == 'Activity':
+            #if the target is an actionable node with text, reference its action id
+            if tgt_node['type'] in actionable_types and tgt_node['NodeText'].strip():
                 successors.append(rid_to_id[tgt])
             elif tgt_node['type'] in ('XOR', 'AND', 'OR'):
                 successors.append(f"gateway_{tgt_node['type'].lower()}_{list(nodes.keys()).index(tgt)}")
             elif tgt_node['type'] == 'EndNode':
+                #EndNode without text = just a structural end marker
                 successors.append("end")
 
-        #we check for conditionals 
-        condition = None
-        for src, cond in incoming.get(rid, []):
-            if cond.strip():
-                condition = cond.strip()
-                break
-        
-
         #now we finally build the final action object with all information
-        #like cleaned readbale id, the actor, outgoing and incoming edges, as ONLY if present,
-        #a pre-comndition
+        #like cleaned readbale id, the actor, outgoing and incoming edges
+        #conditions are NOT stored on actions - they belong on gateway branches only
+        #to avoid duplication and confusion during training/validation
         #postconditions represent the state achieved after completing this action
         #this is useful for process supervision to track what has been done
         action = {
@@ -134,8 +176,6 @@ def extract_workflow(record):
             #added postconditions in order to define states as "postcondition" and future possible action
             "postconditions": [f"{action_id}_done"],
         }
-        if condition:
-            action["condition"] = condition
 
         actions.append(action)
 
@@ -167,7 +207,8 @@ def extract_workflow(record):
             tgt_node = nodes.get(tgt)
             if not tgt_node:
                 continue
-            if tgt_node['type'] == 'Activity':
+            #actionable nodes (Activity, StartNode/EndNode with text) -> use action id
+            if tgt in rid_to_id:
                 next_id = rid_to_id[tgt]
             elif tgt_node['type'] in ('XOR', 'AND', 'OR'):
                 next_id = f"gateway_{tgt_node['type'].lower()}_{list(nodes.keys()).index(tgt)}"
@@ -187,7 +228,8 @@ def extract_workflow(record):
             src_node = nodes.get(src)
             if not src_node:
                 continue
-            if src_node['type'] == 'Activity':
+            #actionable nodes -> use action id
+            if src in rid_to_id:
                 incoming_from.append(rid_to_id[src])
             elif src_node['type'] in ('XOR', 'AND', 'OR'):
                 incoming_from.append(f"gateway_{src_node['type'].lower()}_{list(nodes.keys()).index(src)}")
@@ -303,11 +345,18 @@ def extract_workflow(record):
         if not node:
             return [path]
 
+        #EndNode: mark the path as complete
+        #named EndNodes (with text) get added as actions (e.g. "loan_application_rejected")
+        #unnamed EndNodes get "end" appended so it appears in execution_states
+        #showing that the process can terminate at this point
         if node['type'] == 'EndNode':
-            return [path]
+            if current_rid in rid_to_id:
+                return [path + [rid_to_id[current_rid]]]
+            return [path + ["end"]]
 
         #if activity node add it to the current path and follow outgoing edges
-        if node['type'] == 'Activity':
+        #StartNodes with text are also treated as actions (e.g. "Loan application received")
+        if node['type'] == 'Activity' or (node['type'] == 'StartNode' and current_rid in rid_to_id):
             new_path = path + [rid_to_id[current_rid]]
             next_edges = outgoing.get(current_rid, [])
             if not next_edges:
@@ -505,7 +554,7 @@ def extract_workflow(record):
 with open(processed_dir / 'merged_train.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
-samples = [extract_workflow(data[i]) for i in range(2)]
+samples = [extract_workflow(data[i]) for i in range(2,4)]
 
 output_path = output_dir / 'workflow_samples.json'
 with open(output_path, 'w', encoding='utf-8') as f:

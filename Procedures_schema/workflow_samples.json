@@ -1,14 +1,113 @@
 [
   {
-    "file_index": 1952231103,
-    "procedure_text": "To start the process, trigger the resupply cycle and then check the inventory. If the inventory level is above the minimum, the process ends. However, if the inventory level is at or below the minimum, create a purchase order. After creating the purchase order, revise it. If the order is rejected, rework the order. On the other hand, if the order is accepted, continue the process. In case the order needs to be reworked, revise the purchase order. If the funds for the purchase are reserved, continue the process. Alternatively, if the purchase order is sent to the supplier, continue the process. If the packing slip is received, continue the process. Otherwise, if the invoice is received, continue the process. After receiving and recording the documents, release the reserved funds. Once the funds are released, issue the payment to the supplier. Finally, the process ends.",
+    "file_index": 1131161822,
+    "procedure_text": "In the beginning, for SSP, the first step is to check the time available to complete the task. After checking the time available, it should be highlighted as urgent. The step \"Check Time Available to complete\" requires accessing the data object \"Invoice Entry Form\". It is important to note that for this step, payments are made once a week. The same step requires accessing the data object \"Invoice Entry Form\". Again, it is important to note that for this step, payments are made once a week. Moving on to the step \"Highlight as URGENT\", it is important to pay attention to the fact that there is insufficient time to complete the task as per the SLA. In this case, the Stamp Entry Form should be marked in red. The step \"Highlight as URGENT\" produces the data object \"Invoice Entry Form\". Finally, the process ends.",
     "workflow": {
-      "actors": [],
+      "actors": [
+        "SSP"
+      ],
       "actions": [
         {
-          "id": "check_inventory",
-          "name": "Check Inventory",
-          "actor": null,
+          "id": "check_time_available_to_complete",
+          "name": "Check Time Available to complete",
+          "actor": "SSP",
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "highlight_as_urgent",
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "check_time_available_to_complete_done"
+          ]
+        },
+        {
+          "id": "highlight_as_urgent",
+          "name": "Highlight as URGENT",
+          "actor": "SSP",
+          "predecessors": [
+            "check_time_available_to_complete"
+          ],
+          "successors": [
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "highlight_as_urgent_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_3",
+          "type": "exclusive",
+          "incoming_from": [
+            "check_time_available_to_complete",
+            "highlight_as_urgent"
+          ],
+          "branches": [
+            {
+              "next": "end"
+            }
+          ],
+          "actor": "SSP"
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "available_next": [
+            "check_time_available_to_complete"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_time_available_to_complete"
+          ],
+          "available_next": [
+            "end",
+            "highlight_as_urgent"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_time_available_to_complete",
+            "highlight_as_urgent"
+          ],
+          "available_next": [
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_time_available_to_complete",
+            "highlight_as_urgent",
+            "end"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "check_time_available_to_complete",
+            "end"
+          ],
+          "available_next": []
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1291042293,
+    "procedure_text": "To design and implement a website, the process begins with an informal meeting that lasts for half a business day. If the outcome of this meeting is not successful, then the process comes to an end. However, if the outcome is successful, then a full-day meeting is scheduled to create a storyboard. Again, the success of this meeting is evaluated, and if it is not successful, the process ends. If it is successful, the next steps are carried out simultaneously. These steps include a 10-day design phase and a 5-day initial draft of the content. After the design phase, there is a 2-day development phase. Following this, the need for a marketing review is assessed. If the review is deemed necessary by 40%, then 4 days are allocated for the preparation of the final version. However, if the review is deemed necessary by 60%, then the marketing review takes place and the process ends. After the marketing review, there is a 3-day building phase, followed by a 1-day checking phase. If the outcome of the checking phase is not approval, then an additional 3 days are allocated for building. However, if the outcome is approval, then the process comes to an end.",
+    "workflow": {
+      "actors": [
+        "designing and implementing a web site"
+      ],
+      "actions": [
+        {
+          "id": "informal_meeting_for_half_a_business_day",
+          "name": "informal meeting for half a business day",
+          "actor": "designing and implementing a web site",
           "predecessors": [
             "start"
           ],
@@ -16,94 +115,132 @@
             "gateway_xor_2"
           ],
           "postconditions": [
-            "check_inventory_done"
+            "informal_meeting_for_half_a_business_day_done"
           ]
         },
         {
-          "id": "create_purchase_order",
-          "name": "Create Purchase Order;;",
-          "actor": null,
+          "id": "meeting_for_a_full_day_storyboard",
+          "name": "meeting for a full day, storyboard",
+          "actor": "designing and implementing a web site",
           "predecessors": [
             "gateway_xor_2"
           ],
           "successors": [
-            "revise_purchase_order"
+            "gateway_and_5"
           ],
           "postconditions": [
-            "create_purchase_order_done"
-          ],
-          "condition": "Inventory level at or below minimum"
-        },
-        {
-          "id": "revise_purchase_order",
-          "name": "Revise Purchase Order",
-          "actor": null,
-          "predecessors": [
-            "create_purchase_order",
-            "rework_order"
-          ],
-          "successors": [
-            "gateway_xor_6"
-          ],
-          "postconditions": [
-            "revise_purchase_order_done"
+            "meeting_for_a_full_day_storyboard_done"
           ]
         },
         {
-          "id": "rework_order",
-          "name": "Rework Order",
-          "actor": null,
+          "id": "10_days_design",
+          "name": "10 days design",
+          "actor": "designing and implementing a web site",
           "predecessors": [
-            "gateway_xor_6"
+            "gateway_and_5"
           ],
           "successors": [
-            "revise_purchase_order"
+            "2_days_development"
           ],
           "postconditions": [
-            "rework_order_done"
-          ],
-          "condition": "Order Rejected"
-        },
-        {
-          "id": "receive_and_record_documents",
-          "name": "Receive and Record Documents",
-          "actor": null,
-          "predecessors": [
-            "gateway_xor_11"
-          ],
-          "successors": [
-            "reserve_funds_released"
-          ],
-          "postconditions": [
-            "receive_and_record_documents_done"
+            "10_days_design_done"
           ]
         },
         {
-          "id": "reserve_funds_released",
-          "name": "Reserve Funds Released",
-          "actor": null,
+          "id": "5_days_initial_draft_of_the_content",
+          "name": "5 days initial draft of the content",
+          "actor": "designing and implementing a web site",
           "predecessors": [
-            "receive_and_record_documents"
+            "gateway_and_5"
           ],
           "successors": [
-            "issue_payment_to_supplier"
+            "gateway_xor_9"
           ],
           "postconditions": [
-            "reserve_funds_released_done"
+            "5_days_initial_draft_of_the_content_done"
           ]
         },
         {
-          "id": "issue_payment_to_supplier",
-          "name": "Issue Payment to Supplier",
-          "actor": null,
+          "id": "2_days_development",
+          "name": "2 days development",
+          "actor": "designing and implementing a web site",
           "predecessors": [
-            "reserve_funds_released"
+            "10_days_design"
           ],
           "successors": [
-            "end"
+            "gateway_and_10"
           ],
           "postconditions": [
-            "issue_payment_to_supplier_done"
+            "2_days_development_done"
+          ]
+        },
+        {
+          "id": "preparation_for_final_version_4_days",
+          "name": "preparation for final version 4 days",
+          "actor": "designing and implementing a web site",
+          "predecessors": [
+            "gateway_xor_9"
+          ],
+          "successors": [
+            "gateway_and_10"
+          ],
+          "postconditions": [
+            "preparation_for_final_version_4_days_done"
+          ]
+        },
+        {
+          "id": "marketing_review",
+          "name": "marketing review",
+          "actor": "designing and implementing a web site",
+          "predecessors": [
+            "gateway_xor_9"
+          ],
+          "successors": [],
+          "postconditions": [
+            "marketing_review_done"
+          ]
+        },
+        {
+          "id": "building_for_3_days",
+          "name": "building for 3 days",
+          "actor": "designing and implementing a web site",
+          "predecessors": [
+            "gateway_and_10",
+            "gateway_xor_16"
+          ],
+          "successors": [
+            "checking_for_1_day"
+          ],
+          "postconditions": [
+            "building_for_3_days_done"
+          ]
+        },
+        {
+          "id": "checking_for_1_day",
+          "name": "checking for 1 day",
+          "actor": "designing and implementing a web site",
+          "predecessors": [
+            "building_for_3_days"
+          ],
+          "successors": [
+            "approval"
+          ],
+          "postconditions": [
+            "checking_for_1_day_done"
+          ]
+        },
+        {
+          "id": "approval",
+          "name": "approval",
+          "actor": "designing and implementing a web site",
+          "predecessors": [
+            "checking_for_1_day"
+          ],
+          "successors": [
+            "gateway_xor_16"
+          ],
+          "postconditions": [
+            "approval_done"
           ]
         }
       ],
@@ -112,503 +249,792 @@
           "id": "gateway_xor_2",
           "type": "exclusive",
           "incoming_from": [
-            "check_inventory"
+            "informal_meeting_for_half_a_business_day"
           ],
           "branches": [
             {
               "next": "end",
-              "condition": "Inventory Level Above Minimum"
+              "condition": "no"
             },
             {
-              "next": "create_purchase_order",
-              "condition": "Inventory level at or below minimum"
+              "next": "meeting_for_a_full_day_storyboard",
+              "condition": "yes"
             }
-          ]
+          ],
+          "actor": "designing and implementing a web site"
         },
         {
-          "id": "gateway_xor_6",
-          "type": "exclusive",
+          "id": "gateway_and_5",
+          "type": "parallel",
           "incoming_from": [
-            "revise_purchase_order"
+            "meeting_for_a_full_day_storyboard"
           ],
           "branches": [
             {
-              "next": "rework_order",
-              "condition": "Order Rejected"
+              "next": "10_days_design"
             },
             {
-              "next": "gateway_xor_8",
-              "condition": "Order Accepted"
+              "next": "5_days_initial_draft_of_the_content"
             }
-          ]
-        },
-        {
-          "id": "gateway_xor_8",
-          "type": "exclusive",
-          "incoming_from": [
-            "gateway_xor_6"
           ],
-          "branches": [
-            {
-              "next": "gateway_xor_9",
-              "condition": "Funds for Purchase Reserved"
-            },
-            {
-              "next": "gateway_xor_9",
-              "condition": "Purchase Order Sent to Supplier"
-            }
-          ]
+          "actor": "designing and implementing a web site"
         },
         {
           "id": "gateway_xor_9",
           "type": "exclusive",
           "incoming_from": [
-            "gateway_xor_8",
-            "gateway_xor_8"
+            "5_days_initial_draft_of_the_content"
           ],
           "branches": [
             {
-              "next": "gateway_xor_10"
-            }
-          ]
-        },
-        {
-          "id": "gateway_xor_10",
-          "type": "exclusive",
-          "incoming_from": [
-            "gateway_xor_9"
-          ],
-          "branches": [
-            {
-              "next": "gateway_xor_11",
-              "condition": "Receive Packing Slip"
+              "next": "preparation_for_final_version_4_days",
+              "condition": "40%"
             },
             {
-              "next": "gateway_xor_11",
-              "condition": "Receive Invoice"
+              "next": "marketing_review",
+              "condition": "60%"
             }
-          ]
+          ],
+          "actor": "designing and implementing a web site"
         },
         {
-          "id": "gateway_xor_11",
-          "type": "exclusive",
+          "id": "gateway_and_10",
+          "type": "parallel",
           "incoming_from": [
-            "gateway_xor_10",
-            "gateway_xor_10"
+            "2_days_development",
+            "preparation_for_final_version_4_days"
           ],
           "branches": [
             {
-              "next": "receive_and_record_documents"
+              "next": "building_for_3_days"
             }
-          ]
+          ],
+          "actor": "designing and implementing a web site"
+        },
+        {
+          "id": "gateway_xor_16",
+          "type": "exclusive",
+          "incoming_from": [
+            "approval"
+          ],
+          "branches": [
+            {
+              "next": "building_for_3_days",
+              "condition": "no"
+            },
+            {
+              "next": "end",
+              "condition": "yes"
+            }
+          ],
+          "actor": "designing and implementing a web site"
         }
       ],
       "execution_states": [
         {
           "completed_actions": [],
           "available_next": [
-            "check_inventory"
+            "informal_meeting_for_half_a_business_day"
           ]
         },
         {
           "completed_actions": [
-            "check_inventory"
+            "informal_meeting_for_half_a_business_day"
           ],
           "available_next": [
-            "create_purchase_order"
+            "end",
+            "meeting_for_a_full_day_storyboard"
           ]
         },
         {
           "completed_actions": [
-            "check_inventory",
-            "create_purchase_order"
-          ],
-          "available_next": [
-            "revise_purchase_order"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order"
-          ],
-          "available_next": [
-            "receive_and_record_documents",
-            "rework_order"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "rework_order"
-          ],
-          "available_next": [
-            "revise_purchase_order"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "rework_order",
-            "revise_purchase_order"
-          ],
-          "available_next": [
-            "receive_and_record_documents",
-            "rework_order"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "rework_order",
-            "revise_purchase_order",
-            "rework_order"
-          ],
-          "available_next": []
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "rework_order",
-            "revise_purchase_order",
-            "receive_and_record_documents"
-          ],
-          "available_next": [
-            "reserve_funds_released"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "rework_order",
-            "revise_purchase_order",
-            "receive_and_record_documents",
-            "reserve_funds_released"
-          ],
-          "available_next": [
-            "issue_payment_to_supplier"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "rework_order",
-            "revise_purchase_order",
-            "receive_and_record_documents",
-            "reserve_funds_released",
-            "issue_payment_to_supplier"
-          ],
-          "available_next": []
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "receive_and_record_documents"
-          ],
-          "available_next": [
-            "reserve_funds_released"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "receive_and_record_documents",
-            "reserve_funds_released"
-          ],
-          "available_next": [
-            "issue_payment_to_supplier"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_inventory",
-            "create_purchase_order",
-            "revise_purchase_order",
-            "receive_and_record_documents",
-            "reserve_funds_released",
-            "issue_payment_to_supplier"
-          ],
-          "available_next": []
-        }
-      ]
-    }
-  },
-  {
-    "file_index": 436856625,
-    "procedure_text": "The loan application process starts with receiving the loan application. Simultaneously, the following steps should be completed: assessing the loan risk and checking the credit history. After that, the eligibility of the applicant is assessed. If the applicant is eligible, the acceptance pack is prepared. If the applicant is not eligible, the application is rejected. If the application is rejected, the loan application process ends. On the other hand, if the applicant is eligible, the acceptance pack is prepared. The prepared acceptance pack is then sent. Once the acceptance pack is sent, the process ends.",
-    "workflow": {
-      "actors": [],
-      "actions": [
-        {
-          "id": "assess_loan_risk",
-          "name": "Assess loan risk",
-          "actor": null,
-          "predecessors": [
-            "gateway_and_1"
-          ],
-          "successors": [
-            "gateway_and_4"
-          ],
-          "postconditions": [
-            "assess_loan_risk_done"
-          ]
-        },
-        {
-          "id": "check_credit_history",
-          "name": "Check credit history",
-          "actor": null,
-          "predecessors": [
-            "gateway_and_1"
-          ],
-          "successors": [
-            "gateway_and_4"
-          ],
-          "postconditions": [
-            "check_credit_history_done"
-          ]
-        },
-        {
-          "id": "assess_eligibility",
-          "name": "Assess eligibility",
-          "actor": null,
-          "predecessors": [
-            "gateway_and_4"
-          ],
-          "successors": [
-            "gateway_xor_6"
-          ],
-          "postconditions": [
-            "assess_eligibility_done"
-          ]
-        },
-        {
-          "id": "reject_application",
-          "name": "Reject application",
-          "actor": null,
-          "predecessors": [
-            "gateway_xor_6"
-          ],
-          "successors": [
+            "informal_meeting_for_half_a_business_day",
             "end"
           ],
-          "postconditions": [
-            "reject_application_done"
-          ],
-          "condition": "applicant not eligible"
+          "available_next": []
         },
         {
-          "id": "prepare_acceptance_pack",
-          "name": "Prepare acceptance pack",
-          "actor": null,
-          "predecessors": [
-            "gateway_xor_6"
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard"
           ],
-          "successors": [
-            "send_acceptance_pack"
-          ],
-          "postconditions": [
-            "prepare_acceptance_pack_done"
-          ],
-          "condition": "applicant eligible"
+          "available_next": [
+            "10_days_design",
+            "5_days_initial_draft_of_the_content"
+          ]
         },
         {
-          "id": "send_acceptance_pack",
-          "name": "Send acceptance pack",
-          "actor": null,
-          "predecessors": [
-            "prepare_acceptance_pack"
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design"
           ],
-          "successors": [
+          "available_next": [
+            "2_days_development"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development"
+          ],
+          "available_next": [
+            "5_days_initial_draft_of_the_content"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content"
+          ],
+          "available_next": [
+            "marketing_review",
+            "preparation_for_final_version_4_days"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days"
+          ],
+          "available_next": [
+            "building_for_3_days"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "building_for_3_days",
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
             "end"
           ],
-          "postconditions": [
-            "send_acceptance_pack_done"
-          ]
-        }
-      ],
-      "gateways": [
-        {
-          "id": "gateway_and_1",
-          "type": "parallel",
-          "incoming_from": [],
-          "branches": [
-            {
-              "next": "assess_loan_risk"
-            },
-            {
-              "next": "check_credit_history"
-            }
-          ]
-        },
-        {
-          "id": "gateway_and_4",
-          "type": "parallel",
-          "incoming_from": [
-            "assess_loan_risk",
-            "check_credit_history"
-          ],
-          "branches": [
-            {
-              "next": "assess_eligibility"
-            }
-          ]
-        },
-        {
-          "id": "gateway_xor_6",
-          "type": "exclusive",
-          "incoming_from": [
-            "assess_eligibility"
-          ],
-          "branches": [
-            {
-              "next": "reject_application",
-              "condition": "applicant not eligible"
-            },
-            {
-              "next": "prepare_acceptance_pack",
-              "condition": "applicant eligible"
-            }
-          ]
-        }
-      ],
-      "execution_states": [
-        {
-          "completed_actions": [],
-          "available_next": [
-            "assess_loan_risk",
-            "check_credit_history"
-          ]
+          "available_next": []
         },
         {
           "completed_actions": [
-            "assess_loan_risk"
-          ],
-          "available_next": [
-            "check_credit_history"
-          ]
-        },
-        {
-          "completed_actions": [
-            "assess_loan_risk",
-            "check_credit_history"
-          ],
-          "available_next": [
-            "assess_eligibility"
-          ]
-        },
-        {
-          "completed_actions": [
-            "assess_loan_risk",
-            "check_credit_history",
-            "assess_eligibility"
-          ],
-          "available_next": [
-            "prepare_acceptance_pack",
-            "reject_application"
-          ]
-        },
-        {
-          "completed_actions": [
-            "assess_loan_risk",
-            "check_credit_history",
-            "assess_eligibility",
-            "reject_application"
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "end"
           ],
           "available_next": []
         },
         {
           "completed_actions": [
-            "assess_loan_risk",
-            "check_credit_history",
-            "assess_eligibility",
-            "prepare_acceptance_pack"
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content"
           ],
           "available_next": [
-            "send_acceptance_pack"
+            "marketing_review",
+            "preparation_for_final_version_4_days"
           ]
         },
         {
           "completed_actions": [
-            "assess_loan_risk",
-            "check_credit_history",
-            "assess_eligibility",
-            "prepare_acceptance_pack",
-            "send_acceptance_pack"
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days"
+          ],
+          "available_next": [
+            "10_days_design"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design"
+          ],
+          "available_next": [
+            "2_days_development"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development"
+          ],
+          "available_next": [
+            "building_for_3_days"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "building_for_3_days",
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "end"
           ],
           "available_next": []
         },
         {
           "completed_actions": [
-            "check_credit_history"
-          ],
-          "available_next": [
-            "assess_loan_risk"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_credit_history",
-            "assess_loan_risk"
-          ],
-          "available_next": [
-            "assess_eligibility"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_credit_history",
-            "assess_loan_risk",
-            "assess_eligibility"
-          ],
-          "available_next": [
-            "prepare_acceptance_pack",
-            "reject_application"
-          ]
-        },
-        {
-          "completed_actions": [
-            "check_credit_history",
-            "assess_loan_risk",
-            "assess_eligibility",
-            "reject_application"
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "preparation_for_final_version_4_days",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "end"
           ],
           "available_next": []
         },
         {
           "completed_actions": [
-            "check_credit_history",
-            "assess_loan_risk",
-            "assess_eligibility",
-            "prepare_acceptance_pack"
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review"
           ],
           "available_next": [
-            "send_acceptance_pack"
+            "building_for_3_days"
           ]
         },
         {
           "completed_actions": [
-            "check_credit_history",
-            "assess_loan_risk",
-            "assess_eligibility",
-            "prepare_acceptance_pack",
-            "send_acceptance_pack"
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "building_for_3_days",
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "end"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "10_days_design",
+            "2_days_development",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "end"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review"
+          ],
+          "available_next": [
+            "10_days_design"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design"
+          ],
+          "available_next": [
+            "2_days_development"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development"
+          ],
+          "available_next": [
+            "building_for_3_days"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "building_for_3_days",
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days"
+          ],
+          "available_next": [
+            "checking_for_1_day"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day"
+          ],
+          "available_next": [
+            "approval"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval"
+          ],
+          "available_next": [
+            "end"
+          ]
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "end"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "informal_meeting_for_half_a_business_day",
+            "meeting_for_a_full_day_storyboard",
+            "5_days_initial_draft_of_the_content",
+            "marketing_review",
+            "10_days_design",
+            "2_days_development",
+            "building_for_3_days",
+            "checking_for_1_day",
+            "approval",
+            "end"
           ],
           "available_next": []
         }
