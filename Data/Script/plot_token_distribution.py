@@ -18,10 +18,9 @@ print(f"Mean tokens: {mean_val:.1f}")
 print(f"Median tokens: {median_val:.1f}")
 print(f"Std: {np.std(token_counts):.1f}")
 print(f"Min: {np.min(token_counts)} | Max: {np.max(token_counts)}")
-print(f"25th percentile: {np.percentile(token_counts, 25):.0f}")
-print(f"75th percentile: {np.percentile(token_counts, 75):.0f}")
-over_500 = sum(1 for c in token_counts if c > 500)
-print(f"Procedures with >500 words: {over_500} ({over_500/len(token_counts)*100:.1f}%)")
+
+
+
 
 plt.figure(figsize=(8, 5))
 plt.hist(token_counts, bins=50)

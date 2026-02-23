@@ -1,0 +1,618 @@
+[
+  {
+    "file_index": 1952231103,
+    "procedure_text": "To start the process, trigger the resupply cycle and then check the inventory. If the inventory level is above the minimum, the process ends. However, if the inventory level is at or below the minimum, create a purchase order. After creating the purchase order, revise it. If the order is rejected, rework the order. On the other hand, if the order is accepted, continue the process. In case the order needs to be reworked, revise the purchase order. If the funds for the purchase are reserved, continue the process. Alternatively, if the purchase order is sent to the supplier, continue the process. If the packing slip is received, continue the process. Otherwise, if the invoice is received, continue the process. After receiving and recording the documents, release the reserved funds. Once the funds are released, issue the payment to the supplier. Finally, the process ends.",
+    "workflow": {
+      "actors": [],
+      "actions": [
+        {
+          "id": "check_inventory",
+          "name": "Check Inventory",
+          "actor": null,
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "gateway_xor_2"
+          ],
+          "postconditions": [
+            "check_inventory_done"
+          ]
+        },
+        {
+          "id": "create_purchase_order",
+          "name": "Create Purchase Order;;",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [
+            "revise_purchase_order"
+          ],
+          "postconditions": [
+            "create_purchase_order_done"
+          ],
+          "condition": "Inventory level at or below minimum"
+        },
+        {
+          "id": "revise_purchase_order",
+          "name": "Revise Purchase Order",
+          "actor": null,
+          "predecessors": [
+            "create_purchase_order",
+            "rework_order"
+          ],
+          "successors": [
+            "gateway_xor_6"
+          ],
+          "postconditions": [
+            "revise_purchase_order_done"
+          ]
+        },
+        {
+          "id": "rework_order",
+          "name": "Rework Order",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_6"
+          ],
+          "successors": [
+            "revise_purchase_order"
+          ],
+          "postconditions": [
+            "rework_order_done"
+          ],
+          "condition": "Order Rejected"
+        },
+        {
+          "id": "receive_and_record_documents",
+          "name": "Receive and Record Documents",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_11"
+          ],
+          "successors": [
+            "reserve_funds_released"
+          ],
+          "postconditions": [
+            "receive_and_record_documents_done"
+          ]
+        },
+        {
+          "id": "reserve_funds_released",
+          "name": "Reserve Funds Released",
+          "actor": null,
+          "predecessors": [
+            "receive_and_record_documents"
+          ],
+          "successors": [
+            "issue_payment_to_supplier"
+          ],
+          "postconditions": [
+            "reserve_funds_released_done"
+          ]
+        },
+        {
+          "id": "issue_payment_to_supplier",
+          "name": "Issue Payment to Supplier",
+          "actor": null,
+          "predecessors": [
+            "reserve_funds_released"
+          ],
+          "successors": [
+            "end"
+          ],
+          "postconditions": [
+            "issue_payment_to_supplier_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_2",
+          "type": "exclusive",
+          "incoming_from": [
+            "check_inventory"
+          ],
+          "branches": [
+            {
+              "next": "end",
+              "condition": "Inventory Level Above Minimum"
+            },
+            {
+              "next": "create_purchase_order",
+              "condition": "Inventory level at or below minimum"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_6",
+          "type": "exclusive",
+          "incoming_from": [
+            "revise_purchase_order"
+          ],
+          "branches": [
+            {
+              "next": "rework_order",
+              "condition": "Order Rejected"
+            },
+            {
+              "next": "gateway_xor_8",
+              "condition": "Order Accepted"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_8",
+          "type": "exclusive",
+          "incoming_from": [
+            "gateway_xor_6"
+          ],
+          "branches": [
+            {
+              "next": "gateway_xor_9",
+              "condition": "Funds for Purchase Reserved"
+            },
+            {
+              "next": "gateway_xor_9",
+              "condition": "Purchase Order Sent to Supplier"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_9",
+          "type": "exclusive",
+          "incoming_from": [
+            "gateway_xor_8",
+            "gateway_xor_8"
+          ],
+          "branches": [
+            {
+              "next": "gateway_xor_10"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_10",
+          "type": "exclusive",
+          "incoming_from": [
+            "gateway_xor_9"
+          ],
+          "branches": [
+            {
+              "next": "gateway_xor_11",
+              "condition": "Receive Packing Slip"
+            },
+            {
+              "next": "gateway_xor_11",
+              "condition": "Receive Invoice"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_11",
+          "type": "exclusive",
+          "incoming_from": [
+            "gateway_xor_10",
+            "gateway_xor_10"
+          ],
+          "branches": [
+            {
+              "next": "receive_and_record_documents"
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "available_next": [
+            "check_inventory"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory"
+          ],
+          "available_next": [
+            "create_purchase_order"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order"
+          ],
+          "available_next": [
+            "revise_purchase_order"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order"
+          ],
+          "available_next": [
+            "receive_and_record_documents",
+            "rework_order"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "rework_order"
+          ],
+          "available_next": [
+            "revise_purchase_order"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "rework_order",
+            "revise_purchase_order"
+          ],
+          "available_next": [
+            "receive_and_record_documents",
+            "rework_order"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "rework_order",
+            "revise_purchase_order",
+            "rework_order"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "rework_order",
+            "revise_purchase_order",
+            "receive_and_record_documents"
+          ],
+          "available_next": [
+            "reserve_funds_released"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "rework_order",
+            "revise_purchase_order",
+            "receive_and_record_documents",
+            "reserve_funds_released"
+          ],
+          "available_next": [
+            "issue_payment_to_supplier"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "rework_order",
+            "revise_purchase_order",
+            "receive_and_record_documents",
+            "reserve_funds_released",
+            "issue_payment_to_supplier"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "receive_and_record_documents"
+          ],
+          "available_next": [
+            "reserve_funds_released"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "receive_and_record_documents",
+            "reserve_funds_released"
+          ],
+          "available_next": [
+            "issue_payment_to_supplier"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_inventory",
+            "create_purchase_order",
+            "revise_purchase_order",
+            "receive_and_record_documents",
+            "reserve_funds_released",
+            "issue_payment_to_supplier"
+          ],
+          "available_next": []
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 436856625,
+    "procedure_text": "The loan application process starts with receiving the loan application. Simultaneously, the following steps should be completed: assessing the loan risk and checking the credit history. After that, the eligibility of the applicant is assessed. If the applicant is eligible, the acceptance pack is prepared. If the applicant is not eligible, the application is rejected. If the application is rejected, the loan application process ends. On the other hand, if the applicant is eligible, the acceptance pack is prepared. The prepared acceptance pack is then sent. Once the acceptance pack is sent, the process ends.",
+    "workflow": {
+      "actors": [],
+      "actions": [
+        {
+          "id": "assess_loan_risk",
+          "name": "Assess loan risk",
+          "actor": null,
+          "predecessors": [
+            "gateway_and_1"
+          ],
+          "successors": [
+            "gateway_and_4"
+          ],
+          "postconditions": [
+            "assess_loan_risk_done"
+          ]
+        },
+        {
+          "id": "check_credit_history",
+          "name": "Check credit history",
+          "actor": null,
+          "predecessors": [
+            "gateway_and_1"
+          ],
+          "successors": [
+            "gateway_and_4"
+          ],
+          "postconditions": [
+            "check_credit_history_done"
+          ]
+        },
+        {
+          "id": "assess_eligibility",
+          "name": "Assess eligibility",
+          "actor": null,
+          "predecessors": [
+            "gateway_and_4"
+          ],
+          "successors": [
+            "gateway_xor_6"
+          ],
+          "postconditions": [
+            "assess_eligibility_done"
+          ]
+        },
+        {
+          "id": "reject_application",
+          "name": "Reject application",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_6"
+          ],
+          "successors": [
+            "end"
+          ],
+          "postconditions": [
+            "reject_application_done"
+          ],
+          "condition": "applicant not eligible"
+        },
+        {
+          "id": "prepare_acceptance_pack",
+          "name": "Prepare acceptance pack",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_6"
+          ],
+          "successors": [
+            "send_acceptance_pack"
+          ],
+          "postconditions": [
+            "prepare_acceptance_pack_done"
+          ],
+          "condition": "applicant eligible"
+        },
+        {
+          "id": "send_acceptance_pack",
+          "name": "Send acceptance pack",
+          "actor": null,
+          "predecessors": [
+            "prepare_acceptance_pack"
+          ],
+          "successors": [
+            "end"
+          ],
+          "postconditions": [
+            "send_acceptance_pack_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_and_1",
+          "type": "parallel",
+          "incoming_from": [],
+          "branches": [
+            {
+              "next": "assess_loan_risk"
+            },
+            {
+              "next": "check_credit_history"
+            }
+          ]
+        },
+        {
+          "id": "gateway_and_4",
+          "type": "parallel",
+          "incoming_from": [
+            "assess_loan_risk",
+            "check_credit_history"
+          ],
+          "branches": [
+            {
+              "next": "assess_eligibility"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_6",
+          "type": "exclusive",
+          "incoming_from": [
+            "assess_eligibility"
+          ],
+          "branches": [
+            {
+              "next": "reject_application",
+              "condition": "applicant not eligible"
+            },
+            {
+              "next": "prepare_acceptance_pack",
+              "condition": "applicant eligible"
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "available_next": [
+            "assess_loan_risk",
+            "check_credit_history"
+          ]
+        },
+        {
+          "completed_actions": [
+            "assess_loan_risk"
+          ],
+          "available_next": [
+            "check_credit_history"
+          ]
+        },
+        {
+          "completed_actions": [
+            "assess_loan_risk",
+            "check_credit_history"
+          ],
+          "available_next": [
+            "assess_eligibility"
+          ]
+        },
+        {
+          "completed_actions": [
+            "assess_loan_risk",
+            "check_credit_history",
+            "assess_eligibility"
+          ],
+          "available_next": [
+            "prepare_acceptance_pack",
+            "reject_application"
+          ]
+        },
+        {
+          "completed_actions": [
+            "assess_loan_risk",
+            "check_credit_history",
+            "assess_eligibility",
+            "reject_application"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "assess_loan_risk",
+            "check_credit_history",
+            "assess_eligibility",
+            "prepare_acceptance_pack"
+          ],
+          "available_next": [
+            "send_acceptance_pack"
+          ]
+        },
+        {
+          "completed_actions": [
+            "assess_loan_risk",
+            "check_credit_history",
+            "assess_eligibility",
+            "prepare_acceptance_pack",
+            "send_acceptance_pack"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "check_credit_history"
+          ],
+          "available_next": [
+            "assess_loan_risk"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_credit_history",
+            "assess_loan_risk"
+          ],
+          "available_next": [
+            "assess_eligibility"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_credit_history",
+            "assess_loan_risk",
+            "assess_eligibility"
+          ],
+          "available_next": [
+            "prepare_acceptance_pack",
+            "reject_application"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_credit_history",
+            "assess_loan_risk",
+            "assess_eligibility",
+            "reject_application"
+          ],
+          "available_next": []
+        },
+        {
+          "completed_actions": [
+            "check_credit_history",
+            "assess_loan_risk",
+            "assess_eligibility",
+            "prepare_acceptance_pack"
+          ],
+          "available_next": [
+            "send_acceptance_pack"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_credit_history",
+            "assess_loan_risk",
+            "assess_eligibility",
+            "prepare_acceptance_pack",
+            "send_acceptance_pack"
+          ],
+          "available_next": []
+        }
+      ]
+    }
+  }
+]
