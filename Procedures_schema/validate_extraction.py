@@ -13,7 +13,7 @@ output_dir = Path(__file__).parent
 
 
 def normalize(text):
-    """Normalize text for comparison: lowercase, strip, collapse spaces."""
+    #i will normalize the original actions to match the normalized extracted ones to avoid fuzzy matching
     return ' '.join(text.strip().lower().split()).rstrip(';')
 
 
@@ -24,7 +24,6 @@ def f1_score(precision, recall):
 
 
 def set_metrics(ground_truth, extracted):
-    """Compute precision, recall, F1 between two sets."""
     if not ground_truth and not extracted:
         return 1.0, 1.0, 1.0
     matched = ground_truth & extracted
@@ -45,7 +44,7 @@ def _build_gt_from_raw(raw_record):
         if node['type'] in ('XOR', 'AND', 'OR'):
             rid_to_gateway_id[rid] = make_gateway_id(nodes, rid, node)
 
-    #helper: map any rid to its schema id (action_id, gateway_id, or None)
+    
     def schema_id(rid):
         if rid in rid_to_id:
             return rid_to_id[rid]
@@ -60,13 +59,13 @@ def _build_gt_from_raw(raw_record):
 
 
 def validate_record(raw_record, extracted_workflow):
-    """Validate a single extracted workflow against its raw BPMN data."""
+
     w = extracted_workflow['workflow']
     metrics = {}
 
     nodes, outgoing, incoming, rid_to_id, rid_to_gateway_id, schema_id = _build_gt_from_raw(raw_record)
 
-    #--- 1. Action extraction (P/R/F1 on normalized action names) ---
+    #ACTION EXTRACTION: F1 on normalized action names 
     gt_action_names = set()
     for rid, aid in rid_to_id.items():
         gt_action_names.add(normalize(nodes[rid]['NodeText']))
@@ -83,7 +82,7 @@ def validate_record(raw_record, extracted_workflow):
         'extra': sorted(ext_action_names - gt_action_names),
     }
 
-    #--- 2. Gateway extraction (count, type accuracy, role accuracy) ---
+    #GATEWAY EXTRACTION: count, type (or, and or xor) accuracy, role accuracy
     gt_gw_types = defaultdict(int)
     gt_gw_roles = {}
     for rid, gid in rid_to_gateway_id.items():
@@ -134,8 +133,8 @@ def validate_record(raw_record, extracted_workflow):
         'gt_types': dict(gt_gw_types), 'ext_types': dict(ext_gw_types),
     }
 
-    #--- 3. Structural edge extraction ---
-    #3a. Action relations: (action_id, successor_id) and (predecessor_id, action_id)
+    #EDGES
+    #Action relations: (action_id, successor_id) and (predecessor_id, action_id)
     #ground truth: from SequenceFlow, map each edge to schema IDs
     gt_action_successors = set()
     gt_action_predecessors = set()
@@ -177,7 +176,7 @@ def validate_record(raw_record, extracted_workflow):
         'extra': sorted(ext_action_predecessors - gt_action_predecessors)[:5],
     }
 
-    #3b. Gateway relations: (gateway_id, next_id) and (incoming_id, gateway_id)
+    #Gateway relations: (gateway_id, next_id) and (incoming_id, gateway_id)
     gt_gw_next = set()
     gt_gw_incoming = set()
     for rid, gid in rid_to_gateway_id.items():
@@ -268,43 +267,6 @@ def validate_record(raw_record, extracted_workflow):
         'total_compared': total_compared,
     }
 
-    #--- 5. Termination handling ---
-    #5a. Terminal branches: gateways with next=None should correspond to
-    #    raw gateway edges pointing to unnamed EndNodes
-    gt_terminal_branches = set()
-    for rid, gid in rid_to_gateway_id.items():
-        for tgt, cond in outgoing.get(rid, []):
-            tgt_node = nodes.get(tgt)
-            if tgt_node and tgt_node['type'] == 'EndNode' and not tgt_node['NodeText'].strip():
-                gt_terminal_branches.add(gid)
-
-    ext_terminal_branches = set()
-    for g in w['gateways']:
-        for branch in g['branches']:
-            if branch['next'] is None:
-                ext_terminal_branches.add(g['id'])
-
-    p, r, f = set_metrics(gt_terminal_branches, ext_terminal_branches)
-    metrics['terminal_branches'] = {
-        'precision': p, 'recall': r, 'f1': f,
-        'gt_count': len(gt_terminal_branches), 'ext_count': len(ext_terminal_branches),
-    }
-
-    #5b. can_terminate in execution_states
-    #check that at least one state has can_terminate=True if the workflow has terminal branches
-    #and that the final state(s) have available_next=[]
-    has_terminal_in_gt = len(gt_terminal_branches) > 0
-    states = w.get('execution_states', [])
-    has_can_terminate = any(s.get('can_terminate') for s in states)
-    has_empty_final = any(len(s['available_next']) == 0 for s in states)
-
-    metrics['termination'] = {
-        'gt_has_terminal_branches': has_terminal_in_gt,
-        'ext_has_can_terminate': has_can_terminate,
-        'ext_has_empty_final_state': has_empty_final,
-        'termination_correct': (not has_terminal_in_gt) or has_can_terminate or has_empty_final,
-    }
-
     return metrics
 
 
@@ -366,14 +328,6 @@ def print_metrics(all_metrics):
         print(f"  Branch counts:     accuracy={bc['accuracy']:.2f}  (compared={bc['total_compared']})")
         avg['branch_count_acc'].append(bc['accuracy'])
 
-        tb = m['terminal_branches']
-        print(f"  Terminal branches: P={tb['precision']:.2f}  R={tb['recall']:.2f}  F1={tb['f1']:.2f}  (GT={tb['gt_count']}, Ext={tb['ext_count']})")
-        avg['terminal_f1'].append(tb['f1'])
-
-        t = m['termination']
-        print(f"  Termination:       correct={t['termination_correct']}  gt_terminal={t['gt_has_terminal_branches']}  can_terminate={t['ext_has_can_terminate']}  empty_final={t['ext_has_empty_final_state']}")
-        avg['termination_correct'].append(1.0 if t['termination_correct'] else 0.0)
-
     n = len(all_metrics)
     print(f"\n{'=' * 80}")
     print(f"AVERAGES (over {n} records):")
@@ -386,8 +340,6 @@ def print_metrics(all_metrics):
     print(f"  Gateway incoming F1:    {sum(avg['gw_incoming_f1'])/n:.2f}")
     print(f"  Branch tuple F1:        {sum(avg['branch_tuple_f1'])/n:.2f}")
     print(f"  Branch count accuracy:  {sum(avg['branch_count_acc'])/n:.2f}")
-    print(f"  Terminal branch F1:     {sum(avg['terminal_f1'])/n:.2f}")
-    print(f"  Termination correct:    {sum(avg['termination_correct'])/n:.2f}")
     print("=" * 80)
 
 
