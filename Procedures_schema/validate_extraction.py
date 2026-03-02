@@ -135,7 +135,7 @@ def validate_record(raw_record, extracted_workflow):
 
     #EDGES
     #Action relations: (action_id, successor_id) and (predecessor_id, action_id)
-    #ground truth: from SequenceFlow, map each edge to schema IDs
+    #ground truth: from SequenceFlow based on their IDs
     gt_action_successors = set()
     gt_action_predecessors = set()
     for rid in rid_to_id:

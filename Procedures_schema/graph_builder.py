@@ -169,6 +169,9 @@ def extract_gateways(nodes, outgoing, incoming, rid_to_id):
                 incoming_from.append(rid_to_id[src])
             elif src_node['type'] in ('XOR', 'AND', 'OR'):
                 incoming_from.append(make_gateway_id(nodes, src, src_node))
+            elif src_node['type'] == 'StartNode' and not src_node['NodeText'].strip():
+                # Preserve unnamed BPMN start nodes as explicit "start" references.
+                incoming_from.append("start")
 
         #deduplicate while preserving order (e.g. two edges from same gateway)
         incoming_from = list(dict.fromkeys(incoming_from))

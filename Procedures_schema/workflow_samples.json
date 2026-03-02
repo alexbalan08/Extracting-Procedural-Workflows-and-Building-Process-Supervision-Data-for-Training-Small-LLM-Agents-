@@ -6969,7 +6969,9 @@
           "id": "gateway_and_1",
           "type": "parallel",
           "role": "split",
-          "incoming_from": [],
+          "incoming_from": [
+            "start"
+          ],
           "branches": [
             {
               "next": "undergo_biometric_verification"
