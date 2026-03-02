@@ -6,6 +6,7 @@ from graph_builder import (
     build_graph, build_rid_to_id, make_gateway_id,
     ACTIONABLE_TYPES, GATEWAY_TYPE_MAP
 )
+from path_enumeration import enumerate_paths, build_execution_states
 
 project_root = Path(__file__).parent.parent
 processed_dir = project_root / 'Data' / 'Processed'
@@ -136,16 +137,19 @@ def validate_record(raw_record, extracted_workflow):
     #EDGES
     #Action relations: (action_id, successor_id) and (predecessor_id, action_id)
     #ground truth: from SequenceFlow based on their IDs
+
+    #gt = grownd truth 
+    #ext = my extraction
     gt_action_successors = set()
     gt_action_predecessors = set()
     for rid in rid_to_id:
         action_id = rid_to_id[rid]
-        #successors: direct outgoing edges from this action node
+        #successors  direct outgoing edges from this action node
         for tgt, cond in outgoing.get(rid, []):
             tgt_sid = schema_id(tgt)
             if tgt_sid:
                 gt_action_successors.add((action_id, tgt_sid))
-        #predecessors: direct incoming edges to this action node
+        #predecessors  direct incoming edges to this action node
         for src, cond in incoming.get(rid, []):
             src_sid = schema_id(src)
             if src_sid:
@@ -165,7 +169,7 @@ def validate_record(raw_record, extracted_workflow):
         'precision': p, 'recall': r, 'f1': f,
         'gt_count': len(gt_action_successors), 'ext_count': len(ext_action_successors),
         'missing': sorted(gt_action_successors - ext_action_successors)[:5],
-        'extra': sorted(ext_action_successors - ext_action_successors)[:5],
+        'extra': sorted(ext_action_successors - gt_action_successors)[:5],
     }
 
     p, r, f = set_metrics(gt_action_predecessors, ext_action_predecessors)
@@ -223,7 +227,7 @@ def validate_record(raw_record, extracted_workflow):
         'extra': sorted(ext_gw_incoming - gt_gw_incoming)[:5],
     }
 
-    #--- 4. Gateway branch accuracy (gateway_id, next_id, condition_norm) ---
+    #GATEAWAY branch tuple accuracy  (gateway_id, next_id, condition_norm) 
     gt_branch_tuples = set()
     for rid, gid in rid_to_gateway_id.items():
         for tgt, cond in outgoing.get(rid, []):
@@ -251,7 +255,8 @@ def validate_record(raw_record, extracted_workflow):
         'extra': sorted(ext_branch_tuples - gt_branch_tuples, key=str)[:5],
     }
 
-    #per-gateway branch count match
+    #number of outgoing GT branches for gateway i
+    #number of extracted branches for gateway i
     gt_gw_ordered_rids = list(rid_to_gateway_id.keys())
     branch_count_matches = 0
     total_compared = min(len(gt_gw_ordered_rids), len(w['gateways']))
@@ -265,6 +270,65 @@ def validate_record(raw_record, extracted_workflow):
     metrics['branch_counts'] = {
         'accuracy': branch_count_matches / total_compared if total_compared > 0 else 1.0,
         'total_compared': total_compared,
+    }
+
+    #EXECUTION STATES
+    start_rids = [rid for rid, node in nodes.items() if node['type'] == 'StartNode']
+    gt_unique_paths = enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids)
+    gt_execution_states = build_execution_states(gt_unique_paths)
+    ext_execution_states = w.get('execution_states', [])
+
+    def state_key(state):
+        completed = tuple(state.get('completed_actions', []))
+        available = tuple(sorted(set(state.get('available_next', []))))
+        can_terminate = bool(state.get('can_terminate', False))
+        return (completed, available, can_terminate)
+
+    gt_state_keys = {state_key(s) for s in gt_execution_states}
+    ext_state_keys = {state_key(s) for s in ext_execution_states}
+    p, r, f = set_metrics(gt_state_keys, ext_state_keys)
+
+    action_ids = {a['id'] for a in w['actions']}
+    ext_completed_sets = set()
+    completed_counts = defaultdict(int)
+    unknown_completed = set()
+    unknown_available = set()
+
+    for state in ext_execution_states:
+        completed = tuple(state.get('completed_actions', []))
+        available = list(state.get('available_next', []))
+        completed_counts[completed] += 1
+        ext_completed_sets.add(completed)
+
+        for aid in completed:
+            if aid not in action_ids:
+                unknown_completed.add(aid)
+        for aid in available:
+            if aid not in action_ids:
+                unknown_available.add(aid)
+
+    duplicate_completed_states = sorted(
+        [list(comp) for comp, c in completed_counts.items() if c > 1],
+        key=str
+    )[:5]
+
+    missing_parent_prefix = []
+    for comp in sorted(ext_completed_sets, key=str):
+        if len(comp) <= 1:
+            continue
+        if tuple(comp[:-1]) not in ext_completed_sets:
+            missing_parent_prefix.append(list(comp))
+    missing_parent_prefix = missing_parent_prefix[:5]
+
+    metrics['execution_states'] = {
+        'precision': p, 'recall': r, 'f1': f,
+        'gt_count': len(gt_state_keys), 'ext_count': len(ext_state_keys),
+        'missing': sorted(gt_state_keys - ext_state_keys, key=str)[:5],
+        'extra': sorted(ext_state_keys - gt_state_keys, key=str)[:5],
+        'unknown_completed_actions': sorted(unknown_completed)[:5],
+        'unknown_available_actions': sorted(unknown_available)[:5],
+        'duplicate_completed_states': duplicate_completed_states,
+        'missing_parent_prefix': missing_parent_prefix,
     }
 
     return metrics
@@ -328,6 +392,21 @@ def print_metrics(all_metrics):
         print(f"  Branch counts:     accuracy={bc['accuracy']:.2f}  (compared={bc['total_compared']})")
         avg['branch_count_acc'].append(bc['accuracy'])
 
+        es = m['execution_states']
+        print(f"  Exec states:       P={es['precision']:.2f}  R={es['recall']:.2f}  F1={es['f1']:.2f}  (GT={es['gt_count']}, Ext={es['ext_count']})")
+        if es['missing']:
+            print(f"                     Missing: {es['missing']}")
+        if es['extra']:
+            print(f"                     Extra:   {es['extra']}")
+        if es['unknown_completed_actions'] or es['unknown_available_actions'] or es['duplicate_completed_states'] or es['missing_parent_prefix']:
+            print(
+                f"                     Sanity issues: unknown_completed={len(es['unknown_completed_actions'])}, "
+                f"unknown_available={len(es['unknown_available_actions'])}, "
+                f"duplicate_completed={len(es['duplicate_completed_states'])}, "
+                f"missing_parent_prefix={len(es['missing_parent_prefix'])}"
+            )
+        avg['execution_states_f1'].append(es['f1'])
+
     n = len(all_metrics)
     print(f"\n{'=' * 80}")
     print(f"AVERAGES (over {n} records):")
@@ -340,15 +419,16 @@ def print_metrics(all_metrics):
     print(f"  Gateway incoming F1:    {sum(avg['gw_incoming_f1'])/n:.2f}")
     print(f"  Branch tuple F1:        {sum(avg['branch_tuple_f1'])/n:.2f}")
     print(f"  Branch count accuracy:  {sum(avg['branch_count_acc'])/n:.2f}")
+    print(f"  Execution states F1:    {sum(avg['execution_states_f1'])/n:.2f}")
     print("=" * 80)
 
 
 if __name__ == '__main__':
-    #load raw data
+ 
     with open(processed_dir / 'merged_train.json', 'r', encoding='utf-8') as f:
         raw_data = json.load(f)
 
-    #load extracted workflows
+ 
     with open(output_dir / 'workflow_samples.json', 'r', encoding='utf-8') as f:
         extracted = json.load(f)
 
