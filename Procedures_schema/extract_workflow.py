@@ -40,18 +40,19 @@ def extract_workflow(record):
     return workflow
 
 
-#this is for testing purpose to validate manually
-with open(processed_dir / 'merged_train.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
+if __name__ == '__main__':
+    #this is for testing purpose to validate manually
+    with open(processed_dir / 'merged_train.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
 
-samples = [extract_workflow(data[i]) for i in range(20)]
+    samples = [extract_workflow(data[i]) for i in range(20)]
 
-output_path = output_dir / 'workflow_samples.json'
-with open(output_path, 'w', encoding='utf-8') as f:
-    json.dump(samples, f, indent=2, ensure_ascii=False)
+    output_path = output_dir / 'workflow_samples.json'
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(samples, f, indent=2, ensure_ascii=False)
 
-for i, s in enumerate(samples):
-    w = s['workflow']
-    print(f"Record {i}: {len(w['actions'])} actions, {len(w['gateways'])} gateways, actors: {w['actors']}")
+    for i, s in enumerate(samples):
+        w = s['workflow']
+        print(f"Record {i}: {len(w['actions'])} actions, {len(w['gateways'])} gateways, actors: {w['actors']}")
 
-print(f"\nSaved to {output_path}")
+    print(f"\nSaved to {output_path}")
