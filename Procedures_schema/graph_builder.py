@@ -51,6 +51,7 @@ def make_gateway_id(nodes, rid, node):
 
 
 ACTIONABLE_TYPES = {'Activity', 'StartNode', 'EndNode'}
+#all except ghateways
 
 GATEWAY_TYPE_MAP = {
     'XOR': 'exclusive',
@@ -59,6 +60,7 @@ GATEWAY_TYPE_MAP = {
 }
 
 #"sid-A151...": "check_inventory"
+#endnodes with text we treat them the same 
 def build_rid_to_id(nodes):
     seen_ids = set()
     rid_to_id = {}
@@ -93,6 +95,8 @@ def extract_actions(nodes, outgoing, incoming, rid_to_id):
             elif src_node['type'] == 'StartNode':
                 #StartNode without text 
                 predecessors.append("start")
+
+        #EndNodes without text we skip and they never become actions
 
         #we need to find what comes after so basiclaly everything that points FROM this action node
         #and we append what comes after depending on its node type

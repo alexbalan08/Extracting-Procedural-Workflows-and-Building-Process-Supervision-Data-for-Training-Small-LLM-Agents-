@@ -6,7 +6,6 @@ from path_enumeration import enumerate_paths, build_execution_states
 
 project_root = Path(__file__).parent.parent
 processed_dir = project_root / 'Data' / 'Processed'
-output_dir = Path(__file__).parent
 
 
 def extract_workflow(record):
@@ -40,19 +39,25 @@ def extract_workflow(record):
     return workflow
 
 
+#for the final extraction on all dataset, then i will split again into test/train
 if __name__ == '__main__':
-    #this is for testing purpose to validate manually
-    with open(processed_dir / 'merged_train.json', 'r', encoding='utf-8') as f:
+    input_path = processed_dir / 'merged_dataset.json'
+    output_path = processed_dir / 'extracted_workflows.json'
+
+    with open(input_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    samples = [extract_workflow(data[i]) for i in range(20)]
+    total = len(data)
 
-    output_path = output_dir / 'workflow_samples.json'
+
+    results = []
+
+    for i, record in enumerate(data):
+        workflow = extract_workflow(record)
+        results.append(workflow)
+
+        
+
     with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(samples, f, indent=2, ensure_ascii=False)
-
-    for i, s in enumerate(samples):
-        w = s['workflow']
-        print(f"Record {i}: {len(w['actions'])} actions, {len(w['gateways'])} gateways, actors: {w['actors']}")
-
-    print(f"\nSaved to {output_path}")
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    

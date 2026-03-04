@@ -335,101 +335,60 @@ def validate_record(raw_record, extracted_workflow):
 
 
 def print_metrics(all_metrics):
-    """Print per-record and averaged metrics."""
+    """Print averaged metrics and list records with any score under 1.0."""
     print("=" * 80)
     print("EXTRACTION VALIDATION REPORT")
     print("=" * 80)
 
+    #collect scores per metric and track imperfect records
+    metric_keys = [
+        ('action_f1',          'Action F1',             lambda m: m['actions']['f1']),
+        ('gateway_type_acc',   'Gateway type accuracy',  lambda m: m['gateways']['type_accuracy']),
+        ('gateway_role_acc',   'Gateway role accuracy',  lambda m: m['gateways']['role_accuracy']),
+        ('action_succ_f1',     'Action successor F1',    lambda m: m['action_successors']['f1']),
+        ('action_pred_f1',     'Action predecessor F1',  lambda m: m['action_predecessors']['f1']),
+        ('gw_next_f1',         'Gateway next F1',        lambda m: m['gateway_branches_next']['f1']),
+        ('gw_incoming_f1',     'Gateway incoming F1',    lambda m: m['gateway_incoming']['f1']),
+        ('branch_tuple_f1',    'Branch tuple F1',        lambda m: m['branch_tuples']['f1']),
+        ('branch_count_acc',   'Branch count accuracy',  lambda m: m['branch_counts']['accuracy']),
+        ('exec_states_f1',     'Execution states F1',    lambda m: m['execution_states']['f1']),
+    ]
+
     avg = defaultdict(list)
+    #file_index -> list of (metric_name, score) where score < 1.0
+    imperfect = defaultdict(list)
 
-    for i, m in enumerate(all_metrics):
-        print(f"\n--- Record {i} (file_index: {m.get('file_index', '?')}) ---")
-
-        a = m['actions']
-        print(f"  Actions:           P={a['precision']:.2f}  R={a['recall']:.2f}  F1={a['f1']:.2f}  (GT={a['gt_count']}, Ext={a['ext_count']})")
-        if a['missing']:
-            print(f"                     Missing: {a['missing']}")
-        if a['extra']:
-            print(f"                     Extra:   {a['extra']}")
-        avg['action_f1'].append(a['f1'])
-
-        g = m['gateways']
-        print(f"  Gateways:          count_match={g['count_match']}  type_acc={g['type_accuracy']:.2f}  role_acc={g['role_accuracy']:.2f}  (GT={g['gt_count']}, Ext={g['ext_count']})")
-        avg['gateway_type_acc'].append(g['type_accuracy'])
-        avg['gateway_role_acc'].append(g['role_accuracy'])
-
-        s = m['action_successors']
-        print(f"  Action successors: P={s['precision']:.2f}  R={s['recall']:.2f}  F1={s['f1']:.2f}  (GT={s['gt_count']}, Ext={s['ext_count']})")
-        if s['missing']:
-            print(f"                     Missing: {s['missing']}")
-        avg['action_succ_f1'].append(s['f1'])
-
-        p = m['action_predecessors']
-        print(f"  Action predecess:  P={p['precision']:.2f}  R={p['recall']:.2f}  F1={p['f1']:.2f}  (GT={p['gt_count']}, Ext={p['ext_count']})")
-        if p['missing']:
-            print(f"                     Missing: {p['missing']}")
-        avg['action_pred_f1'].append(p['f1'])
-
-        gn = m['gateway_branches_next']
-        print(f"  Gateway next:      P={gn['precision']:.2f}  R={gn['recall']:.2f}  F1={gn['f1']:.2f}  (GT={gn['gt_count']}, Ext={gn['ext_count']})")
-        if gn['missing']:
-            print(f"                     Missing: {gn['missing']}")
-        avg['gw_next_f1'].append(gn['f1'])
-
-        gi = m['gateway_incoming']
-        print(f"  Gateway incoming:  P={gi['precision']:.2f}  R={gi['recall']:.2f}  F1={gi['f1']:.2f}  (GT={gi['gt_count']}, Ext={gi['ext_count']})")
-        if gi['missing']:
-            print(f"                     Missing: {gi['missing']}")
-        avg['gw_incoming_f1'].append(gi['f1'])
-
-        bt = m['branch_tuples']
-        print(f"  Branch tuples:     P={bt['precision']:.2f}  R={bt['recall']:.2f}  F1={bt['f1']:.2f}  (GT={bt['gt_count']}, Ext={bt['ext_count']})")
-        if bt['missing']:
-            print(f"                     Missing: {bt['missing']}")
-        avg['branch_tuple_f1'].append(bt['f1'])
-
-        bc = m['branch_counts']
-        print(f"  Branch counts:     accuracy={bc['accuracy']:.2f}  (compared={bc['total_compared']})")
-        avg['branch_count_acc'].append(bc['accuracy'])
-
-        es = m['execution_states']
-        print(f"  Exec states:       P={es['precision']:.2f}  R={es['recall']:.2f}  F1={es['f1']:.2f}  (GT={es['gt_count']}, Ext={es['ext_count']})")
-        if es['missing']:
-            print(f"                     Missing: {es['missing']}")
-        if es['extra']:
-            print(f"                     Extra:   {es['extra']}")
-        if es['unknown_completed_actions'] or es['unknown_available_actions'] or es['duplicate_completed_states'] or es['missing_parent_prefix']:
-            print(
-                f"                     Sanity issues: unknown_completed={len(es['unknown_completed_actions'])}, "
-                f"unknown_available={len(es['unknown_available_actions'])}, "
-                f"duplicate_completed={len(es['duplicate_completed_states'])}, "
-                f"missing_parent_prefix={len(es['missing_parent_prefix'])}"
-            )
-        avg['execution_states_f1'].append(es['f1'])
+    for m in all_metrics:
+        file_idx = m.get('file_index', '?')
+        for key, label, extractor in metric_keys:
+            score = extractor(m)
+            avg[key].append(score)
+            if score < 1.0:
+                imperfect[file_idx].append((label, score))
 
     n = len(all_metrics)
+    print(f"\nAVERAGES (over {n} records):")
+    for key, label, _ in metric_keys:
+        print(f"  {label + ':':<25s} {sum(avg[key])/n:.4f}")
+
     print(f"\n{'=' * 80}")
-    print(f"AVERAGES (over {n} records):")
-    print(f"  Action F1:              {sum(avg['action_f1'])/n:.2f}")
-    print(f"  Gateway type accuracy:  {sum(avg['gateway_type_acc'])/n:.2f}")
-    print(f"  Gateway role accuracy:  {sum(avg['gateway_role_acc'])/n:.2f}")
-    print(f"  Action successor F1:    {sum(avg['action_succ_f1'])/n:.2f}")
-    print(f"  Action predecessor F1:  {sum(avg['action_pred_f1'])/n:.2f}")
-    print(f"  Gateway next F1:        {sum(avg['gw_next_f1'])/n:.2f}")
-    print(f"  Gateway incoming F1:    {sum(avg['gw_incoming_f1'])/n:.2f}")
-    print(f"  Branch tuple F1:        {sum(avg['branch_tuple_f1'])/n:.2f}")
-    print(f"  Branch count accuracy:  {sum(avg['branch_count_acc'])/n:.2f}")
-    print(f"  Execution states F1:    {sum(avg['execution_states_f1'])/n:.2f}")
+    if imperfect:
+        print(f"RECORDS WITH SCORE < 1.0  ({len(imperfect)} records):")
+        for file_idx, issues in sorted(imperfect.items(), key=str):
+            issues_str = ', '.join(f"{label}={score:.2f}" for label, score in issues)
+            print(f"  file_index={file_idx}:  {issues_str}")
+    else:
+        print("All records scored 1.0 on every metric.")
     print("=" * 80)
 
 
 if __name__ == '__main__':
  
-    with open(processed_dir / 'merged_train.json', 'r', encoding='utf-8') as f:
+    with open(processed_dir / 'merged_dataset.json', 'r', encoding='utf-8') as f:
         raw_data = json.load(f)
 
- 
-    with open(output_dir / 'workflow_samples.json', 'r', encoding='utf-8') as f:
+    #for extraction
+    with open(processed_dir / 'extracted_test.json', 'r', encoding='utf-8') as f:
         extracted = json.load(f)
 
     #match by file_index
@@ -439,9 +398,6 @@ if __name__ == '__main__':
     for ext in extracted:
         file_idx = ext['file_index']
         raw = raw_by_index.get(file_idx)
-        if not raw:
-            print(f"WARNING: no raw record found for file_index {file_idx}")
-            continue
         m = validate_record(raw, ext)
         m['file_index'] = file_idx
         all_metrics.append(m)

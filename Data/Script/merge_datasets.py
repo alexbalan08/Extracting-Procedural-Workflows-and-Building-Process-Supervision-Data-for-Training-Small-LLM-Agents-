@@ -22,7 +22,7 @@ def clean_text(text):
 
 
 def clean_dataset(data):
-    """Clean all text fields in the dataset."""
+    """Clean all text."""
     if isinstance(data, list):
         return [clean_dataset(item) for item in data]
     elif isinstance(data, dict):
@@ -57,13 +57,29 @@ else:
         'train': train_data
     }
 
-# Remove procedures with more than 500 words
+#remove procedures with more than 500 words
 before = len(merged_data)
 merged_data = [r for r in merged_data if len(r['paragraph'].split()) <= 500]
 print(f"Removed {before - len(merged_data)} procedures with >500 words ({len(merged_data)} remaining)")
+
+#remove records with garbage node text  "???", "?", "..." as they were influecing my extaction quality
+#only 7 of those so no problem in dropping them 
+# these are nodes whose text becomes empty after stripping non-alphanumeric chars
+def has_garbage_node(record):
+    for n in record['step_nodes']:
+        text = n['NodeText'].strip()
+        if text:
+            cleaned = ''.join(c for c in text if c.isalnum() or c == '_' or c == ' ').strip()
+            if not cleaned:
+                return True
+    return False
+
+before = len(merged_data)
+merged_data = [r for r in merged_data if not has_garbage_node(r)]
+print(f"Removed {before - len(merged_data)} records with garbage node text ({len(merged_data)} remaining)")
 
 output_path = output_dir / 'merged_dataset.json'
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(merged_data, f, indent=2)
 
-print(f"saved {output_path}")
+
