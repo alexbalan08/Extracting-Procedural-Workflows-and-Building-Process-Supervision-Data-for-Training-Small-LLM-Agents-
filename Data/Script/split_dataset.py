@@ -2,8 +2,16 @@ import json
 import random
 from pathlib import Path
 
+
+#I will use this class for splitting both the intitial sequenceflow and also my extraction
+
+
 processed_dir = Path(__file__).parent.parent / 'Processed'
 input_path = processed_dir / 'merged_dataset.json'
+
+
+#input_path = processed_dir / 'extracted_workflows.json'
+
 
 TRAIN_RATIO = 0.8
 SEED = 42
@@ -21,7 +29,10 @@ test_data = data[split_idx:]
 print(f"Total: {len(data)} | Train: {len(train_data)} | Test: {len(test_data)}")
 
 for name, subset in [('train', train_data), ('test', test_data)]:
-    output_path = processed_dir / f'{name}.json'
+
+    #output_path = processed_dir / f'extracted_{name}.json'
+    output_path = processed_dir / f'merged_{name}.json'
+
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(subset, f, indent=2, ensure_ascii=False)
-    print(f"Saved {output_path}")
+
