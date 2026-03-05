@@ -233,37 +233,42 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
 
     return unique_paths
 
-#path 1: A, B, C
-#path 2: A, B, D
-#Then after A, B, available next  C, D
 def build_execution_states(unique_paths):
-    """Build execution states by merging ALL paths into a single state map.
-    At each prefix (completed actions so far), we collect ALL valid next actions"""
-    state_map = OrderedDict()
-    #track which states have at least one path that terminates there
-    terminal_states = set()
+    """Build execution states from all paths.
+
+    Each (completed_prefix, next_action) pair from each path becomes its own
+    state entry. We do NOT merge next actions across paths that share the same
+    completed prefix, because those diverging paths may come from mutually
+    exclusive XOR branches. Merging them would incorrectly show both XOR
+    alternatives as simultaneously available.
+
+    For AND gateways enumerate_paths already produces one interleaved path per
+    valid ordering, so parallel branches surface naturally as separate states
+    with a single next_action each — no cross-path merging required there either.
+
+    Deduplication is done on the exact (completed, next_action) pair so that
+    identical steps shared across multiple paths are not repeated.
+    """
+    seen = set()
+    execution_states = []
 
     for path in unique_paths[:MAX_PATHS]:
         for step_idx in range(len(path) + 1):
             completed = tuple(path[:step_idx])
             next_action = path[step_idx] if step_idx < len(path) else None
-            if completed not in state_map:
-                state_map[completed] = set()
-            if next_action:
-                state_map[completed].add(next_action)
-            else:
-                #this path terminates at this prefix
-                terminal_states.add(completed)
 
-    execution_states = []
-    for completed, available in state_map.items():
-        state = {
-            "completed_actions": list(completed),
-            "available_next": sorted(available),
-        }
-        #mark states where the process can terminate (even if other actions are also available)
-        if completed in terminal_states:
-            state["can_terminate"] = True
-        execution_states.append(state)
+            key = (completed, next_action)
+            if key in seen:
+                continue
+            seen.add(key)
+
+            state = {"completed_actions": list(completed)}
+            if next_action:
+                state["available_next"] = [next_action]
+            else:
+                state["available_next"] = []
+                state["can_terminate"] = True
+
+            execution_states.append(state)
 
     return execution_states
