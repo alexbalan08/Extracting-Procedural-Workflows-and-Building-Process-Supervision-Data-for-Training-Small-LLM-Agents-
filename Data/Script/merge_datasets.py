@@ -9,8 +9,8 @@ output_dir.mkdir(exist_ok=True)
 def clean_text(text):
     """Clean procedure text to produce raw text, as we would expect to find in manuals.
     Removes <SEP> tokens (separator between chunks/actors in PAGGED) and add space instread
-    Replaces newlines with spaces
-    Collapses multiple spaces into one
+    replaces newlines with spaces
+    remove multiple spaces with single space
     """
     if not isinstance(text, str):
         return text
@@ -78,23 +78,23 @@ before = len(merged_data)
 merged_data = [r for r in merged_data if not has_garbage_node(r)]
 print(f"Removed {before - len(merged_data)} records with garbage node text ({len(merged_data)} remaining)")
 
-#remove records with orphaned BPMN nodes (nodes with no incoming edges at all)
-#these are data quality issues in the source
+#remove records with fucked up nodes with no incoming edges as they were also influencing the extraction quality
+#these are data quality issues in the source data 
 def has_orphaned_node(record):
-    """True if any non-start node has zero incoming edges."""
+    #True if any non-start node has zero incoming edges.
     incoming_targets = set()
     for edge in record['SequenceFlow']:
         incoming_targets.add(edge['tgt'])
     for n in record['step_nodes']:
         rid = n['resourceId']
-        # StartNodes naturally have no incoming edges
+        #StartNodes naturally have no incoming edges
         if n['type'] == 'StartNode':
             continue
-        # Activities/EndNodes with text must have an incoming edge
+        #Activities/EndNodes with text must have an incoming edge
         if n['type'] in ('Activity', 'EndNode') and n['NodeText'].strip():
             if rid not in incoming_targets:
                 return True
-        # Gateways must have an incoming edge
+        #Gateways must have an incoming edge
         if n['type'] in ('XOR', 'AND', 'OR'):
             if rid not in incoming_targets:
                 return True

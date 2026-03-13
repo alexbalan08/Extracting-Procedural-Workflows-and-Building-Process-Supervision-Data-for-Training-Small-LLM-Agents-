@@ -113,7 +113,7 @@ def extract_actions(nodes, outgoing, incoming, rid_to_id):
             #unnamed EndNodes are termination
 
 
-        #StartNode with text becomes an action — it has no BPMN incoming edges
+        #StartNode with text becomes an action — it has no  incoming edges
         #so we explicitly mark it as following "start"
         if node['type'] == 'StartNode' and not predecessors:
             predecessors.append("start")

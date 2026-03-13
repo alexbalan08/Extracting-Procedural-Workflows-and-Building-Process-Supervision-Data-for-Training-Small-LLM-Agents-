@@ -1,5 +1,3 @@
-"""Utilities for formatting checker feedback into a re-extraction prompt."""
-
 from typing import List
 
 
@@ -15,6 +13,9 @@ def format_feedback_user_message(procedure_text: str, issues: List[str], attempt
     )
 
 
+
+#this we fall back if there are no issue
+#this is the prompt we feed
+#we will pass the ystem pormpt also with detailed strcutre
 def format_initial_user_message(procedure_text: str) -> str:
-    
     return f"Extract the workflow from the following procedure text:\n\n{procedure_text}"

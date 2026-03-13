@@ -1,12 +1,3 @@
-"""
-Convert extracted_train.json into a supervised fine-tuning (SFT) dataset.
-
-Each record becomes a chat with:
-  system  : EXTRACTION_SYSTEM_PROMPT
-  user    : procedure_text
-  assistant: <reasoning>...</reasoning>\n```json\n{workflow}\n```
-"""
-
 import json
 import argparse
 from pathlib import Path
@@ -21,7 +12,8 @@ DEFAULT_INPUT = PROJECT_ROOT / "Data" / "Processed" / "extracted_train.json"
 DEFAULT_OUTPUT = Path(__file__).parent / "sft_train.jsonl"
 
 
-# ── Reasoning trace generator ─────────────────────────────────────────────────
+"""In this class I will convert the extracted workflows (gold) into supervised records for training a small LLM to do the extraction itself from only raw 
+text and produce us json structure similar to what we expect."""
 
 def _describe_ref(ref: str, action_map: dict) -> str:
     if ref == "start":
@@ -30,24 +22,32 @@ def _describe_ref(ref: str, action_map: dict) -> str:
         return f"'{action_map[ref]['name']}'"
     return f"gateway '{ref}'"
 
+#Self-Refine" (Madaan et al., 2023)
+ 
 
+ #i will force CoT for the model to learn how to reason 
+ #this will teach the model how to think about the workflow structure and how to describe it in a reasoning trace. 
+ #it will be used as part of the response during training so the model learns to produce this kind of reasoning when given a procedure text
 def generate_reasoning_trace(workflow: dict) -> str:
+
+    #in here we store for the model how to identify components and use them to reason step by step
     actors = workflow.get("actors", [])
     actions = workflow.get("actions", [])
     gateways = workflow.get("gateways", [])
+
     exec_states = workflow.get("execution_states", [])
 
     action_map = {a["id"]: a for a in actions}
     lines = ["Let me analyze this procedure step by step.", ""]
 
-    # Actors
+    #for actors
     if actors:
         lines.append(f"**Actors**: I identify {len(actors)} actor(s): {', '.join(actors)}.")
     else:
         lines.append("**Actors**: No specific actors are mentioned in this procedure.")
     lines.append("")
 
-    # Actions
+    #actions
     start_actions = [a for a in actions if "start" in a.get("predecessors", [])]
     end_actions = [a for a in actions if not a.get("successors", [])]
     lines.append(f"**Actions**: I identify {len(actions)} action(s) in total.")
@@ -70,9 +70,10 @@ def generate_reasoning_trace(workflow: dict) -> str:
             f"  - '{action['name']}' [id={action['id']}]{actor_note}: "
             f"follows {pred_str} → leads to {succ_str}."
         )
+
     lines.append("")
 
-    # Gateways
+    #gateways
     if gateways:
         lines.append(f"**Gateways**: I identify {len(gateways)} gateway(s):")
         for gw in gateways:
@@ -86,7 +87,7 @@ def generate_reasoning_trace(workflow: dict) -> str:
         lines.append("**Gateways**: No decision or parallel split points — this is a linear sequence.")
     lines.append("")
 
-    # Execution states summary
+    #for ex states
     terminal_count = sum(1 for s in exec_states if s.get("can_terminate"))
     lines.append(
         f"**Execution states**: The workflow produces {len(exec_states)} execution state(s), "
@@ -96,7 +97,9 @@ def generate_reasoning_trace(workflow: dict) -> str:
     return "\n".join(lines)
 
 
-# ── SFT record builder ────────────────────────────────────────────────────────
+#this simply build for each record from training dataset a json with messages field containing the system prompt
+#user prompt (with procedure text) and model response (with reasoning trace and workflow json) that will be used
+# for training the model to do the extraction itself
 
 def build_sft_record(record: dict) -> dict:
     procedure_text = record["procedure_text"]
@@ -109,7 +112,9 @@ def build_sft_record(record: dict) -> dict:
         f"<reasoning>\n{reasoning}\n</reasoning>\n\n"
         f"```json\n{workflow_json}\n```"
     )
+    
 
+    #here 
     return {
         "file_index": record["file_index"],
         "messages": [
@@ -122,7 +127,7 @@ def build_sft_record(record: dict) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Prepare SFT dataset from extracted workflows.")
+    parser = argparse.ArgumentParser(description="Prepare supervised dataset from extracted workflows.")
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
@@ -137,7 +142,7 @@ def main():
             sft = build_sft_record(record)
             f.write(json.dumps(sft, ensure_ascii=False) + "\n")
 
-    print(f"Wrote {len(data)} SFT records to {args.output}")
+    print(f"Wrote {len(data)} supervised records to {args.output}")
 
 
 if __name__ == "__main__":
