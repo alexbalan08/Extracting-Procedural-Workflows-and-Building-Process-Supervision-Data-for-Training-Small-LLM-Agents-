@@ -68,10 +68,13 @@ def find_matching_join(split_rid, nodes, outgoing, incoming):
 def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
     """Enumerate all valid execution paths through the workflow.
 
-    Returns a list of (path, conditions) tuples where:
-      - path: ordered list of action IDs
-      - conditions: list of edge conditions encountered along that path
+    Returns a list of (path, conditions) tuples where conditions are list of edge conditions encountered along that path
     """
+
+
+    #for each traversed edge (target, cond) we append the condition if non empty
+    #for example if health>80
+    #basically we say the list of actions is vaalid when those conditions are met
 
     def _dfs(current_rid, path, conditions, visit_counts=None, stop_at=None):
         """DFS to enumerate all valid execution paths from a given node.
@@ -251,21 +254,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
     return unique_paths
 
 def build_execution_states(unique_paths):
-    """Build execution states from all (path, conditions) pairs.
 
-    Each (completed_prefix, next_action) pair from each path becomes its own
-    state entry. We do NOT merge next actions across paths that share the same
-    completed prefix, because those diverging paths may come from mutually
-    exclusive XOR branches. Merging them would incorrectly show both XOR
-    alternatives as simultaneously available.
-
-    For AND gateways enumerate_paths already produces one interleaved path per
-    valid ordering, so parallel branches surface naturally as separate states
-    with a single next_action each — no cross-path merging required there either.
-
-    Deduplication is done on the exact (completed, next_action, conditions) tuple
-    so that identical steps shared across multiple paths are not repeated.
-    """
     seen = set()
     execution_states = []
 

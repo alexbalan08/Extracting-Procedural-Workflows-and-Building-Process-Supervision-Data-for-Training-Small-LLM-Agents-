@@ -87,14 +87,14 @@ def extract_actions(nodes, outgoing, incoming, rid_to_id):
             src_node = nodes.get(src)
             if not src_node:
                 continue
-            #if the source is an actionable node with text, reference its action id
-            if src_node['type'] in ACTIONABLE_TYPES and src_node['NodeText'].strip():
+            #StartNode always maps to "start" even if it has text
+            #(the text still appears as an action via build_rid_to_id)
+            if src_node['type'] == 'StartNode':
+                predecessors.append("start")
+            elif src_node['type'] in ACTIONABLE_TYPES and src_node['NodeText'].strip():
                 predecessors.append(rid_to_id[src])
             elif src_node['type'] in ('XOR', 'AND', 'OR'):
                 predecessors.append(make_gateway_id(nodes, src, src_node))
-            elif src_node['type'] == 'StartNode':
-                #StartNode without text 
-                predecessors.append("start")
 
         #EndNodes without text we skip and they never become actions
 
@@ -112,6 +112,11 @@ def extract_actions(nodes, outgoing, incoming, rid_to_id):
                 successors.append(make_gateway_id(nodes, tgt, tgt_node))
             #unnamed EndNodes are termination
 
+
+        #StartNode with text becomes an action — it has no BPMN incoming edges
+        #so we explicitly mark it as following "start"
+        if node['type'] == 'StartNode' and not predecessors:
+            predecessors.append("start")
 
         predecessors = list(dict.fromkeys(predecessors))
         successors = list(dict.fromkeys(successors))
@@ -169,13 +174,13 @@ def extract_gateways(nodes, outgoing, incoming, rid_to_id):
             src_node = nodes.get(src)
             if not src_node:
                 continue
-            if src in rid_to_id:
+            #StartNode always maps to "start" even if it has text
+            if src_node['type'] == 'StartNode':
+                incoming_from.append("start")
+            elif src in rid_to_id:
                 incoming_from.append(rid_to_id[src])
             elif src_node['type'] in ('XOR', 'AND', 'OR'):
                 incoming_from.append(make_gateway_id(nodes, src, src_node))
-            elif src_node['type'] == 'StartNode' and not src_node['NodeText'].strip():
-                # Preserve unnamed BPMN start nodes as explicit "start" references.
-                incoming_from.append("start")
 
         #deduplicate while preserving order (e.g. two edges from same gateway)
         incoming_from = list(dict.fromkeys(incoming_from))

@@ -78,6 +78,32 @@ before = len(merged_data)
 merged_data = [r for r in merged_data if not has_garbage_node(r)]
 print(f"Removed {before - len(merged_data)} records with garbage node text ({len(merged_data)} remaining)")
 
+#remove records with orphaned BPMN nodes (nodes with no incoming edges at all)
+#these are data quality issues in the source
+def has_orphaned_node(record):
+    """True if any non-start node has zero incoming edges."""
+    incoming_targets = set()
+    for edge in record['SequenceFlow']:
+        incoming_targets.add(edge['tgt'])
+    for n in record['step_nodes']:
+        rid = n['resourceId']
+        # StartNodes naturally have no incoming edges
+        if n['type'] == 'StartNode':
+            continue
+        # Activities/EndNodes with text must have an incoming edge
+        if n['type'] in ('Activity', 'EndNode') and n['NodeText'].strip():
+            if rid not in incoming_targets:
+                return True
+        # Gateways must have an incoming edge
+        if n['type'] in ('XOR', 'AND', 'OR'):
+            if rid not in incoming_targets:
+                return True
+    return False
+
+before = len(merged_data)
+merged_data = [r for r in merged_data if not has_orphaned_node(r)]
+print(f"Removed {before - len(merged_data)} records with orphaned nodes ({len(merged_data)} remaining)")
+
 output_path = output_dir / 'merged_dataset.json'
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(merged_data, f, indent=2)
