@@ -9,14 +9,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "prompts"))
 from system_prompt import EXTRACTION_SYSTEM_PROMPT
 from feedback_prompt import format_initial_user_message, format_feedback_user_message
 from utils import generate
-
-try:
-    from unsloth import FastLanguageModel
-    UNSLOTH_AVAILABLE = True
-except ImportError:
-    UNSLOTH_AVAILABLE = False
-    from transformers import AutoModelForCausalLM, AutoTokenizer
-    import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
 
 def parse_response(response: str) -> dict:
@@ -65,18 +59,11 @@ class WorkflowExtractor:
         self._load_model(model_path)
 
     def _load_model(self, model_path: str):
-        if UNSLOTH_AVAILABLE:
-            self.model, self.tokenizer = FastLanguageModel.from_pretrained(
-                model_name=model_path, max_seq_length=4096,
-                load_in_4bit=True, dtype=None,
-            )
-            FastLanguageModel.for_inference(self.model)
-        else:
-            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-            self.model = AutoModelForCausalLM.from_pretrained(
-                model_path, load_in_4bit=True, device_map="auto",
-                torch_dtype=torch.bfloat16,
-            )
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_path, load_in_4bit=True, device_map="auto",
+            torch_dtype=torch.bfloat16,
+        )
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
     def _build_messages(self, procedure_text, feedback_issues=None, attempt=1):

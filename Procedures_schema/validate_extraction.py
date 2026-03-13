@@ -235,7 +235,7 @@ def validate_record(raw_record, extracted_workflow):
             if not tgt_node:
                 continue
             tgt_sid = schema_id(tgt)
-            if tgt_node['type'] == 'EndNode':
+            if tgt_node['type'] == 'EndNode' and tgt not in rid_to_id:
                 tgt_sid = None
             cond_norm = cond.strip() if cond.strip() else None
             gt_branch_tuples.add((gid, tgt_sid, cond_norm))
@@ -355,7 +355,7 @@ def print_metrics(all_metrics):
     ]
 
     avg = defaultdict(list)
-    #file_index -> list of (metric_name, score) where score < 1.0
+
     imperfect = defaultdict(list)
 
     for m in all_metrics:
@@ -376,7 +376,7 @@ def print_metrics(all_metrics):
         print(f"RECORDS WITH SCORE < 1.0  ({len(imperfect)} records):")
         for file_idx, issues in sorted(imperfect.items(), key=str):
             issues_str = ', '.join(f"{label}={score:.2f}" for label, score in issues)
-            print(f"  file_index={file_idx}:  {issues_str}")
+            #print(f"  file_index={file_idx}:  {issues_str}")
     else:
         print("All records scored 1.0 on every metric.")
     print("=" * 80)
@@ -388,7 +388,7 @@ if __name__ == '__main__':
         raw_data = json.load(f)
 
     #for extraction
-    with open(processed_dir / 'extracted_test.json', 'r', encoding='utf-8') as f:
+    with open(processed_dir / 'extracted_train.json', 'r', encoding='utf-8') as f:
         extracted = json.load(f)
 
     #match by file_index

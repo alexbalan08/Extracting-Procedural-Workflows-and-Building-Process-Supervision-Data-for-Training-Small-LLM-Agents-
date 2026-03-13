@@ -6,8 +6,6 @@ Output two parts in order:
 
 ─── WORKFLOW SCHEMA ───────────────────────────────────────────────────────────
 
-actors        : list[str]   – all agents/roles mentioned (e.g. "Creator", "Manager")
-
 actions       : list of action objects, one per step/activity:
   id          : str  – snake_case, unique (duplicate names get _2, _3 suffix)
   name        : str  – original text of the action
@@ -39,13 +37,12 @@ execution_states : list of state snapshots covering every reachable step:
 ─── OUTPUT FORMAT ─────────────────────────────────────────────────────────────
 
 <reasoning>
-Step-by-step analysis: identify actors, trace action sequence, identify decision
+Step-by-step analysis: trace action sequence, identify decision
 points or parallel splits, then outline execution states.
 </reasoning>
 
 ```json
 {
-  "actors": [...],
   "actions": [...],
   "gateways": [...],
   "execution_states": [...]
