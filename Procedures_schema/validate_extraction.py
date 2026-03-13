@@ -235,7 +235,7 @@ def validate_record(raw_record, extracted_workflow):
             if not tgt_node:
                 continue
             tgt_sid = schema_id(tgt)
-            if tgt_node['type'] == 'EndNode':
+            if tgt_node['type'] == 'EndNode' and tgt not in rid_to_id:
                 tgt_sid = None
             cond_norm = cond.strip() if cond.strip() else None
             gt_branch_tuples.add((gid, tgt_sid, cond_norm))

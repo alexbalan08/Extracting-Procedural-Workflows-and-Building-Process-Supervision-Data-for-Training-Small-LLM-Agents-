@@ -14,9 +14,6 @@ def extract_workflow(record):
 
     rid_to_id = build_rid_to_id(nodes)
 
-    #we retrieve all unique actors
-    actors = list(dict.fromkeys(n['agent'] for n in record['step_nodes'] if n['agent'].strip()))
-
     actions = extract_actions(nodes, outgoing, incoming, rid_to_id)
     gateways = extract_gateways(nodes, outgoing, incoming, rid_to_id)
 
@@ -29,7 +26,6 @@ def extract_workflow(record):
         "file_index": record['file_index'],
         "procedure_text": record['paragraph'],
         "workflow": {
-            "actors": actors,
             "actions": actions,
             "gateways": gateways,
             "execution_states": execution_states,

@@ -87,9 +87,7 @@ def extract_actions(nodes, outgoing, incoming, rid_to_id):
             src_node = nodes.get(src)
             if not src_node:
                 continue
-            #StartNode always maps to "start" even if it has text
-            #(the text still appears as an action via build_rid_to_id)
-            if src_node['type'] == 'StartNode':
+            if src_node['type'] == 'StartNode' and not src_node['NodeText'].strip():
                 predecessors.append("start")
             elif src_node['type'] in ACTIONABLE_TYPES and src_node['NodeText'].strip():
                 predecessors.append(rid_to_id[src])
@@ -174,8 +172,7 @@ def extract_gateways(nodes, outgoing, incoming, rid_to_id):
             src_node = nodes.get(src)
             if not src_node:
                 continue
-            #StartNode always maps to "start" even if it has text
-            if src_node['type'] == 'StartNode':
+            if src_node['type'] == 'StartNode' and not src_node['NodeText'].strip():
                 incoming_from.append("start")
             elif src in rid_to_id:
                 incoming_from.append(rid_to_id[src])

@@ -22,77 +22,119 @@ def _describe_ref(ref: str, action_map: dict) -> str:
         return f"'{action_map[ref]['name']}'"
     return f"gateway '{ref}'"
 
-#Self-Refine" (Madaan et al., 2023)
- 
 
- #i will force CoT for the model to learn how to reason 
- #this will teach the model how to think about the workflow structure and how to describe it in a reasoning trace. 
+def _gateway_type_explanation(gw_type: str) -> str:
+    """Explain why a gateway type was chosen based on its semantics."""
+    if gw_type == "exclusive":
+        return "only one branch is taken (exclusive/XOR)"
+    elif gw_type == "parallel":
+        return "all branches execute simultaneously (parallel/AND)"
+    elif gw_type == "inclusive":
+        return "one or more branches may be taken (inclusive/OR)"
+    return gw_type
+
+
+#Self-Refine" (Madaan et al., 2023)
+
+
+ #i will force CoT for the model to learn how to reason
+ #this will teach the model how to think about the workflow structure and how to describe it in a reasoning trace.
  #it will be used as part of the response during training so the model learns to produce this kind of reasoning when given a procedure text
 def generate_reasoning_trace(workflow: dict) -> str:
 
     #in here we store for the model how to identify components and use them to reason step by step
-    actors = workflow.get("actors", [])
     actions = workflow.get("actions", [])
     gateways = workflow.get("gateways", [])
 
     exec_states = workflow.get("execution_states", [])
 
     action_map = {a["id"]: a for a in actions}
+    gw_set = {g["id"] for g in gateways}
     lines = ["Let me analyze this procedure step by step.", ""]
 
-    #for actors
-    if actors:
-        lines.append(f"**Actors**: I identify {len(actors)} actor(s): {', '.join(actors)}.")
-    else:
-        lines.append("**Actors**: No specific actors are mentioned in this procedure.")
-    lines.append("")
-
-    #actions
+    #actions - show how IDs are derived so the model learns the naming convention
+    lines.append("**Step 1 — Extract actions and assign IDs**")
     start_actions = [a for a in actions if "start" in a.get("predecessors", [])]
     end_actions = [a for a in actions if not a.get("successors", [])]
-    lines.append(f"**Actions**: I identify {len(actions)} action(s) in total.")
+    lines.append(f"Reading through the text, I find {len(actions)} distinct action(s):")
+    for action in actions:
+        actor_note = f", performed by {action['actor']}" if action.get("actor") else ""
+        lines.append(f"  - '{action['name']}' → id: {action['id']}{actor_note}")
+    lines.append("")
+
+
+    #build the flow step by step so the model learns to connect actions
+    lines.append("**Step 2 — Determine the flow between actions**")
     if start_actions:
         names = ", ".join(f"'{a['name']}'" for a in start_actions)
-        lines.append(f"The process starts with: {names}.")
+        lines.append(f"The process begins with: {names}.")
+
+    for action in actions:
+        preds = action.get("predecessors", [])
+        succs = action.get("successors", [])
+        pred_strs = [_describe_ref(p, action_map) for p in preds]
+        succ_parts = []
+        for s in succs:
+            if s in action_map:
+                succ_parts.append(f"'{action_map[s]['name']}'")
+            elif s in gw_set:
+                succ_parts.append(f"a decision/split point ({s})")
+            else:
+                succ_parts.append(s)
+        pred_str = ", ".join(pred_strs) if pred_strs else "nothing"
+        succ_str = ", ".join(succ_parts) if succ_parts else "the process end"
+        lines.append(f"  '{action['name']}': after {pred_str} → then {succ_str}")
+
     if end_actions:
         names = ", ".join(f"'{a['name']}'" for a in end_actions)
         lines.append(f"The process ends after: {names}.")
     lines.append("")
 
-    lines.append("Action-by-action flow:")
-    for action in actions:
-        pred_strs = [_describe_ref(p, action_map) for p in action.get("predecessors", [])]
-        succ_strs = [_describe_ref(s, action_map) for s in action.get("successors", [])]
-        actor_note = f" (performed by {action['actor']})" if action.get("actor") else ""
-        pred_str = ", ".join(pred_strs) if pred_strs else "nothing"
-        succ_str = ", ".join(succ_strs) if succ_strs else "the process end"
-        lines.append(
-            f"  - '{action['name']}' [id={action['id']}]{actor_note}: "
-            f"follows {pred_str} → leads to {succ_str}."
-        )
 
-    lines.append("")
-
-    #gateways
+    #gateways - explain WHY a type is chosen and trace each branch
+    lines.append("**Step 3 — Identify decision points and parallel splits**")
     if gateways:
-        lines.append(f"**Gateways**: I identify {len(gateways)} gateway(s):")
         for gw in gateways:
             branches = gw.get("branches", [])
-            conds = [b.get("condition", "default") for b in branches]
+            incoming = gw.get("incoming_from", [])
+            inc_strs = [_describe_ref(i, action_map) for i in incoming]
             lines.append(
-                f"  - {gw['id']}: {gw['type']} gateway ({gw['role']}) with "
-                f"{len(branches)} branch(es). Conditions: {conds}."
+                f"Gateway {gw['id']}: {_gateway_type_explanation(gw['type'])}."
             )
+            lines.append(f"  Role: {gw['role']} (incoming from {', '.join(inc_strs)})")
+            for i, branch in enumerate(branches, 1):
+                cond = branch.get("condition", "default")
+                next_ref = branch.get("next")
+                if next_ref is None:
+                    target = "process end"
+                elif next_ref in action_map:
+                    target = f"'{action_map[next_ref]['name']}'"
+                else:
+                    target = next_ref
+                lines.append(f"  Branch {i}: [{cond}] → {target}")
     else:
-        lines.append("**Gateways**: No decision or parallel split points — this is a linear sequence.")
+        lines.append("No decision points or parallel splits — this is a straight linear sequence.")
     lines.append("")
 
-    #for ex states
-    terminal_count = sum(1 for s in exec_states if s.get("can_terminate"))
+
+    #for ex states - show terminal paths so the model learns how to derive them
+    lines.append("**Step 4 — Derive execution states**")
+    terminal_states = [s for s in exec_states if s.get("can_terminate")]
+    non_terminal = len(exec_states) - len(terminal_states)
     lines.append(
-        f"**Execution states**: The workflow produces {len(exec_states)} execution state(s), "
-        f"of which {terminal_count} is/are terminal (process can end)."
+        f"Tracing all possible paths through the workflow produces "
+        f"{len(exec_states)} reachable state(s): "
+        f"{non_terminal} intermediate and {len(terminal_states)} terminal."
     )
+    if terminal_states:
+        for ts in terminal_states[:3]:
+            completed = ts.get("completed_actions", [])
+            if completed:
+                lines.append(
+                    f"  Terminal state after: {' → '.join(completed)}"
+                )
+        if len(terminal_states) > 3:
+            lines.append(f"  ... and {len(terminal_states) - 3} more terminal state(s).")
 
     return "\n".join(lines)
 
