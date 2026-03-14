@@ -1,6 +1,6 @@
-"""Filter extracted training records by token budget.
-Keeps only records whose SFT entry (system + user + assistant) fits within MAX_TOKENS.
-Token count is estimated as total_chars // 4 (standard approximation for English+JSON).
+"""
+we keep only records with SFT entry (system + user + assistant) fits with our MAX_TOKENS
+Token count is estimated as total_chars // 4
 """
 
 import json

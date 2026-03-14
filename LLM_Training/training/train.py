@@ -55,9 +55,11 @@ def load_model(model_cfg: ModelConfig, lora_cfg: LoRAConfig):
 
 
 def train(sft_data_path, output_dir, model_cfg=None, lora_cfg=None,
-          num_epochs=3, lr=2e-4, max_seq_length=4096):
+          num_epochs=3, lr=2e-4, max_seq_length=None):
     model_cfg = model_cfg or ModelConfig()
     lora_cfg = lora_cfg or LoRAConfig()
+    if max_seq_length is None:
+        max_seq_length = model_cfg.max_seq_length
 
     print(f"Loading model: {model_cfg.model_name}")
     model, tokenizer = load_model(model_cfg, lora_cfg)
@@ -78,7 +80,7 @@ def train(sft_data_path, output_dir, model_cfg=None, lora_cfg=None,
         args=TrainingArguments(
             output_dir=output_dir,
             num_train_epochs=num_epochs,
-            per_device_train_batch_size=2,
+            per_device_train_batch_size=1,
             gradient_accumulation_steps=4,
             learning_rate=lr,
             warmup_ratio=0.03,
