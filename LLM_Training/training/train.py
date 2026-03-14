@@ -4,8 +4,7 @@ import argparse
 from pathlib import Path
 
 from datasets import Dataset
-from transformers import TrainingArguments
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 
 from training_config import ModelConfig, LoRAConfig
 
@@ -74,16 +73,18 @@ def train(sft_data_path, output_dir, model_cfg=None, lora_cfg=None,
     )
 
     trainer = SFTTrainer(
-        model=model, tokenizer=tokenizer,
-        train_dataset=dataset, dataset_text_field="text",
-        max_seq_length=max_seq_length, packing=False,
-        args=TrainingArguments(
+        model=model, processing_class=tokenizer,
+        train_dataset=dataset,
+        args=SFTConfig(
             output_dir=output_dir,
+            dataset_text_field="text",
+            max_length=max_seq_length,
+            packing=False,
             num_train_epochs=num_epochs,
             per_device_train_batch_size=1,
             gradient_accumulation_steps=4,
             learning_rate=lr,
-            warmup_ratio=0.03,
+            warmup_steps=40,
             lr_scheduler_type="cosine",
             weight_decay=0.01,
             optim="adamw_8bit",
@@ -93,6 +94,8 @@ def train(sft_data_path, output_dir, model_cfg=None, lora_cfg=None,
             logging_steps=10,
             seed=42,
             report_to="none",
+            dataloader_num_workers=0,
+            dataloader_pin_memory=True,
         ),
     )
 
@@ -124,3 +127,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -5,7 +5,7 @@ from typing import List
 @dataclass
 class ModelConfig:
     model_name: str = "meta-llama/Llama-3.1-8B-Instruct"
-    max_seq_length: int = 5120
+    max_seq_length: int = 4096
     load_in_4bit: bool = True
     dtype: str = None
 
