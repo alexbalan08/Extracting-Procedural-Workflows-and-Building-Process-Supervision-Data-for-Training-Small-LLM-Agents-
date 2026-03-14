@@ -9,7 +9,9 @@ from checker import CombinedChecker
 
 
 class ExtractionAgent:
-    """Orchestrates extract → check → re-extract with feedback, sharing one model."""
+    #we extract workflows with the extractor, then check them with the checker,
+    # and if there are issues we feed them back to the extractor for another attempt.
+    # We repeat this loop until we pass 3 attempts
 
     def __init__(
         self,
@@ -70,7 +72,6 @@ class ExtractionAgent:
         }
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser()
