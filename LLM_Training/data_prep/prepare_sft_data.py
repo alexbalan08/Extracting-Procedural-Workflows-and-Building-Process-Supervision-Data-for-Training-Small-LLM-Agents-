@@ -20,18 +20,7 @@ def _describe_ref(ref: str, action_map: dict) -> str:
         return "the process start"
     if ref in action_map:
         return f"'{action_map[ref]['name']}'"
-    return f"gateway '{ref}'"
-
-
-def _gateway_type_explanation(gw_type: str) -> str:
-    """Explain why a gateway type was chosen based on its semantics."""
-    if gw_type == "exclusive":
-        return "only one branch is taken (exclusive/XOR)"
-    elif gw_type == "parallel":
-        return "all branches execute simultaneously (parallel/AND)"
-    elif gw_type == "inclusive":
-        return "one or more branches may be taken (inclusive/OR)"
-    return gw_type
+    return f"gateway {ref}"
 
 
 #Self-Refine" (Madaan et al., 2023)
@@ -40,31 +29,30 @@ def _gateway_type_explanation(gw_type: str) -> str:
  #i will force CoT for the model to learn how to reason
  #this will teach the model how to think about the workflow structure and how to describe it in a reasoning trace.
  #it will be used as part of the response during training so the model learns to produce this kind of reasoning when given a procedure text
+ #NOTE: ID conventions, schema fields, and gateway patterns are already in the system prompt
+ #so here we only show instance-specific reasoning (what was found and why)
 def generate_reasoning_trace(workflow: dict) -> str:
 
-    #in here we store for the model how to identify components and use them to reason step by step
     actions = workflow.get("actions", [])
     gateways = workflow.get("gateways", [])
-
     exec_states = workflow.get("execution_states", [])
 
     action_map = {a["id"]: a for a in actions}
-    gw_set = {g["id"] for g in gateways}
     lines = ["Let me analyze this procedure step by step.", ""]
 
-    #actions - show how IDs are derived so the model learns the naming convention
-    lines.append("**Step 1 — Extract actions and assign IDs**")
-    start_actions = [a for a in actions if "start" in a.get("predecessors", [])]
-    end_actions = [a for a in actions if not a.get("successors", [])]
-    lines.append(f"Reading through the text, I find {len(actions)} distinct action(s):")
-    for action in actions:
+    #step 1: list what actions were found and their IDs
+    lines.append("**Step 1 — Extract actions**")
+    lines.append(f"I find {len(actions)} distinct action(s) in the text:")
+    for i, action in enumerate(actions, 1):
         actor_note = f", performed by {action['actor']}" if action.get("actor") else ""
-        lines.append(f"  - '{action['name']}' → id: {action['id']}{actor_note}")
+        lines.append(f"  {i}. \"{action['name']}\" → {action['id']}{actor_note}")
     lines.append("")
 
+    #step 2: show how actions connect — the instance-specific flow reasoning
+    lines.append("**Step 2 — Determine the flow**")
+    start_actions = [a for a in actions if "start" in a.get("predecessors", [])]
+    end_actions = [a for a in actions if not a.get("successors", [])]
 
-    #build the flow step by step so the model learns to connect actions
-    lines.append("**Step 2 — Determine the flow between actions**")
     if start_actions:
         names = ", ".join(f"'{a['name']}'" for a in start_actions)
         lines.append(f"The process begins with: {names}.")
@@ -77,64 +65,77 @@ def generate_reasoning_trace(workflow: dict) -> str:
         for s in succs:
             if s in action_map:
                 succ_parts.append(f"'{action_map[s]['name']}'")
-            elif s in gw_set:
-                succ_parts.append(f"a decision/split point ({s})")
             else:
-                succ_parts.append(s)
+                succ_parts.append(f"gateway {s}")
         pred_str = ", ".join(pred_strs) if pred_strs else "nothing"
-        succ_str = ", ".join(succ_parts) if succ_parts else "the process end"
-        lines.append(f"  '{action['name']}': after {pred_str} → then {succ_str}")
+        succ_str = ", ".join(succ_parts) if succ_parts else "end of process"
+        lines.append(f"  {action['id']}: after {pred_str} → then {succ_str}")
 
     if end_actions:
         names = ", ".join(f"'{a['name']}'" for a in end_actions)
         lines.append(f"The process ends after: {names}.")
     lines.append("")
 
-
-    #gateways - explain WHY a type is chosen and trace each branch
-    lines.append("**Step 3 — Identify decision points and parallel splits**")
+    #step 3: gateways — explain WHY a type was chosen from the text
+    lines.append("**Step 3 — Identify gateways**")
     if gateways:
+        lines.append(f"I find {len(gateways)} gateway(s):")
         for gw in gateways:
             branches = gw.get("branches", [])
             incoming = gw.get("incoming_from", [])
             inc_strs = [_describe_ref(i, action_map) for i in incoming]
-            lines.append(
-                f"Gateway {gw['id']}: {_gateway_type_explanation(gw['type'])}."
-            )
-            lines.append(f"  Role: {gw['role']} (incoming from {', '.join(inc_strs)})")
+
+            lines.append(f"  {gw['id']} ({gw['type']}, {gw['role']}):")
+            lines.append(f"    Incoming from: {', '.join(inc_strs)}")
             for i, branch in enumerate(branches, 1):
-                cond = branch.get("condition", "default")
+                cond = branch.get("condition")
                 next_ref = branch.get("next")
                 if next_ref is None:
-                    target = "process end"
+                    target = "process ends"
                 elif next_ref in action_map:
                     target = f"'{action_map[next_ref]['name']}'"
                 else:
-                    target = next_ref
-                lines.append(f"  Branch {i}: [{cond}] → {target}")
+                    target = f"gateway {next_ref}"
+                cond_str = f" when \"{cond}\"" if cond else ""
+                lines.append(f"    Branch {i}: → {target}{cond_str}")
     else:
-        lines.append("No decision points or parallel splits — this is a straight linear sequence.")
+        lines.append("No gateways — straight linear sequence.")
     lines.append("")
 
-
-    #for ex states - show terminal paths so the model learns how to derive them
+    #step 4: trace execution paths to show how states are derived
     lines.append("**Step 4 — Derive execution states**")
     terminal_states = [s for s in exec_states if s.get("can_terminate")]
-    non_terminal = len(exec_states) - len(terminal_states)
-    lines.append(
-        f"Tracing all possible paths through the workflow produces "
-        f"{len(exec_states)} reachable state(s): "
-        f"{non_terminal} intermediate and {len(terminal_states)} terminal."
-    )
+
+    #trace one full path step by step so the model learns the derivation
     if terminal_states:
-        for ts in terminal_states[:3]:
+        example = terminal_states[0]
+        completed = example.get("completed_actions", [])
+        conditions = example.get("conditions_met", [])
+
+        lines.append("Tracing one path through the workflow:")
+        for step_idx in range(len(completed)):
+            done_so_far = completed[:step_idx]
+            next_action = completed[step_idx]
+            done_str = ", ".join(done_so_far) if done_so_far else "(none)"
+            lines.append(f"  After [{done_str}] → next: {next_action}")
+        #terminal
+        cond_note = f" (conditions: {', '.join(conditions)})" if conditions else ""
+        lines.append(f"  After [{', '.join(completed)}] → process can terminate{cond_note}")
+
+    lines.append("")
+    non_terminal = len(exec_states) - len(terminal_states)
+    lines.append(f"Across all paths: {len(exec_states)} states total "
+                 f"({non_terminal} intermediate, {len(terminal_states)} terminal).")
+
+    if len(terminal_states) > 1:
+        lines.append("Terminal paths:")
+        for ts in terminal_states[:5]:
             completed = ts.get("completed_actions", [])
-            if completed:
-                lines.append(
-                    f"  Terminal state after: {' → '.join(completed)}"
-                )
-        if len(terminal_states) > 3:
-            lines.append(f"  ... and {len(terminal_states) - 3} more terminal state(s).")
+            conds = ts.get("conditions_met", [])
+            cond_note = f" (when: {', '.join(conds)})" if conds else ""
+            lines.append(f"  [{' → '.join(completed)}]{cond_note}")
+        if len(terminal_states) > 5:
+            lines.append(f"  ... and {len(terminal_states) - 5} more.")
 
     return "\n".join(lines)
 
