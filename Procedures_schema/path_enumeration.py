@@ -68,17 +68,16 @@ def find_matching_join(split_rid, nodes, outgoing, incoming):
 def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
     """Enumerate all valid execution paths through the workflow.
 
-    Returns a list of (path, conditions) tuples where conditions are list of edge conditions encountered along that path
+    Returns a list of (path, conditions) tuples.
+    conditions is a list of (condition_str, path_index) tuples where path_index
+    is the path length at which the condition becomes active (i.e. the gateway
+    was traversed after that many actions were completed).
     """
-
-
-    #for each traversed edge (target, cond) we append the condition if non empty
-    #for example if health>80
-    #basically we say the list of actions is vaalid when those conditions are met
 
     def _dfs(current_rid, path, conditions, visit_counts=None, stop_at=None):
         """DFS to enumerate all valid execution paths from a given node.
-        Returns list of (path, conditions) tuples."""
+        Returns list of (path, conditions) tuples.
+        conditions: list of (condition_str, path_index) tuples."""
         if visit_counts is None:
             visit_counts = defaultdict(int)
 
@@ -112,7 +111,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
                 return [(new_path, conditions)]
             all_paths = []
             for tgt, cond in next_edges:
-                new_conds = conditions + ([cond.strip()] if cond.strip() else [])
+                new_conds = conditions + ([(cond.strip(), len(new_path))] if cond.strip() else [])
                 all_paths.extend(_dfs(tgt, new_path, new_conds, visit_counts, stop_at))
             return all_paths
 
@@ -120,7 +119,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
         if node['type'] == 'XOR':
             all_paths = []
             for tgt, cond in outgoing.get(current_rid, []):
-                new_conds = conditions + ([cond.strip()] if cond.strip() else [])
+                new_conds = conditions + ([(cond.strip(), len(path))] if cond.strip() else [])
                 all_paths.extend(_dfs(tgt, path, new_conds, visit_counts, stop_at))
             return all_paths
 
@@ -136,7 +135,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
         if node['type'] == 'StartNode':
             all_paths = []
             for tgt, cond in outgoing.get(current_rid, []):
-                new_conds = conditions + ([cond.strip()] if cond.strip() else [])
+                new_conds = conditions + ([(cond.strip(), len(path))] if cond.strip() else [])
                 all_paths.extend(_dfs(tgt, path, new_conds, visit_counts, stop_at))
             return all_paths
 
@@ -151,7 +150,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
         if is_join(current_rid, incoming) and not is_split(current_rid, outgoing):
             all_paths = []
             for tgt, cond in branches_out:
-                new_conds = conditions + ([cond.strip()] if cond.strip() else [])
+                new_conds = conditions + ([(cond.strip(), len(path))] if cond.strip() else [])
                 all_paths.extend(_dfs(tgt, path, new_conds, visit_counts, stop_at))
             return all_paths
 
@@ -160,7 +159,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
         branch_stop = {join_rid} if join_rid else set()
         branch_results = []
         for tgt, cond in branches_out:
-            edge_conds = [cond.strip()] if cond.strip() else []
+            edge_conds = [(cond.strip(), 0)] if cond.strip() else []
             bp = _dfs(tgt, [], edge_conds, visit_counts, stop_at=branch_stop)
             branch_results.append(bp)  # list of (sub_path, sub_conditions)
 
@@ -180,8 +179,9 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
                 interleaved = path[:]
                 merged_conds = conditions[:]
                 for idx in perm:
+                    offset = len(interleaved)
                     interleaved.extend(branch_seqs[idx][0])
-                    merged_conds.extend(branch_seqs[idx][1])
+                    merged_conds.extend([(c, ci + offset) for c, ci in branch_seqs[idx][1]])
                 if join_rid:
                     all_paths.extend(_dfs(join_rid, interleaved, merged_conds, visit_counts, stop_at))
                 else:
@@ -201,7 +201,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
         if is_join(current_rid, incoming) and not is_split(current_rid, outgoing):
             all_paths = []
             for tgt, cond in branches_out:
-                new_conds = conditions + ([cond.strip()] if cond.strip() else [])
+                new_conds = conditions + ([(cond.strip(), len(path))] if cond.strip() else [])
                 all_paths.extend(_dfs(tgt, path, new_conds, visit_counts, stop_at))
             return all_paths
 
@@ -211,7 +211,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
 
         branch_results = []
         for tgt, cond in branches_out:
-            edge_conds = [cond.strip()] if cond.strip() else []
+            edge_conds = [(cond.strip(), 0)] if cond.strip() else []
             bp = _dfs(tgt, [], edge_conds, visit_counts, stop_at=branch_stop)
             branch_results.append(bp)
 
@@ -223,8 +223,9 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
                     merged = path[:]
                     merged_conds = conditions[:]
                     for bp, bc in combo:
+                        offset = len(merged)
                         merged.extend(bp)
-                        merged_conds.extend(bc)
+                        merged_conds.extend([(c, ci + offset) for c, ci in bc])
                     if join_rid:
                         all_paths.extend(_dfs(join_rid, merged, merged_conds, visit_counts, stop_at))
                     else:
@@ -263,14 +264,18 @@ def build_execution_states(unique_paths):
             completed = tuple(path[:step_idx])
             next_action = path[step_idx] if step_idx < len(path) else None
 
-            key = (completed, next_action, tuple(conditions))
+            #only include conditions whose gateway was traversed by this step
+            #initial state (step_idx=0) never has conditions — no gateway traversed yet
+            active_conds = [c for c, idx in conditions if step_idx > 0 and idx <= step_idx]
+
+            key = (completed, next_action, tuple(active_conds))
             if key in seen:
                 continue
             seen.add(key)
 
             state = {
                 "completed_actions": list(completed),
-                "conditions_met": conditions,
+                "conditions_met": active_conds,
             }
             if next_action:
                 state["available_next"] = [next_action]

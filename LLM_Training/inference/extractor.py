@@ -10,13 +10,8 @@ from system_prompt import EXTRACTION_SYSTEM_PROMPT
 from feedback_prompt import format_initial_user_message, format_feedback_user_message
 from utils import generate
 
-try:
-    from unsloth import FastLanguageModel
-    UNSLOTH_AVAILABLE = True
-except ImportError:
-    UNSLOTH_AVAILABLE = False
-    from transformers import AutoModelForCausalLM, AutoTokenizer
-    import torch
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 def parse_response(response: str) -> dict:
@@ -52,7 +47,6 @@ def parse_response(response: str) -> dict:
 
 
 class WorkflowExtractor:
-    """Thin wrapper around a causal LM that extracts structured workflows."""
 
     def __init__(
         self,
@@ -65,17 +59,23 @@ class WorkflowExtractor:
         self._load_model(model_path)
 
     def _load_model(self, model_path: str):
-        if UNSLOTH_AVAILABLE:
-            self.model, self.tokenizer = FastLanguageModel.from_pretrained(
-                model_name=model_path, max_seq_length=4096,
-                load_in_4bit=True, dtype=None,
+        from peft import PeftModel
+        from transformers import BitsAndBytesConfig
+
+        bnb_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16)
+        adapter_config_path = Path(model_path) / "adapter_config.json"
+        if adapter_config_path.exists():
+            with open(adapter_config_path, "r") as f:
+                base_model_name = json.load(f)["base_model_name_or_path"]
+            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+            base_model = AutoModelForCausalLM.from_pretrained(
+                base_model_name, quantization_config=bnb_config, device_map="auto",
             )
-            FastLanguageModel.for_inference(self.model)
+            self.model = PeftModel.from_pretrained(base_model, model_path)
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
             self.model = AutoModelForCausalLM.from_pretrained(
-                model_path, load_in_4bit=True, device_map="auto",
-                torch_dtype=torch.bfloat16,
+                model_path, quantization_config=bnb_config, device_map="auto",
             )
         self.tokenizer.pad_token = self.tokenizer.eos_token
 

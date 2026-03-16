@@ -1,14 +1,18 @@
-"""Shared generation utility for inference modules."""
+
 
 
 def generate(model, tokenizer, messages, max_new_tokens, temperature):
-    """Run chat-completion style generation. Works with both unsloth and HF models."""
-    input_ids = tokenizer.apply_chat_template(
-        messages, tokenize=True, add_generation_prompt=True, return_tensors="pt",
-    ).to(model.device)
+    
+    tokenized = tokenizer.apply_chat_template(
+        messages, tokenize=True, add_generation_prompt=True,
+        return_tensors="pt", return_dict=True,
+    )
+    input_ids = tokenized["input_ids"].to(model.device)
+    attention_mask = tokenized["attention_mask"].to(model.device)
 
     outputs = model.generate(
         input_ids=input_ids,
+        attention_mask=attention_mask,
         max_new_tokens=max_new_tokens,
         temperature=temperature if temperature > 0 else None,
         do_sample=temperature > 0,

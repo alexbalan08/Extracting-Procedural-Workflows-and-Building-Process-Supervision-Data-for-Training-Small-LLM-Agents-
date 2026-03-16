@@ -29,8 +29,7 @@ def _describe_ref(ref: str, action_map: dict) -> str:
  #i will force CoT for the model to learn how to reason
  #this will teach the model how to think about the workflow structure and how to describe it in a reasoning trace.
  #it will be used as part of the response during training so the model learns to produce this kind of reasoning when given a procedure text
- #NOTE: ID conventions, schema fields, and gateway patterns are already in the system prompt
- #so here we only show instance-specific reasoning (what was found and why)
+ #so here what was found and why
 def generate_reasoning_trace(workflow: dict) -> str:
 
     actions = workflow.get("actions", [])
@@ -45,7 +44,7 @@ def generate_reasoning_trace(workflow: dict) -> str:
     lines.append(f"I find {len(actions)} distinct action(s) in the text:")
     for i, action in enumerate(actions, 1):
         actor_note = f", performed by {action['actor']}" if action.get("actor") else ""
-        lines.append(f"  {i}. \"{action['name']}\" → {action['id']}{actor_note}")
+        lines.append(f"  {i}. \"{action['name']}\" → {action['id']}{actor_note}  (id = name lowercased, spaces→underscores)")
     lines.append("")
 
     #step 2: show how actions connect — the instance-specific flow reasoning
@@ -102,29 +101,26 @@ def generate_reasoning_trace(workflow: dict) -> str:
         lines.append("No gateways — straight linear sequence.")
     lines.append("")
 
-    #step 4: trace execution paths to show how states are derived
+    #step 4: trace all execution states
     lines.append("**Step 4 — Derive execution states**")
     terminal_states = [s for s in exec_states if s.get("can_terminate")]
+    non_terminal = len(exec_states) - len(terminal_states)
 
-    #trace one full path step by step so the model learns the derivation
-    if terminal_states:
-        example = terminal_states[0]
-        completed = example.get("completed_actions", [])
-        conditions = example.get("conditions_met", [])
-
-        lines.append("Tracing one path through the workflow:")
-        for step_idx in range(len(completed)):
-            done_so_far = completed[:step_idx]
-            next_action = completed[step_idx]
-            done_str = ", ".join(done_so_far) if done_so_far else "(none)"
-            lines.append(f"  After [{done_str}] → next: {next_action}")
-        #terminal
+    lines.append("Tracing the process:")
+    for state in exec_states:
+        completed = state.get("completed_actions", [])
+        available = state.get("available_next", [])
+        conditions = state.get("conditions_met", [])
+        done_str = ", ".join(completed) if completed else "(none)"
         cond_note = f" (conditions: {', '.join(conditions)})" if conditions else ""
-        lines.append(f"  After [{', '.join(completed)}] → process can terminate{cond_note}")
+        if state.get("can_terminate"):
+            lines.append(f"  After [{done_str}] → process can terminate{cond_note}")
+        else:
+            next_str = ", ".join(available) if available else "nothing"
+            lines.append(f"  After [{done_str}] → next: {next_str}")
 
     lines.append("")
-    non_terminal = len(exec_states) - len(terminal_states)
-    lines.append(f"Across all paths: {len(exec_states)} states total "
+    lines.append(f"Across {len(exec_states)} states total "
                  f"({non_terminal} intermediate, {len(terminal_states)} terminal).")
 
     if len(terminal_states) > 1:

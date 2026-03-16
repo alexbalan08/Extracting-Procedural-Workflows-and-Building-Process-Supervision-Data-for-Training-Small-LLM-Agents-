@@ -1,55 +1,35 @@
 
-
 import argparse
 from pathlib import Path
 
+import torch
 from datasets import Dataset
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTTrainer, SFTConfig
 
 from training_config import ModelConfig, LoRAConfig
-
-try:
-    from unsloth import FastLanguageModel
-    UNSLOTH_AVAILABLE = True
-except ImportError:
-    UNSLOTH_AVAILABLE = False
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-    from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-    import torch
 
 DEFAULT_SFT_DATA = Path(__file__).parent.parent / "data_prep" / "sft_train.jsonl"
 
 
 def load_model(model_cfg: ModelConfig, lora_cfg: LoRAConfig):
-    if UNSLOTH_AVAILABLE:
-        model, tokenizer = FastLanguageModel.from_pretrained(
-            model_name=model_cfg.model_name, max_seq_length=model_cfg.max_seq_length,
-            load_in_4bit=model_cfg.load_in_4bit, dtype=model_cfg.dtype,
-        )
-        model = FastLanguageModel.get_peft_model(
-            model, r=lora_cfg.r, lora_alpha=lora_cfg.lora_alpha,
-            lora_dropout=lora_cfg.lora_dropout, bias=lora_cfg.bias,
-            target_modules=lora_cfg.target_modules,
-            use_gradient_checkpointing=lora_cfg.use_gradient_checkpointing,
-            random_state=42,
-        )
-    else:
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True, bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True,
-        )
-        tokenizer = AutoTokenizer.from_pretrained(model_cfg.model_name)
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.padding_side = "right"
-        model = AutoModelForCausalLM.from_pretrained(
-            model_cfg.model_name, quantization_config=bnb_config, device_map="auto",
-        )
-        model = prepare_model_for_kbit_training(model)
-        model = get_peft_model(model, LoraConfig(
-            r=lora_cfg.r, lora_alpha=lora_cfg.lora_alpha,
-            lora_dropout=lora_cfg.lora_dropout, bias=lora_cfg.bias,
-            target_modules=lora_cfg.target_modules, task_type="CAUSAL_LM",
-        ))
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True, bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True,
+    )
+    tokenizer = AutoTokenizer.from_pretrained(model_cfg.model_name)
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "right"
+    model = AutoModelForCausalLM.from_pretrained(
+        model_cfg.model_name, quantization_config=bnb_config, device_map="auto",
+    )
+    model = prepare_model_for_kbit_training(model)
+    model = get_peft_model(model, LoraConfig(
+        r=lora_cfg.r, lora_alpha=lora_cfg.lora_alpha,
+        lora_dropout=lora_cfg.lora_dropout, bias=lora_cfg.bias,
+        target_modules=lora_cfg.target_modules, task_type="CAUSAL_LM",
+    ))
     return model, tokenizer
 
 
@@ -81,7 +61,7 @@ def train(sft_data_path, output_dir, model_cfg=None, lora_cfg=None,
             max_length=max_seq_length,
             packing=True,
             num_train_epochs=num_epochs,
-            per_device_train_batch_size=1,
+            per_device_train_batch_size=2,
             gradient_accumulation_steps=4,
             learning_rate=lr,
             warmup_steps=40,
@@ -89,12 +69,14 @@ def train(sft_data_path, output_dir, model_cfg=None, lora_cfg=None,
             weight_decay=0.01,
             optim="adamw_8bit",
             bf16=True,
+            tf32=True,
+            gradient_checkpointing=True,
             max_grad_norm=0.3,
             save_steps=100,
             logging_steps=10,
             seed=42,
             report_to="none",
-            dataloader_num_workers=0, #faster cpu load
+            dataloader_num_workers=2,
             dataloader_pin_memory=True,
         ),
     )
