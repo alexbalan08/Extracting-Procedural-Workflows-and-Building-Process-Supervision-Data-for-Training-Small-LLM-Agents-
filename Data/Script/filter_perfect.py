@@ -14,7 +14,7 @@ from prepare_sft_data import build_sft_record
 
 processed_dir = Path(__file__).parent.parent / "Processed"
 
-MAX_TOKENS = 6144
+MAX_TOKENS = 4096
 MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
 
 
