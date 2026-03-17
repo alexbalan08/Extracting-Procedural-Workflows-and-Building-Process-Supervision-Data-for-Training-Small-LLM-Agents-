@@ -11,7 +11,7 @@ from feedback_prompt import format_initial_user_message
 
 processed_dir = Path(__file__).parent.parent / "Processed"
 
-MAX_INPUT_TOKENS = 1000  
+MAX_INPUT_TOKENS = 2000  
 MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
 
 

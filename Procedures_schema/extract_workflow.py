@@ -52,8 +52,12 @@ if __name__ == '__main__':
         workflow = extract_workflow(record)
         results.append(workflow)
 
-        
+        # Print progress every 10 records
+        if (i + 1) % 10 == 0:
+            print(f"Processed {i + 1}/{total} records")
 
+    print(f"Writing {total} workflows to {output_path}...")
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
+    print("Done!")
     
