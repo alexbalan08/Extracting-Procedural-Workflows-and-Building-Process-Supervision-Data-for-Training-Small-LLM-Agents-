@@ -155,6 +155,12 @@ def validate_record(raw_record, extracted_workflow):
             if src_sid:
                 gt_action_predecessors.add((src_sid, action_id))
 
+        #StartNode with text gets a synthetic "start" predecessor
+        #(matches what extract_actions does at line 116-117)
+        node = nodes[rid]
+        if node['type'] == 'StartNode' and not incoming.get(rid, []):
+            gt_action_predecessors.add(("start", action_id))
+
     ext_action_successors = set()
     ext_action_predecessors = set()
     for a in w['actions']:

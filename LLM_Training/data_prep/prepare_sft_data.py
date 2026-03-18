@@ -20,8 +20,10 @@ def _describe_ref(ref: str, action_map: dict) -> str:
         return "the process start"
     if ref in action_map:
         return f"'{action_map[ref]['name']}'"
-    return f"gateway '{ref}'"
+    return f"gateway {ref}"
 
+
+<<<<<<< HEAD
 
 def _gateway_type_explanation(gw_type: str) -> str:
     #to help the CoT genegration
@@ -36,22 +38,30 @@ def _gateway_type_explanation(gw_type: str) -> str:
 
 #Self-Refine" (Madaan et al., 2023)
 
+=======
+#Self-Refine" (Madaan et al., 2023)
+
+>>>>>>> agent-training
 
  #i will force CoT for the model to learn how to reason
  #this will teach the model how to think about the workflow structure and how to describe it in a reasoning trace.
  #it will be used as part of the response during training so the model learns to produce this kind of reasoning when given a procedure text
+ #so here what was found and why
 def generate_reasoning_trace(workflow: dict) -> str:
 
+<<<<<<< HEAD
     #in here we store for the model how to identify components and use them to reason step by step
+=======
+>>>>>>> agent-training
     actions = workflow.get("actions", [])
     gateways = workflow.get("gateways", [])
-
     exec_states = workflow.get("execution_states", [])
 
     action_map = {a["id"]: a for a in actions}
     gw_set = {g["id"] for g in gateways}
     lines = ["Let me analyze this procedure step by step.", ""]
 
+<<<<<<< HEAD
 
     #actions - show how IDs are derived so the model learns the naming convention
     lines.append("**Step 1 — Extract actions and assign IDs**")
@@ -66,6 +76,21 @@ def generate_reasoning_trace(workflow: dict) -> str:
     
     #build the flow step by step so the model learns to connect actions
     lines.append("**Step 2 — Determine the flow between actions**")
+=======
+    #step 1: list what actions were found and their IDs
+    lines.append("**Step 1 — Extract actions**")
+    lines.append(f"I find {len(actions)} distinct action(s) in the text:")
+    for i, action in enumerate(actions, 1):
+        actor_note = f", performed by {action['actor']}" if action.get("actor") else ""
+        lines.append(f"  {i}. \"{action['name']}\" → {action['id']}{actor_note}  (id = name lowercased, spaces→underscores)")
+    lines.append("")
+
+    #step 2: show how actions connect — the instance-specific flow reasoning
+    lines.append("**Step 2 — Determine the flow**")
+    start_actions = [a for a in actions if "start" in a.get("predecessors", [])]
+    end_actions = [a for a in actions if not a.get("successors", [])]
+
+>>>>>>> agent-training
     if start_actions:
         names = ", ".join(f"'{a['name']}'" for a in start_actions)
         lines.append(f"The process begins with: {names}.")
@@ -78,6 +103,7 @@ def generate_reasoning_trace(workflow: dict) -> str:
         for s in succs:
             if s in action_map:
                 succ_parts.append(f"'{action_map[s]['name']}'")
+<<<<<<< HEAD
             elif s in gw_set:
                 succ_parts.append(f"a decision/split point ({s})")
             else:
@@ -85,20 +111,35 @@ def generate_reasoning_trace(workflow: dict) -> str:
         pred_str = ", ".join(pred_strs) if pred_strs else "nothing"
         succ_str = ", ".join(succ_parts) if succ_parts else "the process end"
         lines.append(f"  '{action['name']}': after {pred_str} → then {succ_str}")
+=======
+            else:
+                succ_parts.append(f"gateway {s}")
+        pred_str = ", ".join(pred_strs) if pred_strs else "nothing"
+        succ_str = ", ".join(succ_parts) if succ_parts else "end of process"
+        lines.append(f"  {action['id']}: after {pred_str} → then {succ_str}")
+>>>>>>> agent-training
 
     if end_actions:
         names = ", ".join(f"'{a['name']}'" for a in end_actions)
         lines.append(f"The process ends after: {names}.")
     lines.append("")
 
+<<<<<<< HEAD
     
     #gateways - explain WHY a type is chosen and trace each branch
     lines.append("**Step 3 — Identify decision points and parallel splits**")
     if gateways:
+=======
+    #step 3: gateways — explain WHY a type was chosen from the text
+    lines.append("**Step 3 — Identify gateways**")
+    if gateways:
+        lines.append(f"I find {len(gateways)} gateway(s):")
+>>>>>>> agent-training
         for gw in gateways:
             branches = gw.get("branches", [])
             incoming = gw.get("incoming_from", [])
             inc_strs = [_describe_ref(i, action_map) for i in incoming]
+<<<<<<< HEAD
             lines.append(
                 f"Gateway {gw['id']}: {_gateway_type_explanation(gw['type'])}."
             )
@@ -136,6 +177,57 @@ def generate_reasoning_trace(workflow: dict) -> str:
                 )
         if len(terminal_states) > 3:
             lines.append(f"  ... and {len(terminal_states) - 3} more terminal state(s).")
+=======
+
+            lines.append(f"  {gw['id']} ({gw['type']}, {gw['role']}):")
+            lines.append(f"    Incoming from: {', '.join(inc_strs)}")
+            for i, branch in enumerate(branches, 1):
+                cond = branch.get("condition")
+                next_ref = branch.get("next")
+                if next_ref is None:
+                    target = "process ends"
+                elif next_ref in action_map:
+                    target = f"'{action_map[next_ref]['name']}'"
+                else:
+                    target = f"gateway {next_ref}"
+                cond_str = f" when \"{cond}\"" if cond else ""
+                lines.append(f"    Branch {i}: → {target}{cond_str}")
+    else:
+        lines.append("No gateways — straight linear sequence.")
+    lines.append("")
+
+    #step 4: trace all execution states
+    lines.append("**Step 4 — Derive execution states**")
+    terminal_states = [s for s in exec_states if s.get("can_terminate")]
+    non_terminal = len(exec_states) - len(terminal_states)
+
+    lines.append("Tracing the process:")
+    for state in exec_states:
+        completed = state.get("completed_actions", [])
+        available = state.get("available_next", [])
+        conditions = state.get("conditions_met", [])
+        done_str = ", ".join(completed) if completed else "(none)"
+        cond_note = f" (conditions: {', '.join(conditions)})" if conditions else ""
+        if state.get("can_terminate"):
+            lines.append(f"  After [{done_str}] → process can terminate{cond_note}")
+        else:
+            next_str = ", ".join(available) if available else "nothing"
+            lines.append(f"  After [{done_str}] → next: {next_str}")
+
+    lines.append("")
+    lines.append(f"Across {len(exec_states)} states total "
+                 f"({non_terminal} intermediate, {len(terminal_states)} terminal).")
+
+    if len(terminal_states) > 1:
+        lines.append("Terminal paths:")
+        for ts in terminal_states[:5]:
+            completed = ts.get("completed_actions", [])
+            conds = ts.get("conditions_met", [])
+            cond_note = f" (when: {', '.join(conds)})" if conds else ""
+            lines.append(f"  [{' → '.join(completed)}]{cond_note}")
+        if len(terminal_states) > 5:
+            lines.append(f"  ... and {len(terminal_states) - 5} more.")
+>>>>>>> agent-training
 
     return "\n".join(lines)
 

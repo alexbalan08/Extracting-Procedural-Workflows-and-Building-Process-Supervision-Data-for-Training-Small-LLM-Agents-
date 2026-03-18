@@ -5,7 +5,7 @@ from typing import List
 @dataclass
 class ModelConfig:
     model_name: str = "meta-llama/Llama-3.1-8B-Instruct"
-    max_seq_length: int = 6144
+    max_seq_length: int = 4096  #to play with, but then training takes forever even on a40 from colab
     load_in_4bit: bool = True
     dtype: str = None
 
