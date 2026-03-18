@@ -13,7 +13,7 @@ processed_dir = Path(__file__).parent.parent / 'Processed'
 input_path = processed_dir / 'extracted_workflows.json'
 
 
-TRAIN_RATIO = 0.80
+TRAIN_RATIO = 0.85
 SEED = 42
 
 with open(input_path, 'r', encoding='utf-8') as f:

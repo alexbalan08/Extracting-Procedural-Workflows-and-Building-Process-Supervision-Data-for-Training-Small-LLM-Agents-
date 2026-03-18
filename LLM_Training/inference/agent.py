@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from extractor import WorkflowExtractor
-from checker import CombinedChecker
+from checker import StructuralChecker
 
 
 class ExtractionAgent:
@@ -18,9 +18,7 @@ class ExtractionAgent:
         model_path: str = "meta-llama/Llama-3.1-8B-Instruct",
         max_attempts: int = 3,
         extractor_temperature: float = 0.1,
-        checker_temperature: float = 0.0,
         max_new_tokens: int = 8000,
-        checker_max_new_tokens: int = 512,
     ):
         self.max_attempts = max_attempts
         self.extractor = WorkflowExtractor(
@@ -28,12 +26,7 @@ class ExtractionAgent:
             max_new_tokens=max_new_tokens,
             temperature=extractor_temperature,
         )
-        self.checker = CombinedChecker(
-            model=self.extractor.model,
-            tokenizer=self.extractor.tokenizer,
-            max_new_tokens=checker_max_new_tokens,
-            temperature=checker_temperature,
-        )
+        self.checker = StructuralChecker()
 
     def run(self, procedure_text: str) -> dict:
         feedback_issues = None
@@ -44,7 +37,7 @@ class ExtractionAgent:
             result = self.extractor.extract(procedure_text, feedback_issues=feedback_issues, attempt=attempt)
 
             print(f"[Agent] Attempt {attempt}/{self.max_attempts} — checking …")
-            check = self.checker.check(result["workflow"], procedure_text)
+            check = self.checker.check(result["workflow"])
 
             history.append({
                 "attempt": attempt,
@@ -83,6 +76,7 @@ def main():
     group.add_argument("--text", type=str)
     group.add_argument("--input_json", type=Path)
     parser.add_argument("--output_json", type=Path, default=None)
+    parser.add_argument("--skip", type=int, default=0, help="Number of records to skip from the start")
     parser.add_argument("--max_records", type=int, default=None, help="Limit number of records for testing")
     args = parser.parse_args()
 
@@ -97,6 +91,7 @@ def main():
         records = json.loads(content) if content.startswith("[") else [
             json.loads(line) for line in content.splitlines() if line.strip()
         ]
+        records = records[args.skip:]
         if args.max_records:
             records = records[:args.max_records]
         outputs = []

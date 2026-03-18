@@ -1,5 +1,4 @@
-"""Workflow extractor: loads the fine-tuned model and generates structured
-workflow JSON + reasoning trace from procedure text."""
+
 
 import json
 import re
@@ -15,7 +14,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 def parse_response(response: str) -> dict:
-    """Extract reasoning and workflow JSON from model output."""
+    # first we extract CoT reasoning
     reasoning_match = re.search(r"<reasoning>(.*?)</reasoning>", response, re.DOTALL)
     reasoning = reasoning_match.group(1).strip() if reasoning_match else ""
 
@@ -47,6 +46,7 @@ def parse_response(response: str) -> dict:
 
 
 class WorkflowExtractor:
+    #we need to load quantized model +and then generate extractions with CoT reasoning
 
     def __init__(
         self,
@@ -62,21 +62,18 @@ class WorkflowExtractor:
         from peft import PeftModel
         from transformers import BitsAndBytesConfig
 
+        #4-bit quantization to save memory - by claude ai
         bnb_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16)
         adapter_config_path = Path(model_path) / "adapter_config.json"
-        if adapter_config_path.exists():
-            with open(adapter_config_path, "r") as f:
-                base_model_name = json.load(f)["base_model_name_or_path"]
-            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-            base_model = AutoModelForCausalLM.from_pretrained(
-                base_model_name, quantization_config=bnb_config, device_map="auto",
-            )
-            self.model = PeftModel.from_pretrained(base_model, model_path)
-        else:
-            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-            self.model = AutoModelForCausalLM.from_pretrained(
-                model_path, quantization_config=bnb_config, device_map="auto",
-            )
+
+        # load base model + apply LoRA weights
+        with open(adapter_config_path, "r") as f:
+            base_model_name = json.load(f)["base_model_name_or_path"]
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        base_model = AutoModelForCausalLM.from_pretrained(
+            base_model_name, quantization_config=bnb_config, device_map="auto",
+        )
+        self.model = PeftModel.from_pretrained(base_model, model_path)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
     def _build_messages(self, procedure_text, feedback_issues=None, attempt=1):
