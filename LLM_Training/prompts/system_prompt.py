@@ -54,7 +54,7 @@ execution_states : list of state snapshots covering every reachable step:
 ─── OUTPUT FORMAT ─────────────────────────────────────────────────────────────
 
 <reasoning>
-Step-by-step analysis: trace action sequence, identify decision
+Step-by-step analysis: identify actors, trace action sequence, identify decision
 points or parallel splits, then outline execution states.
 </reasoning>
 
@@ -66,3 +66,5 @@ points or parallel splits, then outline execution states.
 }
 ```
 """
+
+#the prompt is ai generated after my rules and refined after multiple tests. 

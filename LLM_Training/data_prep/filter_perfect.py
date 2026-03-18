@@ -1,14 +1,12 @@
 """Filter extracted training records by token count to fit within context window."""
 
 import json
-import sys
 from pathlib import Path
 from transformers import AutoTokenizer
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "LLM_Training" / "data_prep"))
 from prepare_sft_data import build_sft_record
 
-processed_dir = Path(__file__).parent.parent / "Processed"
+processed_dir = Path(__file__).parent.parent.parent / "Data" / "Processed"
 
 MAX_TOKENS = 4096
 MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
