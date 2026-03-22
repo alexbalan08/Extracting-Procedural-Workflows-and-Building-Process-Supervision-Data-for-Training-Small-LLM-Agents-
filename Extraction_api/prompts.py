@@ -1,7 +1,7 @@
-"""
-System prompt and 3-shot examples for GPT-4o workflow extraction.
-All few-shot examples are taken directly from extracted_train.json ground truth.
-"""
+
+#System prompt and 3-shot examples for GPT-4o workflow extraction.
+#All few-shot examples are taken directly from extracted_train.json ground truth.
+
 
 SYSTEM_PROMPT = """You are an expert procedural workflow analyst. Given a natural-language procedure description, extract a fully structured workflow.
 
@@ -65,11 +65,11 @@ Step 4 — Enumerate execution states: trace every reachable path from start to 
 ```
 """
 
-# ── Few-shot examples ─────────────────────────────────────────────────────────
-# Each tuple: (file_index, procedure_text, expected_output)
-# All examples taken directly from extracted_train.json ground truth.
+#i mannuyally selected 3 example which cover and and also or brances and linear as well
+#they needed to be reatively short so we dont confuse the model with too much context. 
+#some of thhem can get extremely big because of the reaosning traces so selecting manually is important
 
-# Example 1: simple linear procedure, no gateways (file_index 1310881958)
+#Example simple linear procedure  1310881958
 _EX1_PROCEDURE = (
     "For the HR Representative, the first step is to create a recruitment vacancy in NGA.net. "
     "After creating the vacancy, the next step is to manage external advertising. "
@@ -124,7 +124,7 @@ Step 4 — Enumerate execution states:
 }
 ```"""
 
-# Example 2: exclusive (XOR) gateway with early termination (file_index 862270781)
+#Example with XOR gateway with early termination file_index 862270781
 _EX2_PROCEDURE = (
     "To begin the process in Grenoble, the customer enters the store and then decides what they want. "
     "After that, we check whether it is a custom order or an in-store purchase. "
@@ -317,7 +317,7 @@ Step 4 — Enumerate execution states:
 }
 ```"""
 
-# exported list: (file_index, procedure_text, expected_output)
+#those i picked manually such they innclude examples or OR gateways, AND gatways and liear as well 
 FEW_SHOT_EXAMPLES = [
     (1310881958, _EX1_PROCEDURE, _EX1_OUTPUT),
     (862270781, _EX2_PROCEDURE, _EX2_OUTPUT),

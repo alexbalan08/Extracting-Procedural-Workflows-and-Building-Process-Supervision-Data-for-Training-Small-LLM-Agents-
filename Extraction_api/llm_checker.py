@@ -69,12 +69,15 @@ Identify any issues with the extracted workflow compared to the procedure text."
     raw = response.choices[0].message.content
     try:
         parsed = json.loads(raw)
-        # handle both {"issues": [...]} and bare [...]
+        # ideal case: model returns a bare array ["issue1", "issue2"]
         if isinstance(parsed, list):
             return parsed
+        # fallback: model wraps the array under a key like {"issues": [...]}
         for key in ("issues", "errors", "problems"):
             if key in parsed and isinstance(parsed[key], list):
                 return parsed[key]
+        # no recognisable structure — treat as no issues
         return []
     except (json.JSONDecodeError, KeyError):
+        # if parsing fails entirely, don't crash the pipeline — skip this check
         return []
