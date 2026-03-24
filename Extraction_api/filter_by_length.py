@@ -1,8 +1,8 @@
 
-#Filter procedures where the ground truth workflow JSON exceeds a token limit of let s say 2000 tokens
+#Filter procedures where the ground truth workflow JSON exceeds a token limit of let s say 2500 tokens
 #This avoids model running out of output tokens during extraction and keeps the costs ok for me
-#the median of tokens length from ground truth is 1040 tokens so i will cap a limit of 2000 to still maintain some space for longer procedures
-#around 800 tokens-1000 will be added from the cot generation so we will be around 3000-3500 tokens max pere procedure to output
+#the median of tokens length from ground truth is 1040 tokens so i will cap a limit of 2500 to still maintain some space for longer procedures
+#around 800 tokens-1000 will be added from the cot generation so we will be around 3500 tokens max pere procedure to output
 #under the limit of 4096 tokens i set 
 
 
@@ -15,7 +15,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "Data" / "Processed"
 
-MAX_JSON_TOKENS = 2000  #to test with
+MAX_JSON_TOKENS = 2500  #to test with
 
 
 def count_tokens(workflow: dict) -> int:

@@ -1,66 +1,75 @@
 
 #RAG retrieval for workflow extraction.
-#we load extracted_train.json embed procedure texts with MiniLM-L6-v2 (because it s very small and fast to downlaod)
-#and we retrieves the most 2 similar examples at query time with cos sim
+#we load extracted_train.json and embed procedure texts using OpenAI text-embedding-3-small
+#supports up to 8191 tokens per text — no truncation issues with long procedures
+#retrieves the most similar example at query time via cosine similarity (dot product)
 
 
 import json
 import numpy as np
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 
-#methid for emmbeding our proeceudres texts
-def build_example_pool(train_path: Path) -> tuple[list, np.ndarray, SentenceTransformer]:
- 
+
+EMBEDDING_MODEL = "text-embedding-3-small"  # 1536 dims, 8191 token limit, $0.02/1M tokens
+
+
+def _embed(texts: list[str], client: OpenAI) -> np.ndarray:
+    #OpenAI API accepts up to 2048 inputs per request so we batch in chunks
+    #returns a (N, 1536) float32 array, already normalized by the API
+    all_embeddings = []
+    batch_size = 512  # safe batch size well under the 2048 limit
+
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i : i + batch_size]
+        response = client.embeddings.create(model=EMBEDDING_MODEL, input=batch)
+        # response.data is a list of Embedding objects sorted by index
+        batch_vecs = np.array([e.embedding for e in response.data], dtype=np.float32)
+        all_embeddings.append(batch_vecs)
+        print(f"  Embedded {min(i + batch_size, len(texts))}/{len(texts)} procedures...")
+
+    return np.vstack(all_embeddings)
+
+
+def build_example_pool(train_path: Path, client: OpenAI) -> tuple[list, np.ndarray]:
+    #load training records and pre-compute embeddings for all procedure texts
+    #we pass the OpenAI client so no local model is needed — same API key as extraction
+
     with open(train_path, encoding="utf-8") as f:
         pool = json.load(f)
 
-    #all-MiniLM-L6-v2 is small (80MB) and good enough for
-    #semantic similarity between short procedural texts
-    embedder = SentenceTransformer("all-MiniLM-L6-v2")
     texts = [r["procedure_text"] for r in pool]
-
-    #normalize_embeddings=True means retrieval is just a dot product 
-    #tahts why as usual we do matrix dot product since both vectors have lenght 1 
-    embeddings = embedder.encode(
-        texts,
-        normalize_embeddings=True,
-        show_progress_bar=True,
-        batch_size=64,
-    )
-    return pool, embeddings, embedder
+    embeddings = _embed(texts, client)
+    return pool, embeddings
 
 
 def retrieve_similar_workflows(
     query: str,
     pool: list,
     embeddings: np.ndarray,
-    embedder: SentenceTransformer,
-    k: int = 2, #for now lets keep it 2 so we keep the costs low, 2 similar procedures should be enough
+    client: OpenAI,
+    k: int = 1,  # retrieve only the single most similar procedure
 ) -> list[tuple[dict, float]]:
+    #embed the query using the same model as the pool — single API call
+    response = client.embeddings.create(model=EMBEDDING_MODEL, input=[query])
+    query_emb = np.array(response.data[0].embedding, dtype=np.float32)
 
+    #dot product works as cosine similarity because OpenAI embeddings are already normalized
+    scores = (embeddings @ query_emb).squeeze()
 
-    #we embed the query this comes crom _RETREIVAL_TOOL check that and only when model is uncertian
-    query_emb = embedder.encode([query], normalize_embeddings=True)
-
-    #the dot prod between the embebded prcodures and the query
-    scores = (embeddings @ query_emb.T).squeeze()
-
-    #we take top k from reverse but for now k is 2
+    #return top k with their similarity scores
     top_k_indices = np.argsort(scores)[::-1][:k]
     return [(pool[i], float(scores[i])) for i in top_k_indices]
 
 
 def format_retrieval_results(results: list[tuple[dict, float]]) -> str:
-    #we now format retrieved examples as procedure text + workflow JSON as extra context
-    #the similarity score is included so the model can judge how relevant
-    #each example actually is 
+    #format retrieved examples as procedure text + workflow JSON as extra context
+    #similarity score included so model can judge relevance (below ~0.5 = weak match)
 
     parts = []
     for i, (record, score) in enumerate(results, 1):
         parts.append(f"--- Retrieved Example {i} (similarity: {score:.2f}) ---")
         parts.append(f"PROCEDURE:\n{record['procedure_text']}")
-
-        #these examples just provide structural reference, no CoT or anything
+        #no CoT — just the procedure and workflow JSON as structural reference
         parts.append(f"WORKFLOW:\n{json.dumps(record['workflow'], indent=2, ensure_ascii=False)}")
     return "\n\n".join(parts)

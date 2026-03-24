@@ -11,17 +11,22 @@ CHECKER_SYSTEM_PROMPT = """You are an expert workflow validator. You will be giv
 1. An original procedure text
 2. An extracted workflow JSON
 
-Your job is to carefully compare the two and identify REAL errors only.
+Your job is to identify REAL structural errors only. Be conservative — only flag issues you are certain about.
 
 Check for:
-- Missing actions: steps mentioned in the text that are not in the JSON workflow
-- Extra actions: actions in the workflow not supported by the text
-- Wrong action names: names that paraphrase instead of using exact wording from the text
-- Missing gateways: branching/conditions in the text not modeled as gateways
-- Wrong gateway type: e.g. exclusive used when the text implies parallel or inclusive
-- Wrong branch conditions: condition labels that don't match the text
-- Wrong flow: predecessor/successor relationships that contradict the text order
-- Execution states: obvious missing paths (e.g. a branch exists in gateways but has no corresponding states)
+- Missing actions: a clearly named activity in the text is completely absent from the workflow
+- Extra actions: an action in the workflow has no support in the text whatsoever
+- Wrong gateway type: exclusive used when text clearly implies parallel or inclusive (or vice versa)
+- Wrong branch conditions: condition labels that clearly contradict the text
+- Wrong flow: predecessor/successor order that directly contradicts the text sequence
+
+Do NOT flag:
+- Missing data objects, forms, or documents (e.g. "SAP system", "invoice form") — these are not actions
+- Explicit end/termination nodes — empty successors lists are a valid way to model process end
+- "request is handled" or similar state descriptions — these are states, not actions
+- Ambiguous loops or repeated checks where the text is unclear
+- Minor naming differences (gerund vs imperative form, pronoun vs full name)
+- Execution states coverage or ID formatting — handled separately
 
 Output ONLY a JSON array of issue strings. Each issue must be specific and actionable.
 If no issues are found, output an empty array: []
@@ -29,12 +34,8 @@ If no issues are found, output an empty array: []
 Example output:
 [
   "Action 'Review Request' is mentioned in the text but missing from the workflow",
-  "Gateway gateway_xor_2 has condition 'Approved' but the text says 'Accepted'",
-  "Action 'send_notification' should come after 'validate_form' according to the text, but predecessors show 'start'"
-]
-
-Do NOT flag issues with execution_states coverage or ID formatting — those are handled separately.
-Do NOT invent issues. Only flag clear, verifiable problems."""
+  "Gateway gateway_xor_2 has condition 'Approved' but the text says 'Accepted'"
+]"""
 
 
 def check_with_llm(
@@ -61,7 +62,7 @@ Identify any issues with the extracted workflow compared to the procedure text."
             {"role": "user", "content": user_message},
         ],
         temperature=0.0,
-        max_tokens=1024,
+        max_completion_tokens=1024,
         response_format={"type": "json_object"},
     )
 

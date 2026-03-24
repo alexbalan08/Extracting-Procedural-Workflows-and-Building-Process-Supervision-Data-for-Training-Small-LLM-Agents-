@@ -54,7 +54,7 @@ execution_states : list of state snapshots covering every reachable path:
 ─── OUTPUT FORMAT ─────────────────────────────────────────────────────────────
 
 <reasoning>
-Step 1 — Identify actions: list each distinct activity, its actor, and ID.
+Step 1 — Identify actions: list each distinct activity and its ID.
 Step 2 — Trace the flow: identify predecessors and successors for each action.
 Step 3 — Identify gateways: note any branching (XOR/AND/OR) or merging points.
 Step 4 — Enumerate execution states: trace every reachable path from start to termination.
@@ -83,8 +83,8 @@ _EX1_PROCEDURE = (
 
 _EX1_OUTPUT = """<reasoning>
 Step 1 — Identify actions:
-  - "Create Recruitment Vacancy in NGA.net" → id: create_recruitment_vacancy_in_nganet, actor: HR Representative
-  - "Manage External Advertising" → id: manage_external_advertising, actor: HR Representative
+  - "Create Recruitment Vacancy in NGA.net" → id: create_recruitment_vacancy_in_nganet
+  - "Manage External Advertising" → id: manage_external_advertising
 
 Step 2 — Trace the flow:
   create_recruitment_vacancy_in_nganet: start → manage_external_advertising
@@ -142,9 +142,9 @@ _EX2_PROCEDURE = (
 
 _EX2_OUTPUT = """<reasoning>
 Step 1 — Identify actions:
-  - "Customer Enters Store" → id: customer_enters_store, actor: Grenoble
-  - "Customer Decides What They Want" → id: customer_decides_what_they_want, actor: Grenoble
-  - "Fill Out Customer Invoice" → id: fill_out_customer_invoice, actor: Grenoble
+  - "Customer Enters Store" → id: customer_enters_store
+  - "Customer Decides What They Want" → id: customer_decides_what_they_want
+  - "Fill Out Customer Invoice" → id: fill_out_customer_invoice
 
 Step 2 — Trace the flow:
   customer_enters_store: start → customer_decides_what_they_want
@@ -225,10 +225,10 @@ _EX3_PROCEDURE = (
 
 _EX3_OUTPUT = """<reasoning>
 Step 1 — Identify actions:
-  - "Check Application for Completeness" → id: check_application_for_completeness, actor: null
-  - "Sort Applications" → id: sort_applications, actor: null
-  - "Process Complete Applications" → id: process_complete_applications, actor: null
-  - "Discard Applications" → id: discard_applications, actor: null
+  - "Check Application for Completeness" → id: check_application_for_completeness
+  - "Sort Applications" → id: sort_applications
+  - "Process Complete Applications" → id: process_complete_applications
+  - "Discard Applications" → id: discard_applications
 
 Step 2 — Trace the flow:
   check_application_for_completeness: start → sort_applications

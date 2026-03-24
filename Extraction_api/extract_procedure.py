@@ -5,9 +5,7 @@
 #then we have the critic
 #structural checker: IDs, reachability, terminal states
 #llm checker: missing actions, wrong conditions, incorrect flow
-#but also if the model is uncertian we have 
-#RAG the model can call retrieve_similar_workflows() via OpenAI tool calling
-#and search based on query for imislar procedures
+#RAG: always retrieve 1 similar procedure from training set before extraction
 
 import argparse
 import json
@@ -26,45 +24,12 @@ from prompts import SYSTEM_PROMPT, FEW_SHOT_EXAMPLES
 from llm_checker import check_with_llm
 from retrieval import build_example_pool, retrieve_similar_workflows, format_retrieval_results
 
-#the prompt for the rag system
+#note added to system prompt when RAG is enabled
 _RAG_NOTE = (
-    "\n\nYou have access to a retrieval tool. Use it ONLY as a last resort — when you "
-    "are genuinely unable to determine a gateway type or branching structure from the "
-    "procedure text alone. Do NOT call it for straightforward procedures or simple flows. "
-    "When querying, describe the procedure content in plain English steps — NOT using "
-    "BPMN terms like 'XOR gateway'. The query is matched against real procedure texts."
+    "\n\nA similar labelled example from the training set has been provided below your procedure. "
+    "Use it as structural reference — pay attention to how gateways, branch conditions, and "
+    "execution states are modeled. Do not copy it blindly; adapt to the current procedure."
 )
-
-#open ai schema
-_RETRIEVAL_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "retrieve_similar_workflows",
-        "description": (
-            "Retrieve most similar labelled workflows example from the training set. "
-            "Call ONLY when you cannot confidently determine gateway type or branching structure "
-            "from the procedure text alone. Do not call for simple or clear procedures."
-        ),
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    #the query is matched against procedure texts (plain English), NOT JSON terms so this was important to catch
-                    #claude code couldnt see this and they say ai is replacing programmers...
-                    #this would have been a critical mistake for the RAG 
-                    "description": (
-                        "Natural language description of the procedure content you are uncertain about — "
-                        "written as plain English steps, NOT as BPMN or structural terms. "
-                        "Example: 'customer submits form, manager reviews, if rejected process stops' "
-                        "NOT 'XOR gateway with early exit'."
-                    ),
-                },
-            },
-            "required": ["query"],
-        },
-    },
-}
 
 
 def build_messages(
@@ -72,12 +37,11 @@ def build_messages(
     file_index: int | str | None = None,
     use_rag: bool = False,
 ) -> list[dict]:
-    #we nuild the full message list with system prompt, shots examples and rag new procedure
-    #append RAG instructions only when the case if not we will just keep it empty
+    #build full message list: system prompt + 3-shot examples + new procedure
+    #RAG note is appended to system prompt when pool is available
     system_content = SYSTEM_PROMPT + (_RAG_NOTE if use_rag else "")
     messages = [{"role": "system", "content": system_content}]
 
-    
     #important to see the expected output format before the procedure
     for idx, proc, output in FEW_SHOT_EXAMPLES:
         messages.append({"role": "user", "content": f"Extract the workflow from the following procedure (file_index: {idx}):\n\n{proc}"})
@@ -89,7 +53,7 @@ def build_messages(
 
 
 def parse_response(response_text: str) -> tuple[str, dict | None]:
-    #for extracting reasoning block and JSON workflow from model response.
+    #extract reasoning block and JSON workflow from model response
     reasoning_match = re.search(r"<reasoning>(.*?)</reasoning>", response_text, re.DOTALL)
     reasoning = reasoning_match.group(1).strip() if reasoning_match else ""
 
@@ -109,43 +73,23 @@ def _run_single_extraction(
     model: str,
     pool: list | None,
     embeddings,
-    embedder,
+    procedure_text: str,
 ) -> tuple[list[dict], str]:
-    #we call the model andany tool calls before returning the final raw response.
-    use_rag = pool is not None
-    tools = [_RETRIEVAL_TOOL] if use_rag else None
+    #if RAG pool available, always retrieve the most similar procedure before extraction
+    #we use the full procedure text as the query — better match than a model-generated description
+    if pool is not None:
+        results = retrieve_similar_workflows(procedure_text, pool, embeddings, client, k=2)
+        retrieved_context = format_retrieval_results(results)
+        print(f"  RAG: retrieved example")
+        #inject retrieved example as extra context before the model generates
+        messages = messages + [{
+            "role": "user",
+            "content": f"Here is a similar labelled example from the training set for reference:\n\n{retrieved_context}"
+        }]
 
-    for _ in range(2):  #3 rounds for the tool use just in case so we avoid infinite tools calls
-        kwargs = dict(model=model, messages=messages, temperature=0.0, max_tokens=8192) #ok 4096 mightbe too low
-        if tools:
-            kwargs["tools"] = tools
-            kwargs["tool_choice"] = "auto"
-
-        response = client.chat.completions.create(**kwargs)
-        choice = response.choices[0]
-
-        if choice.finish_reason == "tool_calls":
-            #append from tool_calls
-            messages.append(choice.message)
-
-            for tool_call in choice.message.tool_calls:
-                args = json.loads(tool_call.function.arguments)
-                query = args["query"]
-
-                results = retrieve_similar_workflows(query, pool, embeddings, embedder, k=1)
-                tool_result = format_retrieval_results(results)
-
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "content": tool_result,
-                })
-            continue
-
-        raw = choice.message.content
-        messages.append({"role": "assistant", "content": raw})
-        return messages, raw
-
+    #single API call — no tool calling needed
+    kwargs = dict(model=model, messages=messages, temperature=0.0, max_completion_tokens=8192)
+    response = client.chat.completions.create(**kwargs)
     raw = response.choices[0].message.content or ""
     messages.append({"role": "assistant", "content": raw})
     return messages, raw
@@ -161,7 +105,6 @@ def extract_workflow(
     file_index: int | str | None = None,
     pool: list | None = None,
     embeddings=None,
-    embedder=None,
 ) -> dict:
     #we finally run the orchestration loop
 
@@ -188,7 +131,7 @@ def extract_workflow(
                 ),
             })
 
-        messages, raw = _run_single_extraction(messages, client, model, pool, embeddings, embedder)
+        messages, raw = _run_single_extraction(messages, client, model, pool, embeddings, procedure_text)
         reasoning, workflow = parse_response(raw)
 
         #if the model output is fucked, ask it to fix the JSON format and retry
@@ -199,10 +142,10 @@ def extract_workflow(
 
         #structural checks fast rule based
         if structural_checker:
-            structural_issues = structural_checker.check(workflow)
-            if structural_issues:
-                issues_feedback = structural_issues
-                print(f"  Attempt {attempt}: {len(structural_issues)} structural issue(s) — retrying...")
+            check_result = structural_checker.check(workflow)
+            if not check_result.is_valid:
+                issues_feedback = check_result.issues
+                print(f"  Attempt {attempt}: {len(check_result.issues)} structural issue(s) — retrying...")
                 continue
 
         #LLM check this takes more and consumes many tokens for input
@@ -234,12 +177,12 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("extraction_predictions.json"))
     #parser.add_argument("--model", type=str, default="gpt-4o")
     parser.add_argument("--model", type=str, default="gpt-5.4-mini")
-    parser.add_argument("--max_attempts", type=int, default=2)
+    parser.add_argument("--max_attempts", type=int, default=3)
     #i keep this for testing
     parser.add_argument("--no_llm_checker", action="store_true", help="Disable LLM semantic checker")
     parser.add_argument("--no_rag", action="store_true", help="Disable RAG retrieval tool")
     parser.add_argument("--skip", type=int, default=0, help="Skip first N procedures")
-    parser.add_argument("--limit", type=int, default=None, help="Only process first N procedures")
+    parser.add_argument("--limit", type=int, default=10, help="Only process first N procedures")
     args = parser.parse_args()
 
     api_key = os.environ.get("OPENAI_API_KEY")
@@ -248,18 +191,18 @@ def main():
     client = OpenAI(api_key=api_key)
     structural_checker = StructuralChecker()
 
-    #we load the embbded files for RAG only ojnce at startup
-    pool, embeddings, embedder = None, None, None
+    #we load the embedded procedures for RAG only once at startup same OpenAI client
+    pool, embeddings = None, None
     if not args.no_rag:
         train_path = args.train or default_train
         if train_path.exists():
             print(f"Building RAG pool from {train_path.name} ...")
-            pool, embeddings, embedder = build_example_pool(train_path)
+            pool, embeddings = build_example_pool(train_path, client)
             print(f"  Pool ready: {len(pool)} examples")
         else:
             print(f"Warning: --train path not found ({train_path}), RAG disabled.")
 
-    rag_kwargs = dict(pool=pool, embeddings=embeddings, embedder=embedder)
+    rag_kwargs = dict(pool=pool, embeddings=embeddings)
 
     #for batch mode
     if not args.input.exists():
@@ -269,7 +212,7 @@ def main():
         records = json.load(f)
 
     #for testing one procedure only
-    DEBUG_FILE_INDEX = None  #for the file idnex we want to test
+    DEBUG_FILE_INDEX = None  #for the file index we want to test
 
     if DEBUG_FILE_INDEX is not None:
         records = [r for r in records if r.get("file_index") == DEBUG_FILE_INDEX]

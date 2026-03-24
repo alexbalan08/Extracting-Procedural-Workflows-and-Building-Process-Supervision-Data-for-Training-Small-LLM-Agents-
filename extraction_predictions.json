@@ -1,0 +1,2724 @@
+[
+  {
+    "file_index": 1808351684,
+    "procedure_text": "To initiate the Help desk process, begin with the receipt of a request, followed by registering the request. After registering the request, proceed to check the resolution. The step of registering the request generates a data object called \"Request\". If the request is marked as \"unknown\", then it needs to be evaluated. If it is still marked as \"unknown\", continue with the evaluation process. However, if the request is marked as \"known\", then communicate the result. Evaluating the request is followed by prioritizing it. The step of evaluating the request also produces a data object called \"Request\". If the request is marked as \"known\", then communicate the result. Once the result is communicated, the request is considered handled, and the process comes to an end. Prioritizing the request is followed by researching and resolving it. The step of prioritizing the request also produces a data object called \"Request\". After researching and resolving the request, proceed to write the resolution. The step of researching and resolving the request also produces a data object called \"Request\". Once the resolution is written, forward it, and the process comes to an end. The step of writing the resolution produces a data object called \"Request\".",
+    "attempt": 3,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Receipt of a request\" → id: receipt_of_a_request\n  - \"Registering the request\" → id: registering_the_request\n  - \"Check the resolution\" → id: check_the_resolution\n  - \"Evaluate the request\" → id: evaluate_the_request\n  - \"Communicate the result\" → id: communicate_the_result\n  - \"Prioritizing the request\" → id: prioritizing_the_request\n  - \"Researching and resolving it\" → id: researching_and_resolving_it\n  - \"Write the resolution\" → id: write_the_resolution\n  - \"Forward it\" → id: forward_it\n\nStep 2 — Trace the flow:\n  receipt_of_a_request: start → registering_the_request\n  registering_the_request: receipt_of_a_request → check_the_resolution\n  check_the_resolution: registering_the_request → gateway_xor_3\n  gateway_xor_3 splits on request status:\n    - unknown → evaluate_the_request\n    - known → communicate_the_result\n  evaluate_the_request: gateway_xor_3 → prioritizing_the_request\n  prioritizing_the_request: evaluate_the_request → researching_and_resolving_it\n  researching_and_resolving_it: prioritizing_the_request → write_the_resolution\n  write_the_resolution: researching_and_resolving_it → forward_it\n  forward_it: write_the_resolution → (end)\n  communicate_the_result: gateway_xor_3 → (end)\n\nStep 3 — Identify gateways:\n  gateway_xor_3: exclusive split after check_the_resolution\n    - \"unknown\" → evaluate_the_request\n    - \"known\" → communicate_the_result\n\nStep 4 — Enumerate execution states:\n  Path A (unknown branch):\n    receipt → register → check → evaluate → prioritize → research/resolve → write resolution → forward → terminate\n  Path B (known branch):\n    receipt → register → check → communicate result → terminate",
+    "workflow": {
+      "file_index": 1808351684,
+      "actions": [
+        {
+          "id": "receipt_of_a_request",
+          "name": "Receipt of a request",
+          "actor": "Help desk",
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "registering_the_request"
+          ],
+          "postconditions": [
+            "receipt_of_a_request_done"
+          ]
+        },
+        {
+          "id": "registering_the_request",
+          "name": "Registering the request",
+          "actor": "Help desk",
+          "predecessors": [
+            "receipt_of_a_request"
+          ],
+          "successors": [
+            "check_the_resolution"
+          ],
+          "postconditions": [
+            "registering_the_request_done"
+          ]
+        },
+        {
+          "id": "check_the_resolution",
+          "name": "Check the resolution",
+          "actor": "Help desk",
+          "predecessors": [
+            "registering_the_request"
+          ],
+          "successors": [
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "check_the_resolution_done"
+          ]
+        },
+        {
+          "id": "evaluate_the_request",
+          "name": "Evaluate the request",
+          "actor": "Help desk",
+          "predecessors": [
+            "gateway_xor_3"
+          ],
+          "successors": [
+            "prioritizing_the_request"
+          ],
+          "postconditions": [
+            "evaluate_the_request_done"
+          ]
+        },
+        {
+          "id": "communicate_the_result",
+          "name": "Communicate the result",
+          "actor": "Help desk",
+          "predecessors": [
+            "gateway_xor_3"
+          ],
+          "successors": [],
+          "postconditions": [
+            "communicate_the_result_done"
+          ]
+        },
+        {
+          "id": "prioritizing_the_request",
+          "name": "Prioritizing the request",
+          "actor": "Help desk",
+          "predecessors": [
+            "evaluate_the_request"
+          ],
+          "successors": [
+            "researching_and_resolving_it"
+          ],
+          "postconditions": [
+            "prioritizing_the_request_done"
+          ]
+        },
+        {
+          "id": "researching_and_resolving_it",
+          "name": "Researching and resolving it",
+          "actor": "Help desk",
+          "predecessors": [
+            "prioritizing_the_request"
+          ],
+          "successors": [
+            "write_the_resolution"
+          ],
+          "postconditions": [
+            "researching_and_resolving_it_done"
+          ]
+        },
+        {
+          "id": "write_the_resolution",
+          "name": "Write the resolution",
+          "actor": "Help desk",
+          "predecessors": [
+            "researching_and_resolving_it"
+          ],
+          "successors": [
+            "forward_it"
+          ],
+          "postconditions": [
+            "write_the_resolution_done"
+          ]
+        },
+        {
+          "id": "forward_it",
+          "name": "Forward it",
+          "actor": "Help desk",
+          "predecessors": [
+            "write_the_resolution"
+          ],
+          "successors": [],
+          "postconditions": [
+            "forward_it_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_3",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "check_the_resolution"
+          ],
+          "branches": [
+            {
+              "next": "evaluate_the_request",
+              "condition": "unknown"
+            },
+            {
+              "next": "communicate_the_result",
+              "condition": "known"
+            }
+          ],
+          "actor": "Help desk"
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "receipt_of_a_request"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "registering_the_request"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "check_the_resolution"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution"
+          ],
+          "conditions_met": [
+            "unknown"
+          ],
+          "available_next": [
+            "evaluate_the_request"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution",
+            "evaluate_the_request"
+          ],
+          "conditions_met": [
+            "unknown"
+          ],
+          "available_next": [
+            "prioritizing_the_request"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution",
+            "evaluate_the_request",
+            "prioritizing_the_request"
+          ],
+          "conditions_met": [
+            "unknown"
+          ],
+          "available_next": [
+            "researching_and_resolving_it"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution",
+            "evaluate_the_request",
+            "prioritizing_the_request",
+            "researching_and_resolving_it"
+          ],
+          "conditions_met": [
+            "unknown"
+          ],
+          "available_next": [
+            "write_the_resolution"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution",
+            "evaluate_the_request",
+            "prioritizing_the_request",
+            "researching_and_resolving_it",
+            "write_the_resolution"
+          ],
+          "conditions_met": [
+            "unknown"
+          ],
+          "available_next": [
+            "forward_it"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution",
+            "evaluate_the_request",
+            "prioritizing_the_request",
+            "researching_and_resolving_it",
+            "write_the_resolution",
+            "forward_it"
+          ],
+          "conditions_met": [
+            "unknown"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution"
+          ],
+          "conditions_met": [
+            "known"
+          ],
+          "available_next": [
+            "communicate_the_result"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_request",
+            "registering_the_request",
+            "check_the_resolution",
+            "communicate_the_result"
+          ],
+          "conditions_met": [
+            "known"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": [
+      "The procedure says that after 'Communicate the result' the process ends, but the workflow also includes an extra action 'Forward it' after 'Write the resolution' that is not supported by the text as a separate action.",
+      "The procedure says that after 'Write the resolution' the resolution is forwarded and the process ends; the workflow models 'Forward it' as a distinct action, which is not clearly present in the text as an action separate from forwarding the resolution."
+    ]
+  },
+  {
+    "file_index": 1881121390,
+    "procedure_text": "To initiate the process at Central Warehouse Luzern, begin by determining the required product and then checking its availability. If the critical level has been reached, proceed to send an order to the distributor. However, if the critical level has not been reached, locate the nearest warehouse instead. After checking the critical level again, if it has been reached, send an order to the distributor. Otherwise, once again find the nearest warehouse. Once the order has been sent to the distributor, proceed to receive the bill. After receiving the bill, make the payment. If the product is available in the inventory, the process comes to an end. To determine if it is possible to fulfill the order, check if it is not possible, then the delivery has arrived. However, if it is possible, find the nearest warehouse. Repeat the process of checking if it is possible to serve the order, and if it is not, the delivery has arrived. If it is possible, once again find the nearest warehouse. Finally, receive the delivery.",
+    "attempt": 1,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Determine the required product\" → id: determine_the_required_product\n  - \"Checking its availability\" → id: checking_its_availability\n  - \"Send an order to the distributor\" → id: send_an_order_to_the_distributor\n  - \"Locate the nearest warehouse\" → id: locate_the_nearest_warehouse\n  - \"Receive the bill\" → id: receive_the_bill\n  - \"Make the payment\" → id: make_the_payment\n  - \"Product is available in the inventory\" → id: product_is_available_in_the_inventory\n  - \"Check if it is possible to fulfill the order\" → id: check_if_it_is_possible_to_fulfill_the_order\n  - \"The delivery has arrived\" → id: the_delivery_has_arrived\n  - \"Receive the delivery\" → id: receive_the_delivery\n\nStep 2 — Trace the flow:\n  determine_the_required_product: start → checking_its_availability\n  checking_its_availability: determine_the_required_product → gateway_xor_1\n  gateway_xor_1 branches:\n    - Yes / critical level reached → send_an_order_to_the_distributor\n    - No / critical level not reached → locate_the_nearest_warehouse\n  send_an_order_to_the_distributor → receive_the_bill → make_the_payment\n  locate_the_nearest_warehouse → gateway_xor_2\n  gateway_xor_2 is the repeated critical-level check:\n    - Yes → send_an_order_to_the_distributor\n    - No → locate_the_nearest_warehouse\n  make_the_payment → gateway_xor_3\n  gateway_xor_3 branches:\n    - Yes / product available in inventory → product_is_available_in_the_inventory → end\n    - No / continue fulfillment check → check_if_it_is_possible_to_fulfill_the_order\n  check_if_it_is_possible_to_fulfill_the_order → gateway_xor_4\n  gateway_xor_4 branches:\n    - No / not possible → the_delivery_has_arrived\n    - Yes / possible → locate_the_nearest_warehouse\n  the_delivery_has_arrived → gateway_xor_5\n  gateway_xor_5 is the repeated fulfillment check:\n    - No → receive_the_delivery\n    - Yes → locate_the_nearest_warehouse\n  receive_the_delivery → product_is_available_in_the_inventory\n\nStep 3 — Identify gateways:\n  - gateway_xor_1: exclusive split after checking_its_availability\n  - gateway_xor_2: exclusive split after locate_the_nearest_warehouse (repeat critical-level check)\n  - gateway_xor_3: exclusive split after make_the_payment\n  - gateway_xor_4: exclusive split after check_if_it_is_possible_to_fulfill_the_order\n  - gateway_xor_5: exclusive split after the_delivery_has_arrived (repeat fulfillment check)\n\nStep 4 — Enumerate execution states:\n  - Path 1: determine → check availability → critical yes → send order → receive bill → pay → product available → terminate\n  - Path 2: determine → check availability → critical no → locate warehouse → critical yes → send order → receive bill → pay → product available → terminate\n  - Path 3: determine → check availability → critical no → locate warehouse → critical no → locate warehouse → critical yes → send order → receive bill → pay → product available → terminate\n  - Path 4: determine → check availability → critical yes → send order → receive bill → pay → fulfillment not possible → delivery arrived → delivery not possible? no, receive delivery → product available → terminate\n  - Path 5: determine → check availability → critical yes → send order → receive bill → pay → fulfillment possible → locate warehouse → fulfillment not possible → delivery arrived → receive delivery → product available → terminate\n  - Repeated checks create looping states; each loop adds the corresponding condition to conditions_met after the gateway is traversed.",
+    "workflow": {
+      "file_index": 1881121390,
+      "actions": [
+        {
+          "id": "determine_the_required_product",
+          "name": "determine the required product",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "checking_its_availability"
+          ],
+          "postconditions": [
+            "determine_the_required_product_done"
+          ]
+        },
+        {
+          "id": "checking_its_availability",
+          "name": "checking its availability",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "determine_the_required_product"
+          ],
+          "successors": [
+            "gateway_xor_1"
+          ],
+          "postconditions": [
+            "checking_its_availability_done"
+          ]
+        },
+        {
+          "id": "send_an_order_to_the_distributor",
+          "name": "send an order to the distributor",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "gateway_xor_1",
+            "gateway_xor_2"
+          ],
+          "successors": [
+            "receive_the_bill"
+          ],
+          "postconditions": [
+            "send_an_order_to_the_distributor_done"
+          ]
+        },
+        {
+          "id": "locate_the_nearest_warehouse",
+          "name": "locate the nearest warehouse",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "gateway_xor_1",
+            "gateway_xor_2",
+            "gateway_xor_4",
+            "gateway_xor_5"
+          ],
+          "successors": [
+            "gateway_xor_2",
+            "gateway_xor_5"
+          ],
+          "postconditions": [
+            "locate_the_nearest_warehouse_done"
+          ]
+        },
+        {
+          "id": "receive_the_bill",
+          "name": "receive the bill",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "send_an_order_to_the_distributor"
+          ],
+          "successors": [
+            "make_the_payment"
+          ],
+          "postconditions": [
+            "receive_the_bill_done"
+          ]
+        },
+        {
+          "id": "make_the_payment",
+          "name": "make the payment",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "receive_the_bill"
+          ],
+          "successors": [
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "make_the_payment_done"
+          ]
+        },
+        {
+          "id": "product_is_available_in_the_inventory",
+          "name": "product is available in the inventory",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "gateway_xor_3"
+          ],
+          "successors": [],
+          "postconditions": [
+            "product_is_available_in_the_inventory_done"
+          ]
+        },
+        {
+          "id": "check_if_it_is_possible_to_fulfill_the_order",
+          "name": "check if it is possible to fulfill the order",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "gateway_xor_3"
+          ],
+          "successors": [
+            "gateway_xor_4"
+          ],
+          "postconditions": [
+            "check_if_it_is_possible_to_fulfill_the_order_done"
+          ]
+        },
+        {
+          "id": "the_delivery_has_arrived",
+          "name": "the delivery has arrived",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "gateway_xor_4"
+          ],
+          "successors": [
+            "gateway_xor_5"
+          ],
+          "postconditions": [
+            "the_delivery_has_arrived_done"
+          ]
+        },
+        {
+          "id": "receive_the_delivery",
+          "name": "receive the delivery",
+          "actor": "Central Warehouse Luzern",
+          "predecessors": [
+            "gateway_xor_5"
+          ],
+          "successors": [
+            "product_is_available_in_the_inventory"
+          ],
+          "postconditions": [
+            "receive_the_delivery_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_1",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "checking_its_availability"
+          ],
+          "branches": [
+            {
+              "next": "send_an_order_to_the_distributor",
+              "condition": "Yes"
+            },
+            {
+              "next": "locate_the_nearest_warehouse",
+              "condition": "No"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_2",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "locate_the_nearest_warehouse"
+          ],
+          "branches": [
+            {
+              "next": "send_an_order_to_the_distributor",
+              "condition": "Yes"
+            },
+            {
+              "next": "locate_the_nearest_warehouse",
+              "condition": "No"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_3",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "make_the_payment"
+          ],
+          "branches": [
+            {
+              "next": "product_is_available_in_the_inventory",
+              "condition": "Yes"
+            },
+            {
+              "next": "check_if_it_is_possible_to_fulfill_the_order",
+              "condition": "No"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_4",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "check_if_it_is_possible_to_fulfill_the_order"
+          ],
+          "branches": [
+            {
+              "next": "the_delivery_has_arrived",
+              "condition": "No"
+            },
+            {
+              "next": "locate_the_nearest_warehouse",
+              "condition": "Yes"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_5",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "the_delivery_has_arrived"
+          ],
+          "branches": [
+            {
+              "next": "receive_the_delivery",
+              "condition": "No"
+            },
+            {
+              "next": "locate_the_nearest_warehouse",
+              "condition": "Yes"
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "determine_the_required_product"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "checking_its_availability"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability"
+          ],
+          "conditions_met": [
+            "Yes"
+          ],
+          "available_next": [
+            "send_an_order_to_the_distributor"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor"
+          ],
+          "conditions_met": [
+            "Yes"
+          ],
+          "available_next": [
+            "receive_the_bill"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill"
+          ],
+          "conditions_met": [
+            "Yes"
+          ],
+          "available_next": [
+            "make_the_payment"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment"
+          ],
+          "conditions_met": [
+            "Yes"
+          ],
+          "available_next": [
+            "product_is_available_in_the_inventory"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "product_is_available_in_the_inventory"
+          ],
+          "conditions_met": [
+            "Yes"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability"
+          ],
+          "conditions_met": [
+            "No"
+          ],
+          "available_next": [
+            "locate_the_nearest_warehouse"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse"
+          ],
+          "conditions_met": [
+            "No"
+          ],
+          "available_next": [
+            "send_an_order_to_the_distributor",
+            "locate_the_nearest_warehouse"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse"
+          ],
+          "conditions_met": [
+            "No",
+            "Yes"
+          ],
+          "available_next": [
+            "send_an_order_to_the_distributor"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment"
+          ],
+          "conditions_met": [
+            "No",
+            "Yes"
+          ],
+          "available_next": [
+            "product_is_available_in_the_inventory"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "product_is_available_in_the_inventory"
+          ],
+          "conditions_met": [
+            "No",
+            "Yes"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse"
+          ],
+          "conditions_met": [
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "locate_the_nearest_warehouse"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse",
+            "locate_the_nearest_warehouse"
+          ],
+          "conditions_met": [
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "send_an_order_to_the_distributor",
+            "locate_the_nearest_warehouse"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse",
+            "locate_the_nearest_warehouse",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment"
+          ],
+          "conditions_met": [
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "product_is_available_in_the_inventory"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "locate_the_nearest_warehouse",
+            "locate_the_nearest_warehouse",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "product_is_available_in_the_inventory"
+          ],
+          "conditions_met": [
+            "No",
+            "No"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No"
+          ],
+          "available_next": [
+            "check_if_it_is_possible_to_fulfill_the_order"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "the_delivery_has_arrived"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order",
+            "the_delivery_has_arrived"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "receive_the_delivery"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order",
+            "the_delivery_has_arrived",
+            "receive_the_delivery"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "product_is_available_in_the_inventory"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order",
+            "the_delivery_has_arrived",
+            "receive_the_delivery",
+            "product_is_available_in_the_inventory"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "No"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "Yes"
+          ],
+          "available_next": [
+            "locate_the_nearest_warehouse"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order",
+            "locate_the_nearest_warehouse"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "Yes"
+          ],
+          "available_next": [
+            "the_delivery_has_arrived",
+            "locate_the_nearest_warehouse"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order",
+            "locate_the_nearest_warehouse"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "available_next": [
+            "receive_the_delivery"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order",
+            "locate_the_nearest_warehouse",
+            "receive_the_delivery"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "available_next": [
+            "product_is_available_in_the_inventory"
+          ]
+        },
+        {
+          "completed_actions": [
+            "determine_the_required_product",
+            "checking_its_availability",
+            "send_an_order_to_the_distributor",
+            "receive_the_bill",
+            "make_the_payment",
+            "check_if_it_is_possible_to_fulfill_the_order",
+            "locate_the_nearest_warehouse",
+            "receive_the_delivery",
+            "product_is_available_in_the_inventory"
+          ],
+          "conditions_met": [
+            "Yes",
+            "No",
+            "Yes",
+            "No"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": null
+  },
+  {
+    "file_index": 1162283938,
+    "procedure_text": "To begin the process, start with MyStartEvent. Next, proceed to MyTaskOne.MyTaskOne, followed by MyTaskTwo.MyTaskTwo. Finally, conclude the process with MyEndEvent.",
+    "attempt": 1,
+    "reasoning": "Step 1 — Identify actions:\n  - \"MyStartEvent\" → id: mystartevent\n  - \"MyTaskOne\" → id: mytaskone\n  - \"MyTaskTwo\" → id: mytasktwo\n  - \"MyEndEvent\" → id: myendevent\n\nStep 2 — Trace the flow:\n  mystartevent: start → mytaskone\n  mytaskone: mystartevent → mytasktwo\n  mytasktwo: mytaskone → myendevent\n  myendevent: mytasktwo → (end)\n\nStep 3 — Identify gateways:\n  None — the procedure is strictly sequential.\n\nStep 4 — Enumerate execution states:\n  1. Initial state: nothing completed, next is mystartevent\n  2. After mystartevent: next is mytaskone\n  3. After mytaskone: next is mytasktwo\n  4. After mytasktwo: next is myendevent\n  5. After myendevent: process can terminate",
+    "workflow": {
+      "file_index": 1162283938,
+      "actions": [
+        {
+          "id": "mystartevent",
+          "name": "MyStartEvent",
+          "actor": null,
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "mytaskone"
+          ],
+          "postconditions": [
+            "mystartevent_done"
+          ]
+        },
+        {
+          "id": "mytaskone",
+          "name": "MyTaskOne.MyTaskOne",
+          "actor": null,
+          "predecessors": [
+            "mystartevent"
+          ],
+          "successors": [
+            "mytasktwo"
+          ],
+          "postconditions": [
+            "mytaskone_done"
+          ]
+        },
+        {
+          "id": "mytasktwo",
+          "name": "MyTaskTwo.MyTaskTwo",
+          "actor": null,
+          "predecessors": [
+            "mytaskone"
+          ],
+          "successors": [
+            "myendevent"
+          ],
+          "postconditions": [
+            "mytasktwo_done"
+          ]
+        },
+        {
+          "id": "myendevent",
+          "name": "MyEndEvent",
+          "actor": null,
+          "predecessors": [
+            "mytasktwo"
+          ],
+          "successors": [],
+          "postconditions": [
+            "myendevent_done"
+          ]
+        }
+      ],
+      "gateways": [],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "mystartevent"
+          ]
+        },
+        {
+          "completed_actions": [
+            "mystartevent"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "mytaskone"
+          ]
+        },
+        {
+          "completed_actions": [
+            "mystartevent",
+            "mytaskone"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "mytasktwo"
+          ]
+        },
+        {
+          "completed_actions": [
+            "mystartevent",
+            "mytaskone",
+            "mytasktwo"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "myendevent"
+          ]
+        },
+        {
+          "completed_actions": [
+            "mystartevent",
+            "mytaskone",
+            "mytasktwo",
+            "myendevent"
+          ],
+          "conditions_met": [],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": null
+  },
+  {
+    "file_index": 2074496137,
+    "procedure_text": "To start, you should first check the availability. If the item is \"not available\", you can proceed with placing it on backorder. However, if it is indeed \"available\", you should reserve it. If the item is \"not available\" after checking again, you can proceed with placing it on backorder. On the other hand, if it is still \"available\", you should reserve it. This process will continue until it reaches its end.",
+    "attempt": 1,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Check the availability\" → id: check_the_availability\n  - \"Place it on backorder\" → id: place_it_on_backorder\n  - \"Reserve it\" → id: reserve_it\n\nStep 2 — Trace the flow:\n  check_the_availability: start → gateway_xor_2\n  place_it_on_backorder: gateway_xor_2 → gateway_xor_3\n  reserve_it: gateway_xor_2 → gateway_xor_3\n  gateway_xor_3 merges the repeated check loop and leads to the next availability check or termination depending on repetition implied by the text.\n\nStep 3 — Identify gateways:\n  gateway_xor_2: exclusive split after check_the_availability\n    - \"not available\" → place_it_on_backorder\n    - \"available\" → reserve_it\n  gateway_xor_3: exclusive merge after the branch actions, representing the repeated cycle/continuation until end\n\nStep 4 — Enumerate execution states:\n  Path A: check → not available → backorder → continue/end\n  Path B: check → available → reserve → continue/end\n  The procedure repeats the same availability decision again, so the same XOR decision is modeled as a repeated continuation path.",
+    "workflow": {
+      "file_index": 2074496137,
+      "actions": [
+        {
+          "id": "check_the_availability",
+          "name": "Check the availability",
+          "actor": null,
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "gateway_xor_2"
+          ],
+          "postconditions": [
+            "check_the_availability_done"
+          ]
+        },
+        {
+          "id": "place_it_on_backorder",
+          "name": "Place it on backorder",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "place_it_on_backorder_done"
+          ]
+        },
+        {
+          "id": "reserve_it",
+          "name": "Reserve it",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "reserve_it_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_2",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "check_the_availability"
+          ],
+          "branches": [
+            {
+              "next": "place_it_on_backorder",
+              "condition": "not available"
+            },
+            {
+              "next": "reserve_it",
+              "condition": "available"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_3",
+          "type": "exclusive",
+          "role": "merge",
+          "incoming_from": [
+            "place_it_on_backorder",
+            "reserve_it"
+          ],
+          "branches": [
+            {
+              "next": null
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "check_the_availability"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_the_availability"
+          ],
+          "conditions_met": [
+            "not available"
+          ],
+          "available_next": [
+            "place_it_on_backorder"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_the_availability",
+            "place_it_on_backorder"
+          ],
+          "conditions_met": [
+            "not available"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "check_the_availability"
+          ],
+          "conditions_met": [
+            "available"
+          ],
+          "available_next": [
+            "reserve_it"
+          ]
+        },
+        {
+          "completed_actions": [
+            "check_the_availability",
+            "reserve_it"
+          ],
+          "conditions_met": [
+            "available"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": null
+  },
+  {
+    "file_index": 1988807363,
+    "procedure_text": "To start, we need to verify the RFQ. If it is not verified, we should ask for more information. However, if it is verified, we can proceed to analyze the RFQ and provide L&M Cost Estimates. If the RFQ is not verified at this point, we will again ask for more information. But if it is verified, we will continue to analyze the RFQ and provide L&M Cost Estimates. If we need more information, we will ask for it and then provide clarification. After that, we will analyze the RFQ and provide L&M Cost Estimates. Once that is done, we will add overhead costs and generate pricing options. After providing clarification, we will verify the RFQ. Then, we will add overhead costs and generate pricing options. Once that is completed, we can generate the Sales Quote. Finally, the process will come to an end.",
+    "attempt": 3,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Verify RFQ\" → id: verify_rfq\n  - \"Ask for more information\" → id: ask_for_more_information\n  - \"Analyze the RFQ and provide L&M Cost Estimates\" → id: analyze_the_rfq_and_provide_l_m_cost_estimates\n  - \"Provide Clarification\" → id: provide_clarification\n  - \"Add overhead costs and generate pricing options\" → id: add_overhead_costs_and_generate_pricing_options\n  - \"Generate Sales Quote\" → id: generate_sales_quote\n\nStep 2 — Trace the flow:\n  The process starts with verify_rfq.\n  If the RFQ is not verified, the process goes to ask_for_more_information, then provide_clarification, then back to verify_rfq.\n  If the RFQ is verified, the process proceeds to analyze_the_rfq_and_provide_l_m_cost_estimates, then add_overhead_costs_and_generate_pricing_options, then generate_sales_quote, and ends.\n  The text describes a repeated verification cycle after clarification; this is represented by the loop back to verify_rfq.\n\nStep 3 — Identify gateways:\n  - gateway_xor_2: exclusive split after verify_rfq\n    - \"No\" → ask_for_more_information\n    - \"yes\" → analyze_the_rfq_and_provide_l_m_cost_estimates\n\nStep 4 — Enumerate execution states:\n  - Initial state: verify_rfq available.\n  - No path: verify_rfq → ask_for_more_information → provide_clarification → verify_rfq, with repeated cycles possible.\n  - Yes path: verify_rfq → analyze_the_rfq_and_provide_l_m_cost_estimates → add_overhead_costs_and_generate_pricing_options → generate_sales_quote → terminate.\n  - The process may terminate after generate_sales_quote, or after repeated clarification cycles if no further action is taken.",
+    "workflow": {
+      "file_index": 1988807363,
+      "actions": [
+        {
+          "id": "verify_rfq",
+          "name": "Verify RFQ",
+          "actor": null,
+          "predecessors": [
+            "start",
+            "provide_clarification"
+          ],
+          "successors": [
+            "gateway_xor_2"
+          ],
+          "postconditions": [
+            "verify_rfq_done"
+          ]
+        },
+        {
+          "id": "ask_for_more_information",
+          "name": "Ask for more information",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [
+            "provide_clarification"
+          ],
+          "postconditions": [
+            "ask_for_more_information_done"
+          ]
+        },
+        {
+          "id": "analyze_the_rfq_and_provide_l_m_cost_estimates",
+          "name": "Analyze the RFQ and provide L&M Cost Estimates",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [
+            "add_overhead_costs_and_generate_pricing_options"
+          ],
+          "postconditions": [
+            "analyze_the_rfq_and_provide_l_m_cost_estimates_done"
+          ]
+        },
+        {
+          "id": "provide_clarification",
+          "name": "Provide Clarification",
+          "actor": null,
+          "predecessors": [
+            "ask_for_more_information"
+          ],
+          "successors": [
+            "verify_rfq"
+          ],
+          "postconditions": [
+            "provide_clarification_done"
+          ]
+        },
+        {
+          "id": "add_overhead_costs_and_generate_pricing_options",
+          "name": "Add overhead costs and generate pricing options",
+          "actor": null,
+          "predecessors": [
+            "analyze_the_rfq_and_provide_l_m_cost_estimates"
+          ],
+          "successors": [
+            "generate_sales_quote"
+          ],
+          "postconditions": [
+            "add_overhead_costs_and_generate_pricing_options_done"
+          ]
+        },
+        {
+          "id": "generate_sales_quote",
+          "name": "Generate Sales Quote",
+          "actor": null,
+          "predecessors": [
+            "add_overhead_costs_and_generate_pricing_options"
+          ],
+          "successors": [],
+          "postconditions": [
+            "generate_sales_quote_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_2",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "verify_rfq"
+          ],
+          "branches": [
+            {
+              "next": "ask_for_more_information",
+              "condition": "No"
+            },
+            {
+              "next": "analyze_the_rfq_and_provide_l_m_cost_estimates",
+              "condition": "yes"
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "verify_rfq"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq"
+          ],
+          "conditions_met": [
+            "No"
+          ],
+          "available_next": [
+            "ask_for_more_information"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information"
+          ],
+          "conditions_met": [
+            "No"
+          ],
+          "available_next": [
+            "provide_clarification"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification"
+          ],
+          "conditions_met": [
+            "No"
+          ],
+          "available_next": [
+            "verify_rfq"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification",
+            "verify_rfq"
+          ],
+          "conditions_met": [
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "ask_for_more_information"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification",
+            "verify_rfq",
+            "ask_for_more_information"
+          ],
+          "conditions_met": [
+            "No",
+            "No"
+          ],
+          "available_next": [
+            "provide_clarification"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification",
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification"
+          ],
+          "conditions_met": [
+            "No",
+            "No"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification",
+            "verify_rfq"
+          ],
+          "conditions_met": [
+            "No",
+            "yes"
+          ],
+          "available_next": [
+            "analyze_the_rfq_and_provide_l_m_cost_estimates"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification",
+            "verify_rfq",
+            "analyze_the_rfq_and_provide_l_m_cost_estimates"
+          ],
+          "conditions_met": [
+            "No",
+            "yes"
+          ],
+          "available_next": [
+            "add_overhead_costs_and_generate_pricing_options"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification",
+            "verify_rfq",
+            "analyze_the_rfq_and_provide_l_m_cost_estimates",
+            "add_overhead_costs_and_generate_pricing_options"
+          ],
+          "conditions_met": [
+            "No",
+            "yes"
+          ],
+          "available_next": [
+            "generate_sales_quote"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "ask_for_more_information",
+            "provide_clarification",
+            "verify_rfq",
+            "analyze_the_rfq_and_provide_l_m_cost_estimates",
+            "add_overhead_costs_and_generate_pricing_options",
+            "generate_sales_quote"
+          ],
+          "conditions_met": [
+            "No",
+            "yes"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "verify_rfq"
+          ],
+          "conditions_met": [
+            "yes"
+          ],
+          "available_next": [
+            "analyze_the_rfq_and_provide_l_m_cost_estimates"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "analyze_the_rfq_and_provide_l_m_cost_estimates"
+          ],
+          "conditions_met": [
+            "yes"
+          ],
+          "available_next": [
+            "add_overhead_costs_and_generate_pricing_options"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "analyze_the_rfq_and_provide_l_m_cost_estimates",
+            "add_overhead_costs_and_generate_pricing_options"
+          ],
+          "conditions_met": [
+            "yes"
+          ],
+          "available_next": [
+            "generate_sales_quote"
+          ]
+        },
+        {
+          "completed_actions": [
+            "verify_rfq",
+            "analyze_the_rfq_and_provide_l_m_cost_estimates",
+            "add_overhead_costs_and_generate_pricing_options",
+            "generate_sales_quote"
+          ],
+          "conditions_met": [
+            "yes"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": [
+      "The workflow models 'Ask for more information' as a single exclusive branch from 'Verify RFQ', but the text says that after providing clarification the RFQ is verified again and may again lead to asking for more information or proceed to analysis; this repeated verification loop is only partially represented in the gateway structure.",
+      "The procedure says 'If we need more information, we will ask for it and then provide clarification. After that, we will analyze the RFQ and provide L&M Cost Estimates. Once that is done, we will add overhead costs and generate pricing options.' The workflow allows 'Provide Clarification' to go directly back to 'Verify RFQ' without explicitly modeling the stated sequence that clarification is followed by analysis after verification; however this is still consistent overall, so no definite structural error beyond the repeated loop representation is certain."
+    ]
+  },
+  {
+    "file_index": 1239633710,
+    "procedure_text": "For customers, the process begins with identifying the demand and then choosing the supplier. After that, they should check if the company is ours. If the answer is no, then the process comes to an end. However, if the answer is yes, they should proceed with placing an order and the process will also come to an end. The next step is to check again if the company is ours. If the answer is no, then the process ends. However, if the answer is yes, they should proceed with placing an order and the process will come to an end.",
+    "attempt": 3,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Identify the Demand\" → id: identify_the_demand\n  - \"Choose the Supplier\" → id: choose_the_supplier\n  - \"Check if the Company is Ours\" → id: check_if_the_company_is_ours\n  - \"Place an Order\" → id: place_an_order\n\nStep 2 — Trace the flow:\n  identify_the_demand: start → choose_the_supplier\n  choose_the_supplier: identify_the_demand → check_if_the_company_is_ours\n  check_if_the_company_is_ours: choose_the_supplier → gateway_xor_1\n  place_an_order: gateway_xor_1 → (end)\n\nStep 3 — Identify gateways:\n  gateway_xor_1: exclusive split after \"Check if the Company is Ours\"\n    - \"No\" → null (process ends)\n    - \"Yes\" → place_an_order\n\nStep 4 — Enumerate execution states:\n  Path 1: identify demand → choose supplier → check company → No → terminate\n  Path 2: identify demand → choose supplier → check company → Yes → place order → terminate",
+    "workflow": {
+      "file_index": 1239633710,
+      "actions": [
+        {
+          "id": "identify_the_demand",
+          "name": "Identify the Demand",
+          "actor": "Customers",
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "choose_the_supplier"
+          ],
+          "postconditions": [
+            "identify_the_demand_done"
+          ]
+        },
+        {
+          "id": "choose_the_supplier",
+          "name": "Choose the Supplier",
+          "actor": "Customers",
+          "predecessors": [
+            "identify_the_demand"
+          ],
+          "successors": [
+            "check_if_the_company_is_ours"
+          ],
+          "postconditions": [
+            "choose_the_supplier_done"
+          ]
+        },
+        {
+          "id": "check_if_the_company_is_ours",
+          "name": "Check if the Company is Ours",
+          "actor": "Customers",
+          "predecessors": [
+            "choose_the_supplier"
+          ],
+          "successors": [
+            "gateway_xor_1"
+          ],
+          "postconditions": [
+            "check_if_the_company_is_ours_done"
+          ]
+        },
+        {
+          "id": "place_an_order",
+          "name": "Place an Order",
+          "actor": "Customers",
+          "predecessors": [
+            "gateway_xor_1"
+          ],
+          "successors": [],
+          "postconditions": [
+            "place_an_order_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_1",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "check_if_the_company_is_ours"
+          ],
+          "branches": [
+            {
+              "next": null,
+              "condition": "No"
+            },
+            {
+              "next": "place_an_order",
+              "condition": "Yes"
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "identify_the_demand"
+          ]
+        },
+        {
+          "completed_actions": [
+            "identify_the_demand"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "choose_the_supplier"
+          ]
+        },
+        {
+          "completed_actions": [
+            "identify_the_demand",
+            "choose_the_supplier"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "check_if_the_company_is_ours"
+          ]
+        },
+        {
+          "completed_actions": [
+            "identify_the_demand",
+            "choose_the_supplier",
+            "check_if_the_company_is_ours"
+          ],
+          "conditions_met": [
+            "No"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "identify_the_demand",
+            "choose_the_supplier",
+            "check_if_the_company_is_ours"
+          ],
+          "conditions_met": [
+            "Yes"
+          ],
+          "available_next": [
+            "place_an_order"
+          ]
+        },
+        {
+          "completed_actions": [
+            "identify_the_demand",
+            "choose_the_supplier",
+            "check_if_the_company_is_ours",
+            "place_an_order"
+          ],
+          "conditions_met": [
+            "Yes"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": [
+      "The procedure text says the company check happens twice ('After that' and 'The next step is to check again if the company is ours'), but the workflow includes only one 'Check if the Company is Ours' action",
+      "The procedure text describes a second decision after the first 'Yes' branch, but the workflow ends after 'Place an Order' and does not model the repeated check and possible second order"
+    ]
+  },
+  {
+    "file_index": 676185712,
+    "procedure_text": "In the beginning of the SSP process, the first step is to look up the Vendor Number. This step involves accessing the data object \"SAP System\". Additionally, the step \"Look up Vendor Number\" requires accessing the data object \"Invoice + Entry Form\". It is important to note the time it takes to complete this step. After looking up the Vendor Number, the next step is to add it to the Entry Form. Again, this step requires accessing the data object \"Invoice + Entry Form\". Following this, the step \"Look up Vendor Number\" is required to request a new Vendor Number. This step also involves accessing the data object \"Invoice + Entry Form\". The step \"Look up Vendor Number\" produces the data object \"Invoice + Entry Form\". Finally, the step \"Add to Entry Form\" produces the data object \"Invoice + Entry Form\" and the step \"Request New Vendor No\" produces the data object \"Vendor Master Record Request Form\". After requesting the new Vendor Number, it is placed in the Outbox. It is important to note that the Outbox is a dedicated box for new SAP Master Records, which is emptied at 11 am and 3 pm every day by internal mail and sent to the master data entry department. This marks the end of the process.",
+    "attempt": 2,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Look up Vendor Number\" → id: look_up_vendor_number\n  - \"Add to Entry Form\" → id: add_to_entry_form\n  - \"Request New Vendor No\" → id: request_new_vendor_no\n  - \"Place it in the Outbox\" → id: place_it_in_the_outbox\n\nStep 2 — Trace the flow:\n  look_up_vendor_number: start → add_to_entry_form\n  add_to_entry_form: look_up_vendor_number → request_new_vendor_no\n  request_new_vendor_no: add_to_entry_form → place_it_in_the_outbox\n  place_it_in_the_outbox: request_new_vendor_no → (end)\n\nStep 3 — Identify gateways:\n  None — the procedure is sequential with no branching.\n\nStep 4 — Enumerate execution states:\n  State 0: nothing done → next: [look_up_vendor_number]\n  State 1: [look_up_vendor_number] done → next: [add_to_entry_form]\n  State 2: [look_up_vendor_number, add_to_entry_form] done → next: [request_new_vendor_no]\n  State 3: [look_up_vendor_number, add_to_entry_form, request_new_vendor_no] done → next: [place_it_in_the_outbox]\n  State 4: all actions done → can_terminate = true",
+    "workflow": {
+      "file_index": 676185712,
+      "actions": [
+        {
+          "id": "look_up_vendor_number",
+          "name": "Look up Vendor Number",
+          "actor": null,
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "add_to_entry_form"
+          ],
+          "postconditions": [
+            "look_up_vendor_number_done"
+          ]
+        },
+        {
+          "id": "add_to_entry_form",
+          "name": "Add to Entry Form",
+          "actor": null,
+          "predecessors": [
+            "look_up_vendor_number"
+          ],
+          "successors": [
+            "request_new_vendor_no"
+          ],
+          "postconditions": [
+            "add_to_entry_form_done"
+          ]
+        },
+        {
+          "id": "request_new_vendor_no",
+          "name": "Request New Vendor No",
+          "actor": null,
+          "predecessors": [
+            "add_to_entry_form"
+          ],
+          "successors": [
+            "place_it_in_the_outbox"
+          ],
+          "postconditions": [
+            "request_new_vendor_no_done"
+          ]
+        },
+        {
+          "id": "place_it_in_the_outbox",
+          "name": "Place it in the Outbox",
+          "actor": null,
+          "predecessors": [
+            "request_new_vendor_no"
+          ],
+          "successors": [],
+          "postconditions": [
+            "place_it_in_the_outbox_done"
+          ]
+        }
+      ],
+      "gateways": [],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "look_up_vendor_number"
+          ]
+        },
+        {
+          "completed_actions": [
+            "look_up_vendor_number"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "add_to_entry_form"
+          ]
+        },
+        {
+          "completed_actions": [
+            "look_up_vendor_number",
+            "add_to_entry_form"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "request_new_vendor_no"
+          ]
+        },
+        {
+          "completed_actions": [
+            "look_up_vendor_number",
+            "add_to_entry_form",
+            "request_new_vendor_no"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "place_it_in_the_outbox"
+          ]
+        },
+        {
+          "completed_actions": [
+            "look_up_vendor_number",
+            "add_to_entry_form",
+            "request_new_vendor_no",
+            "place_it_in_the_outbox"
+          ],
+          "conditions_met": [],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": null
+  },
+  {
+    "file_index": 1160550961,
+    "procedure_text": "For the system: Initially, there is an NCIIC information check. If the \"NCIIC Photo check\" is true, then the process continues. Otherwise, if the \"NCIIC check\" is true, then the process also continues. Following that, there is a Flink check. Additionally, there is an objective judgment. If the \"PBOC check\" is true, then the process moves to WF. Otherwise, if the process moves to WF, then it signifies the end of the process.",
+    "attempt": 3,
+    "reasoning": "Step 1 — Identify actions:\n  - \"NCIIC information check\" → id: nciic_information_check\n  - \"NCIIC Photo check\" → id: nciic_photo_check\n  - \"NCIIC check\" → id: nciic_check\n  - \"Flink check\" → id: flink_check\n  - \"objective judgment\" → id: objective_judgment\n  - \"PBOC check\" → id: pboc_check\n\nStep 2 — Trace the flow:\n  nciic_information_check: start → gateway_xor_1\n  gateway_xor_1 branches to nciic_photo_check or nciic_check\n  both branches continue to flink_check\n  flink_check → objective_judgment\n  objective_judgment → gateway_xor_2\n  gateway_xor_2 branches either to pboc_check or directly to process end\n  pboc_check → end\n\nStep 3 — Identify gateways:\n  - gateway_xor_1: exclusive split after nciic_information_check\n    - \"NCIIC Photo check is true\" → nciic_photo_check\n    - \"NCIIC check is true\" → nciic_check\n  - gateway_xor_3: exclusive merge before flink_check\n    - incoming from nciic_photo_check and nciic_check\n  - gateway_xor_2: exclusive split after objective_judgment\n    - \"PBOC check is true\" → pboc_check\n    - otherwise → null (process ends)\n  - gateway_xor_4: exclusive merge before process end\n    - incoming from pboc_check and the false branch of gateway_xor_2\n\nStep 4 — Enumerate execution states:\n  Path A: information check → photo check → flink check → objective judgment → PBOC check → terminate\n  Path B: information check → NCIIC check → flink check → objective judgment → PBOC check → terminate\n  Path C: information check → photo check → flink check → objective judgment → terminate\n  Path D: information check → NCIIC check → flink check → objective judgment → terminate",
+    "workflow": {
+      "file_index": 1160550961,
+      "actions": [
+        {
+          "id": "nciic_information_check",
+          "name": "NCIIC information check",
+          "actor": null,
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "gateway_xor_1"
+          ],
+          "postconditions": [
+            "nciic_information_check_done"
+          ]
+        },
+        {
+          "id": "nciic_photo_check",
+          "name": "NCIIC Photo check",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_1"
+          ],
+          "successors": [
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "nciic_photo_check_done"
+          ]
+        },
+        {
+          "id": "nciic_check",
+          "name": "NCIIC check",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_1"
+          ],
+          "successors": [
+            "gateway_xor_3"
+          ],
+          "postconditions": [
+            "nciic_check_done"
+          ]
+        },
+        {
+          "id": "flink_check",
+          "name": "Flink check",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_3"
+          ],
+          "successors": [
+            "objective_judgment"
+          ],
+          "postconditions": [
+            "flink_check_done"
+          ]
+        },
+        {
+          "id": "objective_judgment",
+          "name": "objective judgment",
+          "actor": null,
+          "predecessors": [
+            "flink_check"
+          ],
+          "successors": [
+            "gateway_xor_2"
+          ],
+          "postconditions": [
+            "objective_judgment_done"
+          ]
+        },
+        {
+          "id": "pboc_check",
+          "name": "PBOC check",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [],
+          "postconditions": [
+            "pboc_check_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_1",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "nciic_information_check"
+          ],
+          "branches": [
+            {
+              "next": "nciic_photo_check",
+              "condition": "NCIIC Photo check is true"
+            },
+            {
+              "next": "nciic_check",
+              "condition": "NCIIC check is true"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_3",
+          "type": "exclusive",
+          "role": "merge",
+          "incoming_from": [
+            "nciic_photo_check",
+            "nciic_check"
+          ],
+          "branches": [
+            {
+              "next": "flink_check"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_2",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "objective_judgment"
+          ],
+          "branches": [
+            {
+              "next": "pboc_check",
+              "condition": "PBOC check is true"
+            },
+            {
+              "next": null,
+              "condition": "Otherwise, if the process moves to WF"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_4",
+          "type": "exclusive",
+          "role": "merge",
+          "incoming_from": [
+            "pboc_check",
+            "gateway_xor_2"
+          ],
+          "branches": [
+            {
+              "next": null
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "nciic_information_check"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "nciic_photo_check",
+            "nciic_check"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_photo_check"
+          ],
+          "conditions_met": [
+            "NCIIC Photo check is true"
+          ],
+          "available_next": [
+            "flink_check"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_photo_check",
+            "flink_check"
+          ],
+          "conditions_met": [
+            "NCIIC Photo check is true"
+          ],
+          "available_next": [
+            "objective_judgment"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_photo_check",
+            "flink_check",
+            "objective_judgment"
+          ],
+          "conditions_met": [
+            "NCIIC Photo check is true",
+            "PBOC check is true"
+          ],
+          "available_next": [
+            "pboc_check"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_photo_check",
+            "flink_check",
+            "objective_judgment",
+            "pboc_check"
+          ],
+          "conditions_met": [
+            "NCIIC Photo check is true",
+            "PBOC check is true"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_photo_check",
+            "flink_check",
+            "objective_judgment"
+          ],
+          "conditions_met": [
+            "NCIIC Photo check is true",
+            "Otherwise, if the process moves to WF"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_check"
+          ],
+          "conditions_met": [
+            "NCIIC check is true"
+          ],
+          "available_next": [
+            "flink_check"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_check",
+            "flink_check"
+          ],
+          "conditions_met": [
+            "NCIIC check is true"
+          ],
+          "available_next": [
+            "objective_judgment"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_check",
+            "flink_check",
+            "objective_judgment"
+          ],
+          "conditions_met": [
+            "NCIIC check is true",
+            "PBOC check is true"
+          ],
+          "available_next": [
+            "pboc_check"
+          ]
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_check",
+            "flink_check",
+            "objective_judgment",
+            "pboc_check"
+          ],
+          "conditions_met": [
+            "NCIIC check is true",
+            "PBOC check is true"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "nciic_information_check",
+            "nciic_check",
+            "flink_check",
+            "objective_judgment"
+          ],
+          "conditions_met": [
+            "NCIIC check is true",
+            "Otherwise, if the process moves to WF"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": [
+      "Action 'PBOC check' is described in the text as a condition leading to 'WF', but the workflow models it as a task that must be performed before termination",
+      "Gateway gateway_xor_2 has a branch condition 'Otherwise, if the process moves to WF' that is not an action; the text indicates this is the alternative outcome after the PBOC check, not a separate step"
+    ]
+  },
+  {
+    "file_index": 2033265575,
+    "procedure_text": "The process begins with the receipt of a student loan application. Next, the student loan application is registered. After that, the debts are checked. If there are debts, the student loan is conditionally approved. If there are no debts, the student loan is approved. This process is repeated for both cases. Once the loan is approved, the loan is signed and the student loan application is considered complete, thus ending the process. Similarly, the process starts with the receipt of a home loan application. Then, the home loan application is registered and checked. If the liability is low, the home loan is rejected. If the liability is high, the home loan is approved. This process is repeated for both cases. Once the home loan is approved, the loan is signed. Finally, the home loan application is completed, marking the end of the process.",
+    "attempt": 3,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Receipt of a student loan application\" → id: receipt_of_a_student_loan_application\n  - \"Register the student loan application\" → id: register_the_student_loan_application\n  - \"Check the debts\" → id: check_the_debts\n  - \"Conditionally approved\" → id: conditionally_approved\n  - \"Approved\" → id: approved\n  - \"Sign the loan\" → id: sign_the_loan\n  - \"Student loan application is considered complete\" → id: student_loan_application_is_considered_complete\n  - \"Receipt of a home loan application\" → id: receipt_of_a_home_loan_application\n  - \"Register the home loan application\" → id: register_the_home_loan_application\n  - \"Check the home loan application\" → id: check_the_home_loan_application\n  - \"Rejected\" → id: rejected\n  - \"Approved\" → id: approved_2\n  - \"Sign the loan\" → id: sign_the_loan_2\n  - \"Home loan application is completed\" → id: home_loan_application_is_completed\n\nStep 2 — Trace the flow:\n  Student loan path:\n    receipt_of_a_student_loan_application → register_the_student_loan_application → check_the_debts → gateway_xor_1 → (conditionally_approved | approved) → sign_the_loan → student_loan_application_is_considered_complete\n  Home loan path:\n    receipt_of_a_home_loan_application → register_the_home_loan_application → check_the_home_loan_application → gateway_xor_2 → (rejected | approved_2)\n    approved_2 → sign_the_loan_2 → home_loan_application_is_completed\n\nStep 3 — Identify gateways:\n  - gateway_xor_1: exclusive split after checking debts\n    - \"There are debts\" → conditionally_approved\n    - \"There are no debts\" → approved\n  - gateway_xor_2: exclusive split after checking the home loan application\n    - \"Liability is low\" → rejected\n    - \"Liability is high\" → approved_2\n\nStep 4 — Enumerate execution states:\n  - Student loan branch states:\n    start → receipt → register → check debts → either conditionally approved or approved → sign → complete → terminate\n  - Home loan branch states:\n    start → receipt → register → check home loan application → either rejected or approved → if approved, sign → complete → terminate",
+    "workflow": {
+      "file_index": 2033265575,
+      "actions": [
+        {
+          "id": "receipt_of_a_student_loan_application",
+          "name": "Receipt of a student loan application",
+          "actor": null,
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "register_the_student_loan_application"
+          ],
+          "postconditions": [
+            "receipt_of_a_student_loan_application_done"
+          ]
+        },
+        {
+          "id": "register_the_student_loan_application",
+          "name": "Register the student loan application",
+          "actor": null,
+          "predecessors": [
+            "receipt_of_a_student_loan_application"
+          ],
+          "successors": [
+            "check_the_debts"
+          ],
+          "postconditions": [
+            "register_the_student_loan_application_done"
+          ]
+        },
+        {
+          "id": "check_the_debts",
+          "name": "Check the debts",
+          "actor": null,
+          "predecessors": [
+            "register_the_student_loan_application"
+          ],
+          "successors": [
+            "gateway_xor_1"
+          ],
+          "postconditions": [
+            "check_the_debts_done"
+          ]
+        },
+        {
+          "id": "conditionally_approved",
+          "name": "Conditionally approved",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_1"
+          ],
+          "successors": [
+            "sign_the_loan"
+          ],
+          "postconditions": [
+            "conditionally_approved_done"
+          ]
+        },
+        {
+          "id": "approved",
+          "name": "Approved",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_1"
+          ],
+          "successors": [
+            "sign_the_loan"
+          ],
+          "postconditions": [
+            "approved_done"
+          ]
+        },
+        {
+          "id": "sign_the_loan",
+          "name": "Sign the loan",
+          "actor": null,
+          "predecessors": [
+            "conditionally_approved",
+            "approved"
+          ],
+          "successors": [
+            "student_loan_application_is_considered_complete"
+          ],
+          "postconditions": [
+            "sign_the_loan_done"
+          ]
+        },
+        {
+          "id": "student_loan_application_is_considered_complete",
+          "name": "Student loan application is considered complete",
+          "actor": null,
+          "predecessors": [
+            "sign_the_loan"
+          ],
+          "successors": [],
+          "postconditions": [
+            "student_loan_application_is_considered_complete_done"
+          ]
+        },
+        {
+          "id": "receipt_of_a_home_loan_application",
+          "name": "Receipt of a home loan application",
+          "actor": null,
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "register_the_home_loan_application"
+          ],
+          "postconditions": [
+            "receipt_of_a_home_loan_application_done"
+          ]
+        },
+        {
+          "id": "register_the_home_loan_application",
+          "name": "Register the home loan application",
+          "actor": null,
+          "predecessors": [
+            "receipt_of_a_home_loan_application"
+          ],
+          "successors": [
+            "check_the_home_loan_application"
+          ],
+          "postconditions": [
+            "register_the_home_loan_application_done"
+          ]
+        },
+        {
+          "id": "check_the_home_loan_application",
+          "name": "Check the home loan application",
+          "actor": null,
+          "predecessors": [
+            "register_the_home_loan_application"
+          ],
+          "successors": [
+            "gateway_xor_2"
+          ],
+          "postconditions": [
+            "check_the_home_loan_application_done"
+          ]
+        },
+        {
+          "id": "rejected",
+          "name": "Rejected",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [],
+          "postconditions": [
+            "rejected_done"
+          ]
+        },
+        {
+          "id": "approved_2",
+          "name": "Approved",
+          "actor": null,
+          "predecessors": [
+            "gateway_xor_2"
+          ],
+          "successors": [
+            "sign_the_loan_2"
+          ],
+          "postconditions": [
+            "approved_2_done"
+          ]
+        },
+        {
+          "id": "sign_the_loan_2",
+          "name": "Sign the loan",
+          "actor": null,
+          "predecessors": [
+            "approved_2"
+          ],
+          "successors": [
+            "home_loan_application_is_completed"
+          ],
+          "postconditions": [
+            "sign_the_loan_2_done"
+          ]
+        },
+        {
+          "id": "home_loan_application_is_completed",
+          "name": "Home loan application is completed",
+          "actor": null,
+          "predecessors": [
+            "sign_the_loan_2"
+          ],
+          "successors": [],
+          "postconditions": [
+            "home_loan_application_is_completed_done"
+          ]
+        }
+      ],
+      "gateways": [
+        {
+          "id": "gateway_xor_1",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "check_the_debts"
+          ],
+          "branches": [
+            {
+              "next": "conditionally_approved",
+              "condition": "there are debts"
+            },
+            {
+              "next": "approved",
+              "condition": "there are no debts"
+            }
+          ]
+        },
+        {
+          "id": "gateway_xor_2",
+          "type": "exclusive",
+          "role": "split",
+          "incoming_from": [
+            "check_the_home_loan_application"
+          ],
+          "branches": [
+            {
+              "next": "rejected",
+              "condition": "liability is low"
+            },
+            {
+              "next": "approved_2",
+              "condition": "liability is high"
+            }
+          ]
+        }
+      ],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "receipt_of_a_student_loan_application",
+            "receipt_of_a_home_loan_application"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "register_the_student_loan_application"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "check_the_debts"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts"
+          ],
+          "conditions_met": [
+            "there are debts"
+          ],
+          "available_next": [
+            "conditionally_approved"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts",
+            "conditionally_approved"
+          ],
+          "conditions_met": [
+            "there are debts"
+          ],
+          "available_next": [
+            "sign_the_loan"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts",
+            "conditionally_approved",
+            "sign_the_loan"
+          ],
+          "conditions_met": [
+            "there are debts"
+          ],
+          "available_next": [
+            "student_loan_application_is_considered_complete"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts",
+            "conditionally_approved",
+            "sign_the_loan",
+            "student_loan_application_is_considered_complete"
+          ],
+          "conditions_met": [
+            "there are debts"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts"
+          ],
+          "conditions_met": [
+            "there are no debts"
+          ],
+          "available_next": [
+            "approved"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts",
+            "approved"
+          ],
+          "conditions_met": [
+            "there are no debts"
+          ],
+          "available_next": [
+            "sign_the_loan"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts",
+            "approved",
+            "sign_the_loan"
+          ],
+          "conditions_met": [
+            "there are no debts"
+          ],
+          "available_next": [
+            "student_loan_application_is_considered_complete"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_student_loan_application",
+            "register_the_student_loan_application",
+            "check_the_debts",
+            "approved",
+            "sign_the_loan",
+            "student_loan_application_is_considered_complete"
+          ],
+          "conditions_met": [
+            "there are no debts"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "register_the_home_loan_application"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application",
+            "register_the_home_loan_application"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "check_the_home_loan_application"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application",
+            "register_the_home_loan_application",
+            "check_the_home_loan_application"
+          ],
+          "conditions_met": [
+            "liability is low"
+          ],
+          "available_next": [
+            "rejected"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application",
+            "register_the_home_loan_application",
+            "check_the_home_loan_application",
+            "rejected"
+          ],
+          "conditions_met": [
+            "liability is low"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application",
+            "register_the_home_loan_application",
+            "check_the_home_loan_application"
+          ],
+          "conditions_met": [
+            "liability is high"
+          ],
+          "available_next": [
+            "approved_2"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application",
+            "register_the_home_loan_application",
+            "check_the_home_loan_application",
+            "approved_2"
+          ],
+          "conditions_met": [
+            "liability is high"
+          ],
+          "available_next": [
+            "sign_the_loan_2"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application",
+            "register_the_home_loan_application",
+            "check_the_home_loan_application",
+            "approved_2",
+            "sign_the_loan_2"
+          ],
+          "conditions_met": [
+            "liability is high"
+          ],
+          "available_next": [
+            "home_loan_application_is_completed"
+          ]
+        },
+        {
+          "completed_actions": [
+            "receipt_of_a_home_loan_application",
+            "register_the_home_loan_application",
+            "check_the_home_loan_application",
+            "approved_2",
+            "sign_the_loan_2",
+            "home_loan_application_is_completed"
+          ],
+          "conditions_met": [
+            "liability is high"
+          ],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": null
+  },
+  {
+    "file_index": 802124898,
+    "procedure_text": "To initiate the process for the Central System, begin by marking the Order as ready for billing. Next, proceed to create the bill and send it. This will mark the end of the process.",
+    "attempt": 1,
+    "reasoning": "Step 1 — Identify actions:\n  - \"Mark the Order as ready for billing\" → id: mark_the_order_as_ready_for_billing\n  - \"Create the bill\" → id: create_the_bill\n  - \"Send it\" → id: send_it\n\nStep 2 — Trace the flow:\n  mark_the_order_as_ready_for_billing: start → create_the_bill\n  create_the_bill: mark_the_order_as_ready_for_billing → send_it\n  send_it: create_the_bill → (end)\n\nStep 3 — Identify gateways:\n  None — the procedure is purely sequential.\n\nStep 4 — Enumerate execution states:\n  State 0: nothing done → next: [mark_the_order_as_ready_for_billing]\n  State 1: [mark_the_order_as_ready_for_billing] done → next: [create_the_bill]\n  State 2: [mark_the_order_as_ready_for_billing, create_the_bill] done → next: [send_it]\n  State 3: all actions done → can_terminate = true",
+    "workflow": {
+      "file_index": 802124898,
+      "actions": [
+        {
+          "id": "mark_the_order_as_ready_for_billing",
+          "name": "Mark the Order as ready for billing",
+          "actor": "Central System",
+          "predecessors": [
+            "start"
+          ],
+          "successors": [
+            "create_the_bill"
+          ],
+          "postconditions": [
+            "mark_the_order_as_ready_for_billing_done"
+          ]
+        },
+        {
+          "id": "create_the_bill",
+          "name": "Create the bill",
+          "actor": "Central System",
+          "predecessors": [
+            "mark_the_order_as_ready_for_billing"
+          ],
+          "successors": [
+            "send_it"
+          ],
+          "postconditions": [
+            "create_the_bill_done"
+          ]
+        },
+        {
+          "id": "send_it",
+          "name": "Send it",
+          "actor": "Central System",
+          "predecessors": [
+            "create_the_bill"
+          ],
+          "successors": [],
+          "postconditions": [
+            "send_it_done"
+          ]
+        }
+      ],
+      "gateways": [],
+      "execution_states": [
+        {
+          "completed_actions": [],
+          "conditions_met": [],
+          "available_next": [
+            "mark_the_order_as_ready_for_billing"
+          ]
+        },
+        {
+          "completed_actions": [
+            "mark_the_order_as_ready_for_billing"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "create_the_bill"
+          ]
+        },
+        {
+          "completed_actions": [
+            "mark_the_order_as_ready_for_billing",
+            "create_the_bill"
+          ],
+          "conditions_met": [],
+          "available_next": [
+            "send_it"
+          ]
+        },
+        {
+          "completed_actions": [
+            "mark_the_order_as_ready_for_billing",
+            "create_the_bill",
+            "send_it"
+          ],
+          "conditions_met": [],
+          "available_next": [],
+          "can_terminate": true
+        }
+      ]
+    },
+    "remaining_issues": null
+  }
+]

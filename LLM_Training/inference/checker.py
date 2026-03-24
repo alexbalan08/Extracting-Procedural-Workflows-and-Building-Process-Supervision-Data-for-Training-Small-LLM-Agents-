@@ -103,6 +103,7 @@ class StructuralChecker:
             return ["No terminal execution state found."]
         return []
 
+    #!!! by the way i will re use this method inside the api extractor!!!!
     
     def check(self, workflow) -> CheckResult:
         if workflow is None:
