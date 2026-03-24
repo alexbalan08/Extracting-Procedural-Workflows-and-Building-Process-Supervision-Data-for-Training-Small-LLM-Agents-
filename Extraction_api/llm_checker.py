@@ -1,10 +1,9 @@
-"""
-LLM-based semantic checker for extracted workflows.
 
-Uses GPT-4o to verify the extracted workflow against the original procedure text,
-catching issues the structural checker misses (missing actions, wrong conditions, etc.).
-Returns a list of specific issues for the self-refine feedback loop.
-"""
+
+
+#use same model as critic to verify the extracted workflow against the original procedure text,
+#the structural checker catches structure issues (missing actions, wrong conditions, etc.)
+#return the feedback for hext iteration
 
 from openai import OpenAI
 
@@ -15,7 +14,7 @@ CHECKER_SYSTEM_PROMPT = """You are an expert workflow validator. You will be giv
 Your job is to carefully compare the two and identify REAL errors only.
 
 Check for:
-- Missing actions: steps mentioned in the text that are not in the workflow
+- Missing actions: steps mentioned in the text that are not in the JSON workflow
 - Extra actions: actions in the workflow not supported by the text
 - Wrong action names: names that paraphrase instead of using exact wording from the text
 - Missing gateways: branching/conditions in the text not modeled as gateways
@@ -69,15 +68,15 @@ Identify any issues with the extracted workflow compared to the procedure text."
     raw = response.choices[0].message.content
     try:
         parsed = json.loads(raw)
-        # ideal case: model returns a bare array ["issue1", "issue2"]
+        #ideal case: model returns array ["issue1", "issue2"]
         if isinstance(parsed, list):
             return parsed
-        # fallback: model wraps the array under a key like {"issues": [...]}
+        
         for key in ("issues", "errors", "problems"):
             if key in parsed and isinstance(parsed[key], list):
                 return parsed[key]
-        # no recognisable structure — treat as no issues
+        
         return []
     except (json.JSONDecodeError, KeyError):
-        # if parsing fails entirely, don't crash the pipeline — skip this check
+        #skip the check if parsing fails
         return []

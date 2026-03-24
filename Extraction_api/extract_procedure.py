@@ -116,7 +116,7 @@ def _run_single_extraction(
     tools = [_RETRIEVAL_TOOL] if use_rag else None
 
     for _ in range(2):  #3 rounds for the tool use just in case so we avoid infinite tools calls
-        kwargs = dict(model=model, messages=messages, temperature=0.0, max_tokens=4096)
+        kwargs = dict(model=model, messages=messages, temperature=0.0, max_tokens=8192) #ok 4096 mightbe too low
         if tools:
             kwargs["tools"] = tools
             kwargs["tool_choice"] = "auto"
@@ -154,7 +154,7 @@ def _run_single_extraction(
 def extract_workflow(
     procedure_text: str,
     client: OpenAI,
-    model: str = "gpt-4o",
+    model: str = "gpt-5.4-mini",
     max_attempts: int = 2,
     structural_checker: StructuralChecker | None = None,
     use_llm_checker: bool = True,
@@ -232,7 +232,8 @@ def main():
     parser.add_argument("--input", type=Path, default=default_input, help="Path to input JSON (default: extracted_test.json)")
     parser.add_argument("--train", type=Path, default=None, help="Path to training JSON for RAG pool (optional, default: extracted_train.json)")
     parser.add_argument("--output", type=Path, default=Path("extraction_predictions.json"))
-    parser.add_argument("--model", type=str, default="gpt-4o")
+    #parser.add_argument("--model", type=str, default="gpt-4o")
+    parser.add_argument("--model", type=str, default="gpt-5.4-mini")
     parser.add_argument("--max_attempts", type=int, default=2)
     #i keep this for testing
     parser.add_argument("--no_llm_checker", action="store_true", help="Disable LLM semantic checker")

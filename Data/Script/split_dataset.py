@@ -6,6 +6,8 @@ from pathlib import Path
 #I will use this class for splitting both the intitial sequenceflow and also my extraction
 
 
+
+
 processed_dir = Path(__file__).parent.parent / 'Processed'
 #input_path = processed_dir / 'merged_dataset.json'
 

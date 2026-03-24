@@ -1,13 +1,12 @@
-"""
-Filter procedures where the ground truth workflow JSON exceeds a token limit.
-This avoids GPT-4o running out of output tokens during extraction.
 
-Token budget reasoning:
-  - Ground truth JSON tokens  ~= len(workflow_json) / 4
-  - CoT reasoning estimate    ~= 870 tokens (avg ~8.8 actions * ~400 chars/action / 4)
-  - Total output estimate     ~= JSON tokens + 870
-  We filter at MAX_JSON_TOKENS so total stays safely under the model's max_new_tokens.
-"""
+#Filter procedures where the ground truth workflow JSON exceeds a token limit of let s say 2000 tokens
+#This avoids model running out of output tokens during extraction and keeps the costs ok for me
+#the median of tokens length from ground truth is 1040 tokens so i will cap a limit of 2000 to still maintain some space for longer procedures
+#around 800 tokens-1000 will be added from the cot generation so we will be around 3000-3500 tokens max pere procedure to output
+#under the limit of 4096 tokens i set 
+
+
+
 
 import json
 import statistics
@@ -16,11 +15,11 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "Data" / "Processed"
 
-MAX_JSON_TOKENS = 2000  # filter out records whose ground truth JSON exceeds this
+MAX_JSON_TOKENS = 2000  #to test with
 
 
 def count_tokens(workflow: dict) -> int:
-    """Rough token estimate: chars / 4."""
+    #chars//4 = tokens approx.
     return len(json.dumps(workflow, ensure_ascii=False)) // 4
 
 
@@ -55,9 +54,9 @@ def filter_file(input_path: Path, output_path: Path, max_tokens: int = MAX_JSON_
 if __name__ == "__main__":
     filter_file(
         input_path=PROCESSED_DIR / "extracted_test.json",
-        output_path=PROCESSED_DIR / "extracted_test_filtered.json",
+        output_path=PROCESSED_DIR / "extracted_test.json",
     )
     filter_file(
         input_path=PROCESSED_DIR / "extracted_train.json",
-        output_path=PROCESSED_DIR / "extracted_train_filtered.json",
+        output_path=PROCESSED_DIR / "extracted_train.json",
     )

@@ -1,9 +1,14 @@
 
-#System prompt and 3-shot examples for GPT-4o workflow extraction.
-#All few-shot examples are taken directly from extracted_train.json ground truth.
+
+#All few shot examples are taken directly from extracted_train.json ground truth and i picked them carefully so the
+#cover all possible ways of gateways or even sequential
+#we have the RAG implemented anyways if more context is needed
 
 
-SYSTEM_PROMPT = """You are an expert procedural workflow analyst. Given a natural-language procedure description, extract a fully structured workflow.
+#!!the prompts were refined using Claude Code!!
+
+
+SYSTEM_PROMPT = """You are an expert procedural workflow analyst. Given a natural-language procedure description, extract a fully structured workflow. It will be used to train a PRM and agent for planning tasks.
 
 Output two parts in order:
 1. A <reasoning> block where you trace the procedure step by step.
@@ -124,7 +129,7 @@ Step 4 — Enumerate execution states:
 }
 ```"""
 
-#Example with XOR gateway with early termination file_index 862270781
+#example with XOR gateway with early termination file_index 862270781
 _EX2_PROCEDURE = (
     "To begin the process in Grenoble, the customer enters the store and then decides what they want. "
     "After that, we check whether it is a custom order or an in-store purchase. "
@@ -208,7 +213,7 @@ Step 4 — Enumerate execution states:
 }
 ```"""
 
-# Example 3: inclusive (OR) gateway — split and merge (file_index 1735666188)
+#example 3 with OR gateway — split and merge (file_index 1735666188)
 _EX3_PROCEDURE = (
     "To start, we need to check the application for completeness. After that, we should sort the applications. "
     "During the step of checking the application for completeness, it is important to consider all applications "
