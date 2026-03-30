@@ -1,7 +1,7 @@
 
 #RAG retrieval for workflow extraction.
 #we load extracted_train.json and embed procedure texts using OpenAI text-embedding-3-small
-#supports up to 8191 tokens per text — no truncation issues with long procedures
+#supports up to 8191 tokens per text so no truncation issues with long procedures like we had with the previous model
 #retrieves the most similar example at query time via cosine similarity (dot product)
 
 
@@ -11,19 +11,18 @@ from pathlib import Path
 from openai import OpenAI
 
 
-EMBEDDING_MODEL = "text-embedding-3-small"  # 1536 dims, 8191 token limit, $0.02/1M tokens
+EMBEDDING_MODEL = "text-embedding-3-small"  # 1536 dims, 8191 token limit so all good, also
 
 
 def _embed(texts: list[str], client: OpenAI) -> np.ndarray:
     #OpenAI API accepts up to 2048 inputs per request so we batch in chunks
-    #returns a (N, 1536) float32 array, already normalized by the API
     all_embeddings = []
-    batch_size = 512  # safe batch size well under the 2048 limit
+    batch_size = 512  
 
     for i in range(0, len(texts), batch_size):
         batch = texts[i : i + batch_size]
         response = client.embeddings.create(model=EMBEDDING_MODEL, input=batch)
-        # response.data is a list of Embedding objects sorted by index
+
         batch_vecs = np.array([e.embedding for e in response.data], dtype=np.float32)
         all_embeddings.append(batch_vecs)
         print(f"  Embedded {min(i + batch_size, len(texts))}/{len(texts)} procedures...")
@@ -32,8 +31,8 @@ def _embed(texts: list[str], client: OpenAI) -> np.ndarray:
 
 
 def build_example_pool(train_path: Path, client: OpenAI) -> tuple[list, np.ndarray]:
-    #load training records and pre-compute embeddings for all procedure texts
-    #we pass the OpenAI client so no local model is needed — same API key as extraction
+    #we load training data and precompute embeddings for all procedure texts
+    #we pass the OpenAI client so no local model is needed and uses anyways same API key as extraction
 
     with open(train_path, encoding="utf-8") as f:
         pool = json.load(f)
@@ -48,9 +47,9 @@ def retrieve_similar_workflows(
     pool: list,
     embeddings: np.ndarray,
     client: OpenAI,
-    k: int = 1,  # retrieve only the single most similar procedure
+    k: int = 2,  #retrieve only the top 2 most similar procedure
 ) -> list[tuple[dict, float]]:
-    #embed the query using the same model as the pool — single API call
+    #embed the query using the same model so same api call
     response = client.embeddings.create(model=EMBEDDING_MODEL, input=[query])
     query_emb = np.array(response.data[0].embedding, dtype=np.float32)
 

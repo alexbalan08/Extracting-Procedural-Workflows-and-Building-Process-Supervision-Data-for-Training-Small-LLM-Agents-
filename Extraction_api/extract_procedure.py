@@ -4,8 +4,8 @@
 #JSON block with the full structured workflow (actions, gateways, execution_states)
 #then we have the critic
 #structural checker: IDs, reachability, terminal states
-#llm checker: missing actions, wrong conditions, incorrect flow
-#RAG: always retrieve 1 similar procedure from training set before extraction
+#llm checker: missing actions, wrong conditions, incorrect flow etc
+#RAG always retrieve 2 similar procedure from training set before extraction (this showed best results)
 
 import argparse
 import json
@@ -75,7 +75,7 @@ def _run_single_extraction(
     embeddings,
     procedure_text: str,
 ) -> tuple[list[dict], str]:
-    #if RAG pool available, always retrieve the most similar procedure before extraction
+    #if RAG pool available, always retrieve the most similar 2 procedure before extraction
     #we use the full procedure text as the query — better match than a model-generated description
     if pool is not None:
         results = retrieve_similar_workflows(procedure_text, pool, embeddings, client, k=2)
@@ -148,7 +148,7 @@ def extract_workflow(
                 print(f"  Attempt {attempt}: {len(check_result.issues)} structural issue(s) — retrying...")
                 continue
 
-        #LLM check this takes more and consumes many tokens for input
+        
         if use_llm_checker:
             semantic_issues = check_with_llm(procedure_text, workflow, client, model)
             if semantic_issues:
@@ -156,7 +156,7 @@ def extract_workflow(
                 print(f"  Attempt {attempt}: {len(semantic_issues)} semantic issue(s) — retrying...")
                 continue
 
-        #all checks passed return early with the attempt number 1 or 2 i mean for now
+        #all checks passed return early with the attempt number 3 i mean for now
         return {"attempt": attempt, "reasoning": reasoning, "workflow": workflow}
 
     #max attempts reached
@@ -169,7 +169,7 @@ def extract_workflow(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Extract workflows with GPT-4o (3-shot + RAG + self-refine)")
+    parser = argparse.ArgumentParser(description="Extract workflows with GPT 5.4 mini (3-shot + RAG + self-refine)")
     default_input = PROJECT_ROOT / "Data" / "Processed" / "extracted_test.json"
     default_train = PROJECT_ROOT / "Data" / "Processed" / "extracted_train.json"
     parser.add_argument("--input", type=Path, default=default_input, help="Path to input JSON (default: extracted_test.json)")
@@ -177,10 +177,14 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("extraction_predictions.json"))
     #parser.add_argument("--model", type=str, default="gpt-4o")
     parser.add_argument("--model", type=str, default="gpt-5.4-mini")
-    parser.add_argument("--max_attempts", type=int, default=3)
+    parser.add_argument("--max_attempts", type=int, default=1)
     #i keep this for testing
-    parser.add_argument("--no_llm_checker", action="store_true", help="Disable LLM semantic checker")
-    parser.add_argument("--no_rag", action="store_true", help="Disable RAG retrieval tool")
+    #parser.add_argument("--no_llm_checker", action="store_true", help="Disable LLM semantic checker")
+    parser.add_argument("--no_llm_checker", action="store_true", default=True, help="Disable LLM semantic checker")
+
+    #parser.add_argument("--no_rag", action="store_true", help="Disable RAG retrieval tool")
+    parser.add_argument("--no_rag", action="store_true", default=True, help="Disable RAG retrieval tool")
+
     parser.add_argument("--skip", type=int, default=0, help="Skip first N procedures")
     parser.add_argument("--limit", type=int, default=10, help="Only process first N procedures")
     args = parser.parse_args()

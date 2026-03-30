@@ -2,10 +2,10 @@
 
 ## Configuration
 - Model: gpt-5.4-mini
-- Max attempts for slef-refine: 2
+- Max attempts for slef-refine: 2 and 3 tested
 - RAG: different settings, on demand by tool calling, or always on 
 - Structural checker: always on
-- Few-shot examples always in the promt also picked b
+- Few-shot examples always in the promt also picked carefully
 
 ---
 
@@ -47,7 +47,7 @@ Down to 1/10 false positives. More importantly, the checker caught 5 real errors
 
 ---
 
-**Run 3 — Checker v2 + RAG always on (k=1)**
+**Run 3 — Checker v2 + RAG always on (k=1), max_attempts=2**
 
 | file_index | Attempt | Remaining Issues | Verdict |
 |------------|---------|-----------------|---------|
@@ -69,4 +69,52 @@ Down to 1/10 false positives. More importantly, the checker caught 5 real errors
 - Procedures 5 and 7 now pass in 1 attempt (in v2 was 2) 
 - 0 false positives — checker v2 + RAG always is the best configuration so far
 
-**Conclusion is that always-on RAG (k=1) is the best setup.** 
+
+---
+
+**Run 4 — Checker v2 + RAG always on (k=2) + max_attempts=3**
+
+| file_index | Attempt | Remaining Issues | Verdict |
+|------------|---------|-----------------|---------|
+| 1808351684 | 3 | 1 — "Forward it" action modeling discrepancy | Legitimate |
+| 1881121390 | 1 | — | Clean — resolved in 1 attempt (was 2 in run 3) |
+| 1162283938 | 1 | — | Clean |
+| 2074496137 | 1 | — | Clean — resolved in 1 attempt (was 2 in run 3) |
+| 1988807363 | 3 | 1 — clarification loop not fully modeled | Legitimate |
+| 1239633710 | 3 | 1 — repeated check still missing | Legitimate |
+| 676185712  | 2 | — | Clean |
+| 1160550961 | 3 | 1 — PBOC check modeled as action not condition | Legitimate |
+| 2033265575 | 3 | — | Clean — **inverted logic fixed on 3rd attempt this is super big and important** |
+| 802124898  | 1 | — | Clean |
+
+**False positives: 0/10**
+**Clean passes: 6/10**
+
+- The critical inverted logic error on 2033265575 is now fixed with the 3rd attempt, k=2 helped 1881121390 and 2074496137 resolve in 1 attempt (rather than 2)
+
+**Best config so far: checker v2 + RAG always on k=2 + max_attempts=3**
+
+---
+
+**Run 5 — Checker v2 + RAG always on (k=2) + max_attempts=2** *(ablation: isolates effect of 3rd attempt vs k=2)*
+
+| file_index | Attempt | Remaining Issues | Verdict |
+|------------|---------|-----------------|---------|
+| 1808351684 | 1 | — | Clean — **first clean pass across all 5 runs, was failing even in run 4 with 3 attempts** |
+| 1881121390 | 1 | — | Clean — resolved in 1 attempt (consistent with run 4) |
+| 1162283938 | 1 | — | Clean |
+| 2074496137 | 1 | — | Clean — resolved in 1 attempt (consistent with run 4) |
+| 1988807363 | 2 | checker text says "loop is present, no issue there" / "No structural issues found" | False positive — remaining_issues field populated but checker's own text says no real issue |
+| 1239633710 | 2 | 1 — Yes branch routed back to place an order, creating a loop not in source text | Legitimate |
+| 676185712  | 2 | — | Clean |
+| 1160550961 | 2 | 2 — gateway exclusivity mismatches with text (NCIIC and PBOC branches) | Legitimate |
+| 2033265575 | 2 | 3 — **inverted liability conditions persist** | Legitimate — confirms 3rd attempt in run 4 was what fixed this |
+| 802124898  | 1 | — | Clean |
+
+**False positives: 1/10**
+**Clean passes: 6/10**
+
+- 1808351684 finally passes clean — k=2 resolved the gateway routing issue that persisted across all prior runs
+- 2033265575 still fails: direct confirmation that the 3rd attempt (run 4) is what fixes the inverted logic, not k=2 alone
+- 1988807363 is a false positive: the checker flagged it but its own reasoning confirmed no structural issues
+- **Ablation conclusion**: k=1→k=2 (run 3→run 5) adds 1 clean pass (5→6) but introduces 1 false positive; adding the 3rd attempt (run 5→run 4) eliminates that false positive and fixes 2033265575, keeping 6 clean passes — the 3rd attempt improves reliability without changing the clean count
