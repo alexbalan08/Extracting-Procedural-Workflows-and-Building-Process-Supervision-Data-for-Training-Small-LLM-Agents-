@@ -31,25 +31,25 @@ gateways      : list of gateway objects (only when the flow branches or merges):
   incoming_from: list[str] – action/gateway IDs or "start" feeding into this gateway
   branches    : list of { next: str|null, condition?: str }
                (next is null when a branch leads directly to process end)
+               condition must be SHORT (1-4 words) and use wording from the procedure text.
+               Do NOT expand into full sentences — write "Yes"/"No", "Approved"/"Rejected", etc.
 
-execution_states : list of state snapshots covering every reachable path:
-  completed_actions: list[str] – ordered list of action IDs completed so far
-  conditions_met   : list[str] – edge conditions satisfied on this path (only add AFTER gateway is traversed)
-  available_next   : list[str] – action IDs that can execute next
-  can_terminate    : bool      – present and true only when the process may end here
+─── MERGE GATEWAY RULE (critical — most common mistake) ───────────────────────
+• Whenever two or more branches converge back to the same action, you MUST add
+  a merge gateway (role: "merge") immediately before that action.
+• Signal: an action that can be reached from more than one branch → it needs a
+  merge gateway as its sole predecessor; the branches point to the gateway, not
+  directly to the action.
+• Do NOT connect multiple branch endpoints directly to the same action — always
+  route through a merge gateway first.
+• This applies to XOR, AND, and OR merges equally.
 
 ─── ID CONVENTIONS ────────────────────────────────────────────────────────────
 • Action IDs: EXACT action name → lowercase → replace spaces/non-alphanumeric with underscore → strip edges
 • Gateway IDs: "gateway_xor_<N>", "gateway_and_<N>", "gateway_or_<N>" (0-based, document order)
 • Use "start" as predecessor for the very first action(s) — never create a "start" action node
-• Do NOT create "end", "end_process", or "terminate" actions — use can_terminate=true in execution_states
+• Do NOT create "end", "end_process", or "terminate" actions — model termination with empty successors list
 • Do NOT split a single mentioned activity into multiple actions
-
-─── EXECUTION STATES RULES ──────────────────────────────────────────────────
-• Each XOR branch produces a SEPARATE chain of states
-• For AND splits: list ALL parallel actions in available_next simultaneously
-• conditions_met is cumulative along a path — empty before the gateway that tests it
-• The initial state (completed_actions=[]) must always have conditions_met=[]
 
 ─── OUTPUT FORMAT ─────────────────────────────────────────────────────────────
 
@@ -57,15 +57,13 @@ execution_states : list of state snapshots covering every reachable path:
 Step 1 — Identify actions: list each distinct activity and its ID.
 Step 2 — Trace the flow: identify predecessors and successors for each action.
 Step 3 — Identify gateways: note any branching (XOR/AND/OR) or merging points.
-Step 4 — Enumerate execution states: trace every reachable path from start to termination.
 </reasoning>
 
 ```json
 {
   "file_index": <value from the prompt>,
   "actions": [...],
-  "gateways": [...],
-  "execution_states": [...]
+  "gateways": [...]
 }
 ```
 """
@@ -92,11 +90,6 @@ Step 2 — Trace the flow:
 
 Step 3 — Identify gateways:
   None — purely sequential.
-
-Step 4 — Enumerate execution states:
-  State 0: nothing done → next: [create_recruitment_vacancy_in_nganet]
-  State 1: [create_recruitment_vacancy_in_nganet] done → next: [manage_external_advertising]
-  State 2: both done → can_terminate = true
 </reasoning>
 
 ```json
@@ -120,12 +113,7 @@ Step 4 — Enumerate execution states:
       "postconditions": ["manage_external_advertising_done"]
     }
   ],
-  "gateways": [],
-  "execution_states": [
-    {"completed_actions": [], "conditions_met": [], "available_next": ["create_recruitment_vacancy_in_nganet"]},
-    {"completed_actions": ["create_recruitment_vacancy_in_nganet"], "conditions_met": [], "available_next": ["manage_external_advertising"]},
-    {"completed_actions": ["create_recruitment_vacancy_in_nganet", "manage_external_advertising"], "conditions_met": [], "available_next": [], "can_terminate": true}
-  ]
+  "gateways": []
 }
 ```"""
 
@@ -155,10 +143,6 @@ Step 3 — Identify gateways:
   gateway_xor_2: exclusive split after customer_decides_what_they_want
     - "Custom Order" → fill_out_customer_invoice
     - "In-Store Purchase" → null (process ends immediately)
-
-Step 4 — Enumerate execution states:
-  Path A (Custom Order): enter → decide → fill invoice → terminate
-  Path B (In-Store Purchase): enter → decide → terminate immediately
 </reasoning>
 
 ```json
@@ -202,13 +186,6 @@ Step 4 — Enumerate execution states:
       ],
       "actor": "Grenoble"
     }
-  ],
-  "execution_states": [
-    {"completed_actions": [], "conditions_met": [], "available_next": ["customer_enters_store"]},
-    {"completed_actions": ["customer_enters_store"], "conditions_met": [], "available_next": ["customer_decides_what_they_want"]},
-    {"completed_actions": ["customer_enters_store", "customer_decides_what_they_want"], "conditions_met": ["Custom Order"], "available_next": ["fill_out_customer_invoice"]},
-    {"completed_actions": ["customer_enters_store", "customer_decides_what_they_want", "fill_out_customer_invoice"], "conditions_met": ["Custom Order"], "available_next": [], "can_terminate": true},
-    {"completed_actions": ["customer_enters_store", "customer_decides_what_they_want"], "conditions_met": ["In-Store Purchase"], "available_next": [], "can_terminate": true}
   ]
 }
 ```"""
@@ -243,12 +220,6 @@ Step 3 — Identify gateways:
     - "Incomplete" → discard_applications
   gateway_or_6: inclusive merge before end
     - incoming from both process_complete_applications and discard_applications
-
-Step 4 — Enumerate execution states:
-  Path A (Complete only): check → sort → process → terminate
-  Path B (Incomplete only): check → sort → discard → terminate
-  Path C (Both): check → sort → process → discard → terminate
-  Note: inclusive (OR) gateway means one, the other, or BOTH branches can be taken.
 </reasoning>
 
 ```json
@@ -308,23 +279,107 @@ Step 4 — Enumerate execution states:
         {"next": null}
       ]
     }
-  ],
-  "execution_states": [
-    {"completed_actions": [], "conditions_met": [], "available_next": ["check_application_for_completeness"]},
-    {"completed_actions": ["check_application_for_completeness"], "conditions_met": [], "available_next": ["sort_applications"]},
-    {"completed_actions": ["check_application_for_completeness", "sort_applications"], "conditions_met": ["Complete"], "available_next": ["process_complete_applications"]},
-    {"completed_actions": ["check_application_for_completeness", "sort_applications", "process_complete_applications"], "conditions_met": ["Complete"], "available_next": [], "can_terminate": true},
-    {"completed_actions": ["check_application_for_completeness", "sort_applications"], "conditions_met": ["Incomplete"], "available_next": ["discard_applications"]},
-    {"completed_actions": ["check_application_for_completeness", "sort_applications", "discard_applications"], "conditions_met": ["Incomplete"], "available_next": [], "can_terminate": true},
-    {"completed_actions": ["check_application_for_completeness", "sort_applications", "process_complete_applications"], "conditions_met": ["Complete", "Incomplete"], "available_next": ["discard_applications"]},
-    {"completed_actions": ["check_application_for_completeness", "sort_applications", "process_complete_applications", "discard_applications"], "conditions_met": ["Complete", "Incomplete"], "available_next": [], "can_terminate": true}
   ]
 }
 ```"""
 
-#those i picked manually such they innclude examples or OR gateways, AND gatways and liear as well 
+#example 4 XOR split where BOTH branches where merge gateway is required
+#this is the most commonly missed pattern
+_EX4_PROCEDURE = (
+    "To process the loan request, first assess the risk. "
+    "If the risk is low, approve the loan. "
+    "If the risk is high, decline the loan. "
+    "After the decision is made, record the outcome in the system and the process ends."
+)#see after the both if brnahces we need to merge and record the outcome
+#this will be to mitigate the model on getting more FN on merges gateways
+#so i will push a fourth procedure as example
+_EX4_OUTPUT = """<reasoning>
+Step 1 — Identify actions:
+  - "Assess the risk" → id: assess_the_risk
+  - "Approve the loan" → id: approve_the_loan
+  - "Decline the loan" → id: decline_the_loan
+  - "Record the outcome in the system" → id: record_the_outcome_in_the_system
+
+Step 2 — Trace the flow:
+  assess_the_risk: start → gateway_xor_1
+  approve_the_loan: gateway_xor_1 → gateway_xor_3
+  decline_the_loan: gateway_xor_1 → gateway_xor_3
+  record_the_outcome_in_the_system: gateway_xor_3 → (end)
+
+Step 3 — Identify gateways:
+  gateway_xor_1: exclusive split after assess_the_risk
+    - "Risk is low" → approve_the_loan
+    - "Risk is high" → decline_the_loan
+  gateway_xor_3: exclusive merge — both approve and decline converge here before record_outcome
+    IMPORTANT: "record the outcome" is reachable from both branches, so a merge gateway
+    is required. Do NOT connect approve/decline directly to record_outcome.
+</reasoning>
+
+```json
+{
+  "file_index": 999999999,
+  "actions": [
+    {
+      "id": "assess_the_risk",
+      "name": "Assess the risk",
+      "actor": null,
+      "predecessors": ["start"],
+      "successors": ["gateway_xor_1"],
+      "postconditions": ["assess_the_risk_done"]
+    },
+    {
+      "id": "approve_the_loan",
+      "name": "Approve the loan",
+      "actor": null,
+      "predecessors": ["gateway_xor_1"],
+      "successors": ["gateway_xor_3"],
+      "postconditions": ["approve_the_loan_done"]
+    },
+    {
+      "id": "decline_the_loan",
+      "name": "Decline the loan",
+      "actor": null,
+      "predecessors": ["gateway_xor_1"],
+      "successors": ["gateway_xor_3"],
+      "postconditions": ["decline_the_loan_done"]
+    },
+    {
+      "id": "record_the_outcome_in_the_system",
+      "name": "Record the outcome in the system",
+      "actor": null,
+      "predecessors": ["gateway_xor_3"],
+      "successors": [],
+      "postconditions": ["record_the_outcome_in_the_system_done"]
+    }
+  ],
+  "gateways": [
+    {
+      "id": "gateway_xor_1",
+      "type": "exclusive",
+      "role": "split",
+      "incoming_from": ["assess_the_risk"],
+      "branches": [
+        {"next": "approve_the_loan", "condition": "Risk is low"},
+        {"next": "decline_the_loan", "condition": "Risk is high"}
+      ]
+    },
+    {
+      "id": "gateway_xor_3",
+      "type": "exclusive",
+      "role": "merge",
+      "incoming_from": ["approve_the_loan", "decline_the_loan"],
+      "branches": [
+        {"next": "record_the_outcome_in_the_system"}
+      ]
+    }
+  ]
+}
+```"""
+
+#those i picked manually such they innclude examples or OR gateways, AND gatways and liear as well
 FEW_SHOT_EXAMPLES = [
     (1310881958, _EX1_PROCEDURE, _EX1_OUTPUT),
     (862270781, _EX2_PROCEDURE, _EX2_OUTPUT),
     (1735666188, _EX3_PROCEDURE, _EX3_OUTPUT),
+    (999999999, _EX4_PROCEDURE, _EX4_OUTPUT),
 ]

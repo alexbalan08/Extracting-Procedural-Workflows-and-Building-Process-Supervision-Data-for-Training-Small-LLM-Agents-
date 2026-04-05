@@ -63,6 +63,7 @@ Identify any issues with the extracted workflow compared to the procedure text."
         ],
         temperature=0.0,
         max_completion_tokens=1024,
+        seed=42,
         response_format={"type": "json_object"},
     )
 

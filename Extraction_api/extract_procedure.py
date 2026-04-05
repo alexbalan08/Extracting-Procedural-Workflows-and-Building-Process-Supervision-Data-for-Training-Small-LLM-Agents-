@@ -1,35 +1,35 @@
-
-#for each procedure text we have
-#<reasoning> block tracing the logic step by step
-#JSON block with the full structured workflow (actions, gateways, execution_states)
-#then we have the critic
-#structural checker: IDs, reachability, terminal states
-#llm checker: missing actions, wrong conditions, incorrect flow etc
-#RAG always retrieve 2 similar procedure from training set before extraction (this showed best results)
+# Extraction pipeline: procedure text → structured workflow JSON + execution states
+# Flow: RAG retrieval → LLM extraction → structural checker → LLM checker → retry up to max_attempts
+# Output per procedure: reasoning trace, workflow JSON, deterministic execution states
 
 import argparse
 import json
 import os
 import re
-import sys
 from pathlib import Path
 
-from openai import OpenAI
+from openai import OpenAI, BadRequestError
 
 PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
 
-from LLM_Training.inference.checker import StructuralChecker
+from structural_checker import StructuralChecker
 from prompts import SYSTEM_PROMPT, FEW_SHOT_EXAMPLES
 from llm_checker import check_with_llm
 from retrieval import build_example_pool, retrieve_similar_workflows, format_retrieval_results
+from trace_builder import build_traces
 
 #note added to system prompt when RAG is enabled
 _RAG_NOTE = (
     "\n\nA similar labelled example from the training set has been provided below your procedure. "
     "Use it as structural reference — pay attention to how gateways, branch conditions, and "
-    "execution states are modeled. Do not copy it blindly; adapt to the current procedure."
+    "flow edges are modeled. Do not copy it blindly; adapt to the current procedure."
 )
+
+
+def _sanitize(text: str) -> str:
+    # remove control characters, null bytes, and lone surrogates (U+D800-DFFF)
+    # lone surrogates are valid Python str chars but cause json.dumps to fail
+    return text.encode("utf-8", errors="ignore").decode("utf-8", errors="ignore")
 
 
 def build_messages(
@@ -39,16 +39,27 @@ def build_messages(
 ) -> list[dict]:
     #build full message list: system prompt + 3-shot examples + new procedure
     #RAG note is appended to system prompt when pool is available
+    procedure_text = _sanitize(procedure_text)
     system_content = SYSTEM_PROMPT + (_RAG_NOTE if use_rag else "")
     messages = [{"role": "system", "content": system_content}]
 
     #important to see the expected output format before the procedure
     for idx, proc, output in FEW_SHOT_EXAMPLES:
-        messages.append({"role": "user", "content": f"Extract the workflow from the following procedure (file_index: {idx}):\n\n{proc}"})
+        messages.append(
+            {
+                "role": "user",
+                "content": f"Extract the workflow from the following procedure (file_index: {idx}):\n\n{proc}",
+            }
+        )
         messages.append({"role": "assistant", "content": output})
 
     idx_str = f" (file_index: {file_index})" if file_index is not None else ""
-    messages.append({"role": "user", "content": f"Extract the workflow from the following procedure{idx_str}:\n\n{procedure_text}"})
+    messages.append(
+        {
+            "role": "user",
+            "content": f"Extract the workflow from the following procedure{idx_str}:\n\n{procedure_text}",
+        }
+    )
     return messages
 
 
@@ -71,24 +82,14 @@ def _run_single_extraction(
     messages: list[dict],
     client: OpenAI,
     model: str,
-    pool: list | None,
-    embeddings,
-    procedure_text: str,
 ) -> tuple[list[dict], str]:
-    #if RAG pool available, always retrieve the most similar 2 procedure before extraction
-    #we use the full procedure text as the query — better match than a model-generated description
-    if pool is not None:
-        results = retrieve_similar_workflows(procedure_text, pool, embeddings, client, k=2)
-        retrieved_context = format_retrieval_results(results)
-        print(f"  RAG: retrieved example")
-        #inject retrieved example as extra context before the model generates
-        messages = messages + [{
-            "role": "user",
-            "content": f"Here is a similar labelled example from the training set for reference:\n\n{retrieved_context}"
-        }]
-
     #single API call — no tool calling needed
-    kwargs = dict(model=model, messages=messages, temperature=0.0, max_completion_tokens=8192)
+    # sanitize all message content to strip control characters that cause 400 errors
+    clean_messages = [
+        {**m, "content": _sanitize(m["content"]) if isinstance(m.get("content"), str) else m.get("content")}
+        for m in messages
+    ]
+    kwargs = dict(model=model, messages=clean_messages, temperature=0.0, max_completion_tokens=8192, seed=42)
     response = client.chat.completions.create(**kwargs)
     raw = response.choices[0].message.content or ""
     messages.append({"role": "assistant", "content": raw})
@@ -105,6 +106,7 @@ def extract_workflow(
     file_index: int | str | None = None,
     pool: list | None = None,
     embeddings=None,
+    rag_k: int = 2,
 ) -> dict:
     #we finally run the orchestration loop
 
@@ -113,25 +115,38 @@ def extract_workflow(
     #for the structural checker go to folder LLM_training and then inference and then checker please!!
     #run LLM semantic checker — if issues feed back and retry
     #If both pass return result
-
     use_rag = pool is not None
     messages = build_messages(procedure_text, file_index, use_rag)
     issues_feedback = None
     reasoning, workflow = "", None
 
+    #retrieve once per procedure and reuse the same context across retries
+    if pool is not None:
+        results = retrieve_similar_workflows(procedure_text, pool, embeddings, client, k=rag_k)
+        retrieved_context = format_retrieval_results(results)
+        print(f"  RAG: retrieved {len(results)} example(s)")
+        messages.append(
+            {
+                "role": "user",
+                "content": f"Here is a similar labelled example from the training set for reference:\n\n{retrieved_context}",
+            }
+        )
+
     for attempt in range(1, max_attempts + 1):
         #we append the feedback from critic to user message
         #so model sees what went wrong
         if issues_feedback:
-            messages.append({
-                "role": "user",
-                "content": (
-                    "Your previous extraction had issues. Please fix them and re-extract:\n\n"
-                    + "\n".join(f"- {i}" for i in issues_feedback)
-                ),
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "Your previous extraction had issues. Please fix them and re-extract:\n\n"
+                        + "\n".join(f"- {i}" for i in issues_feedback)
+                    ),
+                }
+            )
 
-        messages, raw = _run_single_extraction(messages, client, model, pool, embeddings, procedure_text)
+        messages, raw = _run_single_extraction(messages, client, model)
         reasoning, workflow = parse_response(raw)
 
         #if the model output is fucked, ask it to fix the JSON format and retry
@@ -148,7 +163,6 @@ def extract_workflow(
                 print(f"  Attempt {attempt}: {len(check_result.issues)} structural issue(s) — retrying...")
                 continue
 
-        
         if use_llm_checker:
             semantic_issues = check_with_llm(procedure_text, workflow, client, model)
             if semantic_issues:
@@ -175,18 +189,12 @@ def main():
     parser.add_argument("--input", type=Path, default=default_input, help="Path to input JSON (default: extracted_test.json)")
     parser.add_argument("--train", type=Path, default=None, help="Path to training JSON for RAG pool (optional, default: extracted_train.json)")
     parser.add_argument("--output", type=Path, default=Path("extraction_predictions.json"))
-    #parser.add_argument("--model", type=str, default="gpt-4o")
     parser.add_argument("--model", type=str, default="gpt-5.4-mini")
-    parser.add_argument("--max_attempts", type=int, default=1)
-    #i keep this for testing
-    #parser.add_argument("--no_llm_checker", action="store_true", help="Disable LLM semantic checker")
-    parser.add_argument("--no_llm_checker", action="store_true", default=True, help="Disable LLM semantic checker")
-
-    #parser.add_argument("--no_rag", action="store_true", help="Disable RAG retrieval tool")
-    parser.add_argument("--no_rag", action="store_true", default=True, help="Disable RAG retrieval tool")
-
-    parser.add_argument("--skip", type=int, default=0, help="Skip first N procedures")
-    parser.add_argument("--limit", type=int, default=10, help="Only process first N procedures")
+    parser.add_argument("--max_attempts", type=int, default=3)
+    parser.add_argument("--no_rag", action="store_true", help="Disable RAG retrieval tool")
+    parser.add_argument("--rag_k", type=int, default=1, help="Number of similar procedures to retrieve")
+ 
+    parser.add_argument("--limit", type=int, default=0, help="Only process first N procedures")
     args = parser.parse_args()
 
     api_key = os.environ.get("OPENAI_API_KEY")
@@ -206,50 +214,68 @@ def main():
         else:
             print(f"Warning: --train path not found ({train_path}), RAG disabled.")
 
-    rag_kwargs = dict(pool=pool, embeddings=embeddings)
+    rag_kwargs = dict(pool=pool, embeddings=embeddings, rag_k=args.rag_k)
 
-    #for batch mode
     if not args.input.exists():
         parser.error(f"Input file not found: {args.input}.")
 
     with open(args.input, encoding="utf-8") as f:
         records = json.load(f)
 
-    #for testing one procedure only
-    DEBUG_FILE_INDEX = None  #for the file index we want to test
+    if args.limit:
+        records = records[: args.limit]
 
-    if DEBUG_FILE_INDEX is not None:
-        records = [r for r in records if r.get("file_index") == DEBUG_FILE_INDEX]
-        if not records:
-            raise ValueError(f"file_index {DEBUG_FILE_INDEX} not found in {args.input}")
-    else:
-        records = records[args.skip:]
-        if args.limit:
-            records = records[: args.limit]
-
+    # resume: load already-processed results so a crashed run can continue
     results = []
+    done_indices = set()
+    if args.output.exists():
+        with open(args.output, encoding="utf-8") as f:
+            results = json.load(f)
+        done_indices = {r["file_index"] for r in results}
+        if done_indices:
+            print(f"Resuming — {len(done_indices)} already done: {sorted(done_indices)}")
+
     for i, record in enumerate(records):
         file_index = record.get("file_index", i)
+        if file_index in done_indices:
+            print(f"[{i+1}/{len(records)}] file_index={file_index}  (skipped — already done)")
+            continue
+
         procedure_text = record["procedure_text"]
         print(f"[{i+1}/{len(records)}] file_index={file_index}")
 
-        result = extract_workflow(
-            procedure_text, client, args.model, args.max_attempts,
-            structural_checker, not args.no_llm_checker, file_index,
-            **rag_kwargs,
+        try:
+            result = extract_workflow(
+                procedure_text,
+                client,
+                args.model,
+                args.max_attempts,
+                structural_checker,
+                True,
+                file_index,
+                **rag_kwargs,
+            )
+        except BadRequestError as e:
+            print(f"  WARNING: skipping file_index={file_index} — BadRequestError: {e}")
+            continue
+        execution_states = build_traces(result["workflow"])
+        results.append(
+            {
+                "file_index": file_index,
+                "procedure_text": procedure_text,
+                "attempt": result["attempt"],
+                "reasoning": result["reasoning"],
+                "workflow": result["workflow"],
+                "execution_states": execution_states,
+                "remaining_issues": result.get("remaining_issues"),
+            }
         )
-        results.append({
-            "file_index": file_index,
-            "procedure_text": procedure_text,
-            "attempt": result["attempt"],
-            "reasoning": result["reasoning"],
-            "workflow": result["workflow"],
-            "remaining_issues": result.get("remaining_issues"),
-        })
-        print(f"  → done in {result['attempt']} attempt(s)")
+        print(f"  -> done in {result['attempt']} attempt(s), {len(execution_states)} execution states")
 
-    with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
+        # save after every record so a crash doesn't lose progress
+        with open(args.output, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
+
     print(f"\nSaved {len(results)} results to {args.output}")
 
 

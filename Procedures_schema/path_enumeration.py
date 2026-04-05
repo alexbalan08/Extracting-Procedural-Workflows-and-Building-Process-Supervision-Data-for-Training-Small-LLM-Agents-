@@ -64,15 +64,8 @@ def find_matching_join(split_rid, nodes, outgoing, incoming):
 
     return None
 
-
+#
 def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
-    """Enumerate all valid execution paths through the workflow.
-
-    Returns a list of (path, conditions) tuples.
-    conditions is a list of (condition_str, path_index) tuples where path_index
-    is the path length at which the condition becomes active (i.e. the gateway
-    was traversed after that many actions were completed).
-    """
 
     def _dfs(current_rid, path, conditions, visit_counts=None, stop_at=None):
         """DFS to enumerate all valid execution paths from a given node.
@@ -96,7 +89,7 @@ def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
         if not node:
             return [(path, conditions)]
 
-        #EndNode: named EndNodes (with text) get added as actions
+        #named EndNodes (with text) get added as actions
         #unnamed EndNodes just terminate the path
         if node['type'] == 'EndNode':
             if current_rid in rid_to_id:
@@ -279,6 +272,7 @@ def build_execution_states(unique_paths):
             }
             if next_action:
                 state["available_next"] = [next_action]
+                
             else:
                 state["available_next"] = []
                 state["can_terminate"] = True
