@@ -1,26 +1,13 @@
-"""
-build_negatives.py  –  Generate step-level labeled traces for PRM training.
 
-Each record's execution_states are split into individual execution paths
-and converted to flat sequences of human-readable action names.
+#Each records execution_states are split into individual execution paths
+#and converted to flat sequences of human-readable action names.
 
-Corruption strategies (each produces step-level labels):
-  skip_action      – drop an intermediate action; steps from that point on are label=0
-  swap_adjacent    – swap two consecutive actions; steps from that point on are label=0
-  wrong_branch     – at a fork, continue with actions from the wrong path; label=0 from divergence
-  premature_stop   – truncate the trace early; all present steps are correct but complete=false
+#we will do skip_action which drops an action and from that point we have label 0 
+#swap_adjacent where we swap two consecutive actions
+#wrong_branch at a split we continue with actions from the wrong branch (the wrong condition) 
+#premature_stop just fiish faster all steps are correct but can_terminate will be null 
 
-Output schema per example:
-  {
-    "file_index":        int,
-    "procedure":         str,
-    "steps":             [{"action": str, "label": 1|0, "condition_reached": [str]?}],
-    "complete":          bool,
-    "label":             1 | 0,
-    "corruption_type":   str | null,
-    "corruption_detail": dict | null
-  }
-"""
+#we need to show the corruption type and the step so the traces are easy to follow by non experts humans
 
 import argparse
 import copy
@@ -30,15 +17,16 @@ from collections import Counter
 from pathlib import Path
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+#the extractor stores actions by ID internally but training traces need human readable names
+#this just builds a lookup dict so we can go from ID to name anywhere in the pipeline
 def build_action_map(workflow):
-    """action_id -> human-readable name."""
     return {a["id"]: a["name"] for a in workflow.get("actions", [])}
 
 
+#execution_states from the graph traversal contains ALL states from ALL branches into one list
+#this function separates them back into individual paths, one path per terminal state (can_terminate=True)
 def split_into_paths(states):
-    """Split execution_states into individual paths (one per terminal state)."""
+
     terminals = [s for s in states if s.get("can_terminate")]
     if not terminals:
         return []
@@ -52,8 +40,7 @@ def split_into_paths(states):
         for s in states:
             s_actions = s.get("completed_actions", [])
             s_conds = set(s.get("conditions_met", []))
-            # s belongs to this path if its completed_actions is a prefix and
-            # its conditions are a subset (empty conditions match any branch)
+            #if completed actions and conditions met are included in the terminal dtates for that branch 
             if s_actions == term_actions[: len(s_actions)] and s_conds <= term_conds:
                 path.append(s)
 
@@ -63,8 +50,15 @@ def split_into_paths(states):
     return paths
 
 
+
+
+#state_0: completed=[],                        conditions={}
+#state_1: completed=["action_1"],              conditions={}
+#state_2: completed=["action_1","action_2"],   conditions={"approved"}
+#produces: [{"action":"verify document","label":1}, {"action":"approve payment","label":1,"condition_reached":["approved"]}]
+#we start at index 1 sicne 0 is always start node
 def path_to_steps(path_states, action_map):
-    """Convert a path (ordered states) into a list of step dicts."""
+
     steps = []
     prev_conds = set()
 
@@ -87,11 +81,13 @@ def path_to_steps(path_states, action_map):
     return steps
 
 
-# ── Corruption functions ─────────────────────────────────────────────────────
-# Each returns (corrupted_steps, detail_dict) or None.
 
+
+#removes one intermediate action from the trace but never the first or last
+#everything from the removal point onward gets label=0 because the sequence is now wrong as we ve seenn in normal prm literature
+#the PRM needs to learn that skipping a required step makes all subsequent steps wrong even if they look right
+#we need at least 3 steps so there is at least one intermediate step to skip
 def corrupt_skip_action(steps):
-    """Remove one intermediate action; everything from that point is wrong."""
     if len(steps) < 3:
         return None
 
@@ -109,8 +105,11 @@ def corrupt_skip_action(steps):
     }
 
 
+#swaps two consecutive intermediate actions, wrong order is a common agent mistake especially around gateways
+#everything from the swap point onward gets label=0 because the ordering is now wrong
+#we need at least 4 steps so there are at least two intermediate steps that can be swapped
+# upper bound is len-3 we never want to swap last 3 without the fort 
 def corrupt_swap_adjacent(steps):
-    """Swap two consecutive intermediate actions; wrong from swap point on."""
     if len(steps) < 4:
         return None
 
@@ -128,6 +127,9 @@ def corrupt_swap_adjacent(steps):
     }
 
 
+#this one requires multiple paths to work and it simulates the agent taking the wrong branch at a gateway
+#we find where the current path and another path first diverge then continue with the wrong path s actions from there
+#this does not work for linear workflow with only one path
 def corrupt_wrong_branch(steps, all_paths_steps, path_idx):
     """After a shared prefix, continue with actions from a different branch."""
     current = steps
@@ -136,7 +138,7 @@ def corrupt_wrong_branch(steps, all_paths_steps, path_idx):
         if other_idx == path_idx:
             continue
 
-        # Find where the two paths diverge
+        #to find where the two paths diverge
         diverge_at = None
         for j in range(min(len(current), len(other))):
             if current[j]["action"] != other[j]["action"]:
@@ -146,7 +148,7 @@ def corrupt_wrong_branch(steps, all_paths_steps, path_idx):
         if diverge_at is None or diverge_at == 0:
             continue
 
-        # Prefix from current path (correct) + continuation from wrong path
+        #currennt correct path + continuation from wrong path
         corrupted = copy.deepcopy(current[:diverge_at])
         wrong_tail = copy.deepcopy(other[diverge_at:])
         for s in wrong_tail:
@@ -163,6 +165,9 @@ def corrupt_wrong_branch(steps, all_paths_steps, path_idx):
     return None
 
 
+#truncates the trace at a random point before the end
+#this teaches the PRM that a trace can have all green steps and still be wrong if it stopped too early
+#lower bound is 2 so we always keep at least two steps and bcs of this we need at least 3 steps so stop_at can be strictly less than the full length
 def corrupt_premature_stop(steps):
     """Truncate the trace early.  All present steps are individually correct."""
     if len(steps) < 3:
@@ -170,7 +175,7 @@ def corrupt_premature_stop(steps):
 
     stop_at = random.randint(2, len(steps) - 1)
     corrupted = copy.deepcopy(steps[:stop_at])
-    # steps themselves remain label=1 (each was correct in isolation)
+    #steps themselves remain label=1
 
     return corrupted, {
         "stopped_at": stop_at,
@@ -178,8 +183,9 @@ def corrupt_premature_stop(steps):
     }
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
 
+#i fixed a seed for reproductibility
+#we want to have for each positive flow 4 negatives
 def main():
     _here = Path(__file__).parent
 
@@ -209,6 +215,7 @@ def main():
         if not paths:
             continue
 
+        #convert all paths to step lists upfront so wrong_branch can compare across paths
         all_paths_steps = [path_to_steps(p, action_map) for p in paths]
 
         for path_idx, steps in enumerate(all_paths_steps):
@@ -216,6 +223,7 @@ def main():
                 continue
 
             # ── positive ──
+            #deepcopy so any later corruption on the same steps list doesnt mutate the positive
             all_examples.append({
                 "file_index":        record["file_index"],
                 "procedure":         record["procedure_text"],
@@ -227,6 +235,9 @@ def main():
             })
 
             # ── negatives ──
+            #we attempt all four corruption types and skip any that return None (path too short)
+            #complete is True for all corruptions except premature_stop since those traces do reach an end
+            #just the wrong one, whereas premature_stop never reaches any terminal state at all
             for _ in range(args.n_per_corruption):
                 attempts = [
                     ("skip_action",    corrupt_skip_action(steps)),
@@ -257,6 +268,7 @@ def main():
     print(f"Records processed : {len(records)}")
     print(f"Paths (positives) : {n_pos}")
     print(f"Negatives         : {n_neg}")
+    #ideally around 4:1 but shorter traces produce fewer negatives since corruption functions return None
     print(f"  ratio           : 1 : {n_neg / max(n_pos, 1):.1f}")
 
     print()
