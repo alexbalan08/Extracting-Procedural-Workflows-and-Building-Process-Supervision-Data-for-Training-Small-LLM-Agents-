@@ -303,6 +303,36 @@ def main():
 
     with open(args.predictions, encoding="utf-8") as f:
         predictions = json.load(f)
+
+    #will filter out extractions with no execution states due to json parsin errors.
+    #this will basically be garbage data and it represents only 17 out of 489 procedures extracted.
+    #that is less than 3.5%
+    #also filter procedures with over 100 execution states as these are loop explosions
+    #from the path enumeration hitting MAX_LOOP_ITERATIONS not real data.
+    #only 5 out of 489
+    #so we get remaining 467 reaosning traces after extaraction
+    total_before = len(predictions)
+    removed = []
+    kept = []
+    for r in predictions:
+        n = len(r.get("execution_states", []))
+        if r.get("workflow") is None:
+            removed.append((r["file_index"], "null workflow"))
+        elif n == 0:
+            removed.append((r["file_index"], "0 execution states"))
+        elif n > 100:
+            removed.append((r["file_index"], f"too complex ({n} execution states)"))
+        else:
+            kept.append(r)
+    predictions = kept
+    print(f"Filter step — Total: {total_before} | Removed: {len(removed)} | Kept: {len(kept)}")
+    if removed:
+        for file_index, reason in removed:
+            print(f"  file_index={file_index}  ({reason})")
+    with open(args.predictions, "w", encoding="utf-8") as f:
+        json.dump(kept, f, indent=2, ensure_ascii=False)
+    print()
+
     with open(args.gt, encoding="utf-8") as f:
         ground_truth = json.load(f)
 
