@@ -1,0 +1,5 @@
+Data/Processed/extracted_workflows.json filter=lfs diff=lfs merge=lfs -text
+Data/Processed/extracted_test.json filter=lfs diff=lfs merge=lfs -text
+Data/Processed/extracted_train.json filter=lfs diff=lfs merge=lfs -text
+Extraction_results/extraction_predictions.json filter=lfs diff=lfs merge=lfs -text
+PRM/prm_training_data.json filter=lfs diff=lfs merge=lfs -text

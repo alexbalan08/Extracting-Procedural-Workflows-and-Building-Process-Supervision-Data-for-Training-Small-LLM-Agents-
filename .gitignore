@@ -1,10 +1,5 @@
-# Large JSON data files
-Data/Processed/extracted_workflows.json
-Data/Processed/extracted_test.json
-Data/Processed/extracted_train.json
-Extraction_results/extraction_predictions.json
-PRM/prm_training_data.json
-
-# Python
+# python cache
 __pycache__/
 *.pyc
+*.pyo
+.env
