@@ -310,7 +310,7 @@ def main():
     #also filter procedures with over 100 execution states as these are loop explosions
     #from the path enumeration hitting MAX_LOOP_ITERATIONS not real data.
     #only 5 out of 489
-    #so we get remaining 467 reaosning traces after extaraction
+    #so we get remaining 467 workflows after extaraction
     total_before = len(predictions)
     removed = []
     kept = []

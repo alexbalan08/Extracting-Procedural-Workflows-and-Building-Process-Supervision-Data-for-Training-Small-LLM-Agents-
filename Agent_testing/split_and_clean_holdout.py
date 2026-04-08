@@ -21,55 +21,80 @@ def main():
 
     total = len(records)
 
-    #fix the random seed so the split is always reproducible
-    #if we re-run this script we always get the same 50 held-out procedures
-    #this is important so we dont accidentally leak held-out data later
-    random.seed(args.seed)
-    indices = list(range(total))
-    random.shuffle(indices)
+    #if the held-out file already exists we reuse those file_indices instead of re-shuffling
+    #this makes the script safe to re-run if the input gets reset or the training file gets corrupted
+    #without this we d pick a different 50 every time the input size changes and leak data into PRM training
+    holdout_file_indices = None
+    if args.holdout_output.exists():
+        with open(args.holdout_output, encoding="utf-8") as f:
+            existing = json.load(f)
+        holdout_file_indices = {r["file_index"] for r in existing}
+        print(f"Found existing {args.holdout_output.name} with {len(holdout_file_indices)} file_indices — reusing")
 
-    holdout_indices = set(indices[: args.holdout_size])
-    holdout = [records[i] for i in sorted(holdout_indices)]
-    train = [records[i] for i in range(total) if i not in holdout_indices]
+    if holdout_file_indices is None:
+        #fix the random seed so the split is always reproducible
+        #if we re-run this script from scratch we always get the same 50 held-out procedures
+        random.seed(args.seed)
+        indices = list(range(total))
+        random.shuffle(indices)
+        holdout_idx_set = set(indices[: args.holdout_size])
+        holdout_records = [records[i] for i in sorted(holdout_idx_set)]
+        holdout_file_indices = {r["file_index"] for r in holdout_records}
+    else:
+        #reuse the same file_indices from the existing held-out file
+        holdout_records = [r for r in records if r["file_index"] in holdout_file_indices]
+
+    train = [r for r in records if r["file_index"] not in holdout_file_indices]
+
+    #if the training file already matches nothing to do
+    if len(train) == total and not holdout_records:
+        print(f"Held-out indices already removed from {args.input.name} — nothing to do")
+        return
+
+    #build agent input from the held-out procedures
+    #we only expose what the agent actually needs to reason about the next step
+    #procedure_text is the task description the agent has to follow
+    #actions is the flat list of action names pulled from the extracted workflow
+    #conditions is the flat list of condition strings pulled from extracted gateways
+    #we use the extracted workflow not ground truth on purpose so the end to end
+    #pipeline contribution including the extractor is what gets evaluated
+    #graph structure successors predecessors branch targets are intentionally excluded
+    #if the agent sees those it can just read the correct next action directly
+    #execution_states are excluded too as they leak the correct order step by step
+    cleaned = []
+    for r in holdout_records:
+        wf = r.get("workflow") or {}
+        actions = [a["name"] for a in wf.get("actions", [])]
+        conditions = sorted({
+            b["condition"]
+            for gw in wf.get("gateways", [])
+            for b in gw.get("branches", [])
+            if b.get("condition")
+        })
+        cleaned.append({
+            "file_index":     r["file_index"],
+            "procedure_text": r["procedure_text"],
+            "actions":        actions,
+            "conditions":     conditions,
+        })
 
     #save held-out — these procedures are never used for PRM training
     #only used at the very end for agent evaluation
     with open(args.holdout_output, "w", encoding="utf-8") as f:
-        json.dump(holdout, f, indent=2, ensure_ascii=False)
+        json.dump(cleaned, f, indent=2, ensure_ascii=False)
 
-    #overwrite the clean predictions with only the 417 training procedures
-    #from this point on extraction_predictions_clean.json is the prm training source
+    #overwrite the clean predictions with only the training procedures
+    #from this point on extraction_predictions.json is the prm training source
     with open(args.train_output, "w", encoding="utf-8") as f:
         json.dump(train, f, indent=2, ensure_ascii=False)
 
     print(f"Total:    {total}")
-    print(f"Held-out: {len(holdout)}  → {args.holdout_output}")
+    print(f"Held-out: {len(cleaned)}  → {args.holdout_output}")
     print(f"Training: {len(train)}  → {args.train_output}")
     print()
-    print(f"Held-out file_indices:")
-    for r in holdout:
+    print("Held-out file_indices:")
+    for r in cleaned:
         print(f"  {r['file_index']}")
-    print()
-
-    #load the held-out procedures
-    #remove extraction metadata that is not needed for agent testing
-    #we only keep what the agent and evaluator actually need:
-    #  file_index — identifier
-    #  procedure_text — input to the agent
-    #  workflow — the structured procedure (useful for debugging and analysis)
-    #  execution_states — ground truth for evaluating agent steps
-    KEEP = {"file_index", "procedure_text", "workflow", "execution_states"}
-
-    cleaned = [
-        {k: v for k, v in r.items() if k in KEEP}
-        for r in holdout
-    ]
-
-    with open(args.holdout_output, "w", encoding="utf-8") as f:
-        json.dump(cleaned, f, indent=2, ensure_ascii=False)
-
-    print(f"Cleaned {len(cleaned)} records — removed: reasoning, attempt, remaining_issues")
-    print(f"Saved to {args.holdout_output}")
 
 
 if __name__ == "__main__":
