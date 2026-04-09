@@ -139,8 +139,6 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
     training_args = TrainingArguments(
         output_dir=str(output_dir),
         num_train_epochs=num_epochs,
-        #batch_size=1 with gradient_accumulation=4 gives effective batch of 4
-        #this avoids OOM on 16GB VRAM with 5120-token sequences
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
         learning_rate=lr,
