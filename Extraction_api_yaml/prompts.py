@@ -20,7 +20,6 @@ Output two parts in order:
 actions       : list of action objects, one per step/activity:
   id          : str  – snake_case, unique (duplicate names get _2, _3 suffix)
   name        : str  – EXACT wording from the procedure text (do not paraphrase or rephrase)
-  actor       : str|null – which actor performs it
   predecessors: list[str] – action IDs (or "start") that immediately precede this action
   successors  : list[str] – action IDs or gateway IDs that immediately follow
   postconditions: ["{id}_done"]
@@ -101,7 +100,7 @@ file_index: 1310881958
 actions:
   - id: create_recruitment_vacancy_in_nganet
     name: Create Recruitment Vacancy in NGA.net
-    actor: HR Representative
+
     predecessors:
       - start
     successors:
@@ -110,7 +109,7 @@ actions:
       - create_recruitment_vacancy_in_nganet_done
   - id: manage_external_advertising
     name: Manage External Advertising
-    actor: HR Representative
+
     predecessors:
       - create_recruitment_vacancy_in_nganet
     successors: []
@@ -152,7 +151,7 @@ file_index: 862270781
 actions:
   - id: customer_enters_store
     name: Customer Enters Store
-    actor: Grenoble
+
     predecessors:
       - start
     successors:
@@ -161,7 +160,7 @@ actions:
       - customer_enters_store_done
   - id: customer_decides_what_they_want
     name: Customer Decides What They Want
-    actor: Grenoble
+
     predecessors:
       - customer_enters_store
     successors:
@@ -170,7 +169,7 @@ actions:
       - customer_decides_what_they_want_done
   - id: fill_out_customer_invoice
     name: Fill Out Customer Invoice
-    actor: Grenoble
+
     predecessors:
       - gateway_xor_2
     successors: []
@@ -187,7 +186,7 @@ gateways:
         condition: Custom Order
       - next: null
         condition: In-Store Purchase
-    actor: Grenoble
+
 ```"""
 
 #example 3 with OR gateway — split and merge (file_index 1735666188)
@@ -227,7 +226,7 @@ file_index: 1735666188
 actions:
   - id: check_application_for_completeness
     name: Check Application for Completeness
-    actor: null
+
     predecessors:
       - start
     successors:
@@ -236,7 +235,7 @@ actions:
       - check_application_for_completeness_done
   - id: sort_applications
     name: Sort Applications
-    actor: null
+
     predecessors:
       - check_application_for_completeness
     successors:
@@ -245,7 +244,7 @@ actions:
       - sort_applications_done
   - id: process_complete_applications
     name: Process Complete Applications
-    actor: null
+
     predecessors:
       - gateway_or_3
     successors:
@@ -254,7 +253,7 @@ actions:
       - process_complete_applications_done
   - id: discard_applications
     name: Discard Applications
-    actor: null
+
     predecessors:
       - gateway_or_3
     successors:
@@ -319,7 +318,7 @@ file_index: 999999999
 actions:
   - id: assess_the_risk
     name: Assess the risk
-    actor: null
+
     predecessors:
       - start
     successors:
@@ -328,7 +327,7 @@ actions:
       - assess_the_risk_done
   - id: approve_the_loan
     name: Approve the loan
-    actor: null
+
     predecessors:
       - gateway_xor_1
     successors:
@@ -337,7 +336,7 @@ actions:
       - approve_the_loan_done
   - id: decline_the_loan
     name: Decline the loan
-    actor: null
+
     predecessors:
       - gateway_xor_1
     successors:
@@ -346,7 +345,7 @@ actions:
       - decline_the_loan_done
   - id: record_the_outcome_in_the_system
     name: Record the outcome in the system
-    actor: null
+
     predecessors:
       - gateway_xor_3
     successors: []

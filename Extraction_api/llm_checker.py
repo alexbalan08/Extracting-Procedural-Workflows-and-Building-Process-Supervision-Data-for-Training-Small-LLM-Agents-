@@ -26,6 +26,7 @@ Do NOT flag:
 - "request is handled" or similar state descriptions — these are states, not actions
 - Ambiguous loops or repeated checks where the text is unclear
 - Minor naming differences (gerund vs imperative form, pronoun vs full name)
+- Missing actor fields — actors are not part of the extraction schema
 - Execution states coverage or ID formatting — handled separately
 
 Output ONLY a JSON array of issue strings. Each issue must be specific and actionable.

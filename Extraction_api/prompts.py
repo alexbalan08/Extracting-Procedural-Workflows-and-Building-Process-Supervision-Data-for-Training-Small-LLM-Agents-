@@ -19,7 +19,6 @@ Output two parts in order:
 actions       : list of action objects, one per step/activity:
   id          : str  – snake_case, unique (duplicate names get _2, _3 suffix)
   name        : str  – EXACT wording from the procedure text (do not paraphrase or rephrase)
-  actor       : str|null – which actor performs it
   predecessors: list[str] – action IDs (or "start") that immediately precede this action
   successors  : list[str] – action IDs or gateway IDs that immediately follow
   postconditions: ["{id}_done"]
@@ -99,7 +98,7 @@ Step 3 — Identify gateways:
     {
       "id": "create_recruitment_vacancy_in_nganet",
       "name": "Create Recruitment Vacancy in NGA.net",
-      "actor": "HR Representative",
+
       "predecessors": ["start"],
       "successors": ["manage_external_advertising"],
       "postconditions": ["create_recruitment_vacancy_in_nganet_done"]
@@ -107,7 +106,7 @@ Step 3 — Identify gateways:
     {
       "id": "manage_external_advertising",
       "name": "Manage External Advertising",
-      "actor": "HR Representative",
+
       "predecessors": ["create_recruitment_vacancy_in_nganet"],
       "successors": [],
       "postconditions": ["manage_external_advertising_done"]
@@ -152,7 +151,7 @@ Step 3 — Identify gateways:
     {
       "id": "customer_enters_store",
       "name": "Customer Enters Store",
-      "actor": "Grenoble",
+
       "predecessors": ["start"],
       "successors": ["customer_decides_what_they_want"],
       "postconditions": ["customer_enters_store_done"]
@@ -160,7 +159,7 @@ Step 3 — Identify gateways:
     {
       "id": "customer_decides_what_they_want",
       "name": "Customer Decides What They Want",
-      "actor": "Grenoble",
+
       "predecessors": ["customer_enters_store"],
       "successors": ["gateway_xor_2"],
       "postconditions": ["customer_decides_what_they_want_done"]
@@ -168,7 +167,7 @@ Step 3 — Identify gateways:
     {
       "id": "fill_out_customer_invoice",
       "name": "Fill Out Customer Invoice",
-      "actor": "Grenoble",
+
       "predecessors": ["gateway_xor_2"],
       "successors": [],
       "postconditions": ["fill_out_customer_invoice_done"]
@@ -183,8 +182,7 @@ Step 3 — Identify gateways:
       "branches": [
         {"next": "fill_out_customer_invoice", "condition": "Custom Order"},
         {"next": null, "condition": "In-Store Purchase"}
-      ],
-      "actor": "Grenoble"
+      ]
     }
   ]
 }
@@ -229,7 +227,7 @@ Step 3 — Identify gateways:
     {
       "id": "check_application_for_completeness",
       "name": "Check Application for Completeness",
-      "actor": null,
+
       "predecessors": ["start"],
       "successors": ["sort_applications"],
       "postconditions": ["check_application_for_completeness_done"]
@@ -237,7 +235,7 @@ Step 3 — Identify gateways:
     {
       "id": "sort_applications",
       "name": "Sort Applications",
-      "actor": null,
+
       "predecessors": ["check_application_for_completeness"],
       "successors": ["gateway_or_3"],
       "postconditions": ["sort_applications_done"]
@@ -245,7 +243,7 @@ Step 3 — Identify gateways:
     {
       "id": "process_complete_applications",
       "name": "Process Complete Applications",
-      "actor": null,
+
       "predecessors": ["gateway_or_3"],
       "successors": ["gateway_or_6"],
       "postconditions": ["process_complete_applications_done"]
@@ -253,7 +251,7 @@ Step 3 — Identify gateways:
     {
       "id": "discard_applications",
       "name": "Discard Applications",
-      "actor": null,
+
       "predecessors": ["gateway_or_3"],
       "successors": ["gateway_or_6"],
       "postconditions": ["discard_applications_done"]
@@ -322,7 +320,7 @@ Step 3 — Identify gateways:
     {
       "id": "assess_the_risk",
       "name": "Assess the risk",
-      "actor": null,
+
       "predecessors": ["start"],
       "successors": ["gateway_xor_1"],
       "postconditions": ["assess_the_risk_done"]
@@ -330,7 +328,7 @@ Step 3 — Identify gateways:
     {
       "id": "approve_the_loan",
       "name": "Approve the loan",
-      "actor": null,
+
       "predecessors": ["gateway_xor_1"],
       "successors": ["gateway_xor_3"],
       "postconditions": ["approve_the_loan_done"]
@@ -338,7 +336,7 @@ Step 3 — Identify gateways:
     {
       "id": "decline_the_loan",
       "name": "Decline the loan",
-      "actor": null,
+
       "predecessors": ["gateway_xor_1"],
       "successors": ["gateway_xor_3"],
       "postconditions": ["decline_the_loan_done"]
@@ -346,7 +344,7 @@ Step 3 — Identify gateways:
     {
       "id": "record_the_outcome_in_the_system",
       "name": "Record the outcome in the system",
-      "actor": null,
+
       "predecessors": ["gateway_xor_3"],
       "successors": [],
       "postconditions": ["record_the_outcome_in_the_system_done"]
