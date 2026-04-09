@@ -11,7 +11,7 @@
 #  - Llama 3.1 8B, 4-bit quantization (bitsandbytes), LoRA r=16
 #  - batch_size=1, gradient_accumulation=4 (effective batch=4) for 16GB VRAM
 #  - max_seq_length=5120
-#  - uses SFTConfig with dataset_text_field for trl >= 0.15 compatibility
+#  - uses transformers Trainer directly to avoid trl version hell
 
 import json
 from dataclasses import dataclass
@@ -23,9 +23,11 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
+    Trainer,
+    TrainingArguments,
+    DataCollatorForLanguageModeling,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from trl import SFTTrainer, SFTConfig
 
 try:
     from unsloth import FastLanguageModel
@@ -35,11 +37,12 @@ except ImportError:
 
 _here = Path(__file__).parent
 
+MAX_SEQ_LENGTH = 5120
+
 
 @dataclass
 class ModelConfig:
     model_name: str = "meta-llama/Llama-3.1-8B-Instruct"
-    max_seq_length: int = 5120
     load_in_4bit: bool = True
 
 
@@ -52,14 +55,13 @@ class LoRAConfig:
                              "gate_proj", "up_proj", "down_proj")
 
 
-def load_prm_dataset(sft_path: Path, tokenizer) -> Dataset:
+def load_and_tokenize(sft_path: Path, tokenizer) -> Dataset:
     records = []
     with open(sft_path, encoding="utf-8") as f:
         for line in f:
             records.append(json.loads(line))
 
     #apply the chat template so each record becomes a single formatted string
-    #the model only trains on the assistant turn (Yes/No) via completions_only mode
     texts = []
     for rec in records:
         text = tokenizer.apply_chat_template(
@@ -67,18 +69,26 @@ def load_prm_dataset(sft_path: Path, tokenizer) -> Dataset:
             tokenize=False,
             add_generation_prompt=False,
         )
-        texts.append({"text": text})
+        texts.append(text)
 
-    return Dataset.from_list(texts)
+    #tokenize all at once
+    tokenized = tokenizer(
+        texts,
+        truncation=True,
+        max_length=MAX_SEQ_LENGTH,
+        padding=False,
+    )
+
+    #for causal LM the labels are the same as input_ids
+    tokenized["labels"] = tokenized["input_ids"].copy()
+    return Dataset.from_dict(tokenized)
 
 
 def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
-          num_epochs=3, lr=2e-4, max_seq_length=None):
+          num_epochs=3, lr=2e-4):
 
     model_cfg = model_cfg or ModelConfig()
     lora_cfg  = lora_cfg  or LoRAConfig()
-    if max_seq_length is None:
-        max_seq_length = model_cfg.max_seq_length
 
     sft_data_path = sft_data_path or (_here / "prm_sft_train.jsonl")
     output_dir    = output_dir    or str(_here / "prm_model_output")
@@ -87,7 +97,7 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         #unsloth gives ~2x speedup and uses Flash Attention 2 automatically
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=model_cfg.model_name,
-            max_seq_length=max_seq_length,
+            max_seq_length=MAX_SEQ_LENGTH,
             load_in_4bit=model_cfg.load_in_4bit,
         )
         model = FastLanguageModel.get_peft_model(
@@ -126,12 +136,10 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    dataset = load_prm_dataset(sft_data_path, tokenizer)
+    dataset = load_and_tokenize(sft_data_path, tokenizer)
+    print(f"Dataset: {len(dataset)} examples")
 
-    #only compute loss on the assistant turn (the Yes/No token)
-    #everything before that is the prompt and we dont want to train on it
-    #completions_only=True with the response_template handles this in modern trl
-    sft_config = SFTConfig(
+    training_args = TrainingArguments(
         output_dir=str(output_dir),
         num_train_epochs=num_epochs,
         per_device_train_batch_size=1,
@@ -148,17 +156,16 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         report_to="none",
     )
 
-    trainer = SFTTrainer(
+    trainer = Trainer(
         model=model,
-        processing_class=tokenizer,
+        args=training_args,
         train_dataset=dataset,
-        args=sft_config,
-        max_seq_length=max_seq_length,
-        dataset_text_field="text",
+        data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
 
     trainer.train()
     trainer.save_model(str(output_dir))
+    tokenizer.save_pretrained(str(output_dir))
     print(f"PRM model saved to {output_dir}")
 
 
