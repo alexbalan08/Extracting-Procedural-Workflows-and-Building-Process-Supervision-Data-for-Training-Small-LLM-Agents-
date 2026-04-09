@@ -150,7 +150,7 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
 
     trainer = SFTTrainer(
         model=model,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         train_dataset=dataset,
         args=sft_config,
         max_seq_length=max_seq_length,
