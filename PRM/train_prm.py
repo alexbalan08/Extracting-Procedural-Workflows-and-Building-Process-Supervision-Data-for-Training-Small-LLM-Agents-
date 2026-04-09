@@ -146,8 +146,6 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         save_steps=200,
         save_total_limit=3,
         report_to="none",
-        max_seq_length=max_seq_length,
-        dataset_text_field="text",
     )
 
     trainer = SFTTrainer(
@@ -155,6 +153,8 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         tokenizer=tokenizer,
         train_dataset=dataset,
         args=sft_config,
+        max_seq_length=max_seq_length,
+        dataset_text_field="text",
     )
 
     trainer.train()
