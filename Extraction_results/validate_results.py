@@ -325,7 +325,13 @@ def main():
         else:
             kept.append(r)
     predictions = kept
+    null_wf = sum(1 for _, r in removed if r == "null workflow")
+    zero_states = sum(1 for _, r in removed if r == "0 execution states")
+    too_complex = len(removed) - null_wf - zero_states
     print(f"Filter step — Total: {total_before} | Removed: {len(removed)} | Kept: {len(kept)}")
+    print(f"  Failed extractions (null workflow): {null_wf}")
+    print(f"  Failed traces (0 execution states): {zero_states}")
+    print(f"  Too complex (>100 execution states): {too_complex}")
     if removed:
         for file_index, reason in removed:
             print(f"  file_index={file_index}  ({reason})")

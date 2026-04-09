@@ -1,5 +1,4 @@
-#YAML version of validate_results.py — same metrics, reads yaml files instead of json
-#run this from vsc run button to validate yaml extraction against yaml ground truth
+#YAML version of validate_results.py  same metrics reads yaml files instead of json
 
 #METRICS we use
 #witch action F1 we see how well the predicted actions match the ground truth actions
@@ -49,6 +48,17 @@ def main():
     with open(args.predictions, encoding="utf-8") as f:
         predictions = yaml.safe_load(f) or []
 
+    #keep only the same file_indices as the json extraction so the comparison is fair
+    #the json predictions already had the holdout removed and the filter applied
+    import json
+    json_preds_path = _here / "extraction_predictions.json"
+    if json_preds_path.exists():
+        with open(json_preds_path, encoding="utf-8") as f:
+            json_indices = {r["file_index"] for r in json.load(f)}
+        before_align = len(predictions)
+        predictions = [r for r in predictions if r["file_index"] in json_indices]
+        print(f"Aligned to JSON predictions — {before_align} → {len(predictions)} (matched {len(json_indices)} json file_indices)")
+
     #same filter as json version
     total_before = len(predictions)
     removed = []
@@ -64,7 +74,13 @@ def main():
         else:
             kept.append(r)
     predictions = kept
+    null_wf = sum(1 for _, r in removed if r == "null workflow")
+    zero_states = sum(1 for _, r in removed if r == "0 execution states")
+    too_complex = len(removed) - null_wf - zero_states
     print(f"Filter step — Total: {total_before} | Removed: {len(removed)} | Kept: {len(kept)}")
+    print(f"  Failed extractions (null workflow): {null_wf}")
+    print(f"  Failed traces (0 execution states): {zero_states}")
+    print(f"  Too complex (>100 execution states): {too_complex}")
     if removed:
         for file_index, reason in removed:
             print(f"  file_index={file_index}  ({reason})")

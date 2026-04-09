@@ -1,5 +1,5 @@
 #converts extracted_test.json ground truth to yaml so we can validate yaml extraction against yaml ground truth
-#one shot script, run it once before running the yaml extraction pipeline
+
 
 import json
 import yaml
