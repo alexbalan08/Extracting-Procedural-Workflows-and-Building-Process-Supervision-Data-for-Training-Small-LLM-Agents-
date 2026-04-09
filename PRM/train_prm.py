@@ -7,10 +7,11 @@
 #P("Yes") / (P("Yes") + P("No")) from the logits to get a continuous score.
 #Rank all candidate actions by this score and pick the highest — this is the re-ranker.
 #
-#Training setup mirrors the extractor SFT:
+#Training setup:
 #  - Llama 3.1 8B, 4-bit quantization (bitsandbytes), LoRA r=16
 #  - batch_size=1, gradient_accumulation=4 (effective batch=4) for 16GB VRAM
 #  - max_seq_length=5120
+#  - uses SFTConfig with dataset_text_field for trl >= 0.15 compatibility
 
 import json
 from dataclasses import dataclass
@@ -22,14 +23,9 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
-    TrainingArguments,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from trl import SFTTrainer
-try:
-    from trl import DataCollatorForCompletionOnlyLM
-except ImportError:
-    from trl.trainer import DataCollatorForCompletionOnlyLM
+from trl import SFTTrainer, SFTConfig
 
 try:
     from unsloth import FastLanguageModel
@@ -63,7 +59,7 @@ def load_prm_dataset(sft_path: Path, tokenizer) -> Dataset:
             records.append(json.loads(line))
 
     #apply the chat template so each record becomes a single formatted string
-    #the model only trains on the assistant turn (Yes/No) via DataCollatorForCompletionOnlyLM
+    #the model only trains on the assistant turn (Yes/No) via completions_only mode
     texts = []
     for rec in records:
         text = tokenizer.apply_chat_template(
@@ -134,13 +130,8 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
 
     #only compute loss on the assistant turn (the Yes/No token)
     #everything before that is the prompt and we dont want to train on it
-    response_template = "<|start_header_id|>assistant<|end_header_id|>"
-    collator = DataCollatorForCompletionOnlyLM(
-        response_template=response_template,
-        tokenizer=tokenizer,
-    )
-
-    training_args = TrainingArguments(
+    #completions_only=True with the response_template handles this in modern trl
+    sft_config = SFTConfig(
         output_dir=str(output_dir),
         num_train_epochs=num_epochs,
         per_device_train_batch_size=1,
@@ -155,16 +146,15 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         save_steps=200,
         save_total_limit=3,
         report_to="none",
+        max_seq_length=max_seq_length,
+        dataset_text_field="text",
     )
 
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
         train_dataset=dataset,
-        data_collator=collator,
-        dataset_text_field="text",
-        max_seq_length=max_seq_length,
-        args=training_args,
+        args=sft_config,
     )
 
     trainer.train()
