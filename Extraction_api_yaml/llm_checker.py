@@ -32,14 +32,13 @@ Do NOT flag:
 - Missing actor fields — actors are not part of the extraction schema
 - Execution states coverage or ID formatting — handled separately
 
-Output ONLY a JSON array of issue strings. Each issue must be specific and actionable.
-If no issues are found, output an empty array: []
+Output ONLY a YAML list of issue strings. Each issue must be specific and actionable.
+If no issues are found, output an empty list: []
 
 Example output:
-[
-  "Action 'Review Request' is mentioned in the text but missing from the workflow",
-  "Gateway gateway_xor_2 has condition 'Approved' but the text says 'Accepted'"
-]"""
+- "Action 'Review Request' is mentioned in the text but missing from the workflow"
+- "Gateway gateway_xor_2 has condition 'Approved' but the text says 'Accepted'"
+"""
 
 
 def check_with_llm(
@@ -49,8 +48,6 @@ def check_with_llm(
     model: str = "gpt-4o",
 ) -> list[str]:
     """Run the LLM checker and return a list of issues (empty = no issues)."""
-    import json
-
     #show workflow as YAML to the checker for consistency with the extraction format
     workflow_yaml = yaml.dump(workflow, allow_unicode=True, sort_keys=False, default_flow_style=False)
 
@@ -71,21 +68,20 @@ Identify any issues with the extracted workflow compared to the procedure text."
         temperature=0.0,
         max_completion_tokens=1024,
         seed=42,
-        response_format={"type": "json_object"},
     )
 
     raw = response.choices[0].message.content
     try:
-        parsed = json.loads(raw)
-        #ideal case: model returns array ["issue1", "issue2"]
+        parsed = yaml.safe_load(raw)
         if isinstance(parsed, list):
             return parsed
 
-        for key in ("issues", "errors", "problems"):
-            if key in parsed and isinstance(parsed[key], list):
-                return parsed[key]
+        # fallback: model may wrap in a dict
+        if isinstance(parsed, dict):
+            for key in ("issues", "errors", "problems"):
+                if key in parsed and isinstance(parsed[key], list):
+                    return parsed[key]
 
         return []
-    except (json.JSONDecodeError, KeyError):
-        #skip the check if parsing fails
+    except yaml.YAMLError:
         return []

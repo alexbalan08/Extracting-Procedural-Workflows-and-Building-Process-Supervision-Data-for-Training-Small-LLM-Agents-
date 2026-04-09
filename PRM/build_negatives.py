@@ -175,7 +175,8 @@ def corrupt_premature_stop(steps):
 
     stop_at = random.randint(2, len(steps) - 1)
     corrupted = copy.deepcopy(steps[:stop_at])
-    #steps themselves remain label=1
+    #last step gets label=0 as a "wrong termination" signal for step-level PRM training
+    corrupted[-1]["label"] = 0
 
     return corrupted, {
         "stopped_at": stop_at,
