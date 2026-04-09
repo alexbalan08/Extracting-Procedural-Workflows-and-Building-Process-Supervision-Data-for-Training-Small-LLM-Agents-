@@ -71,17 +71,13 @@ def load_and_tokenize(sft_path: Path, tokenizer) -> Dataset:
         )
         texts.append(text)
 
-    #tokenize all at once
-    tokenized = tokenizer(
-        texts,
-        truncation=True,
-        max_length=MAX_SEQ_LENGTH,
-        padding=False,
-    )
-
-    #for causal LM the labels are the same as input_ids
-    tokenized["labels"] = tokenized["input_ids"].copy()
-    return Dataset.from_dict(tokenized)
+    #tokenize individually so each example is its own dict
+    #DataCollatorForLanguageModeling will pad batches and create labels automatically
+    examples = []
+    for text in texts:
+        tok = tokenizer(text, truncation=True, max_length=MAX_SEQ_LENGTH)
+        examples.append({"input_ids": tok["input_ids"], "attention_mask": tok["attention_mask"]})
+    return Dataset.from_list(examples)
 
 
 def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
