@@ -1,0 +1,125 @@
+#YAML version of validate_results.py — same metrics, reads yaml files instead of json
+#run this from vsc run button to validate yaml extraction against yaml ground truth
+
+#METRICS we use
+#witch action F1 we see how well the predicted actions match the ground truth actions
+#two actions match if they share at least one nonstopword (ROUGE-1 > 0) and then we sort all cadidates by Jaccardi score and always pick the highest. This works quite well
+#we also consider cases such as gt: "processing", extraction: "process" and we simply catch those if the previous method fails and this is edit distcnace in characters bascially
+#and we need it over 0.6
+
+#Edge F1 measures how well the predicted flow matches ground truth flow graph
+#Edges are action  pairs A then B, but without gateways so that A then gateway then B
+#this avoids penalising a missing gateway twice as we ve seen that missing gateways is one of the biggest issues
+
+#Gateway counts F1 measures if the right number of gateways were extracted. for the type and order i defined another metric
+
+#Gateway type accuracy measures for the gateways that were matched what fraction have the correct type
+#exclusive  parallel  inclusive, BUT ONLY if they re stored in the same order as GT so this also basically will check for order extraction of the gqatways that were
+#extratced.
+#The ones missing are not included, neither ones invented, but that s why we have gateway counts to see those numbers exaclty
+
+#Branch tuple F1 where each branch is a tuple (gateway_id, condition, next_action) that we have in reaoning traces so with this we basicallly make nsure the reasoning traces are correct
+#Gateway IDs must match exactly, conditions are matched with jaccard bigger than 0.3 or edit distance and next-action IDs
+#are matched the same with rouge 1 and Jacardi. This metric will capture any routing errors and it will be lower since we see that we quite miss some gateways.
+
+#then if all those metrics are good, then the reasoning traces will be correct as they re built deterministic from the graph extraction
+
+import argparse
+import yaml
+from difflib import SequenceMatcher
+from pathlib import Path
+
+#reuse all the matching logic from the json validator
+from validate_results import (
+    match_actions, validate_record,
+)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Validate YAML extraction predictions against YAML ground truth")
+    _here = Path(__file__).parent
+    parser.add_argument("--predictions", type=Path,
+                        default=_here / "extraction_predictions_yaml.yaml",
+                        help="Path to predictions YAML")
+    parser.add_argument("--gt", type=Path,
+                        default=_here.parent / "Data" / "Processed" / "extracted_test.yaml",
+                        help="Path to ground truth YAML (default: extracted_test.yaml)")
+    args = parser.parse_args()
+
+    with open(args.predictions, encoding="utf-8") as f:
+        predictions = yaml.safe_load(f) or []
+
+    #same filter as json version
+    total_before = len(predictions)
+    removed = []
+    kept = []
+    for r in predictions:
+        n = len(r.get("execution_states", []))
+        if r.get("workflow") is None:
+            removed.append((r["file_index"], "null workflow"))
+        elif n == 0:
+            removed.append((r["file_index"], "0 execution states"))
+        elif n > 100:
+            removed.append((r["file_index"], f"too complex ({n} execution states)"))
+        else:
+            kept.append(r)
+    predictions = kept
+    print(f"Filter step — Total: {total_before} | Removed: {len(removed)} | Kept: {len(kept)}")
+    if removed:
+        for file_index, reason in removed:
+            print(f"  file_index={file_index}  ({reason})")
+    with open(args.predictions, "w", encoding="utf-8") as f:
+        yaml.dump(kept, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
+    print()
+
+    with open(args.gt, encoding="utf-8") as f:
+        ground_truth = yaml.safe_load(f) or []
+
+
+    gt_by_idx = {r["file_index"]: r for r in ground_truth}
+
+    metric_keys = [
+        "action_f1", "action_precision", "action_recall", "action_fn", "action_fp",
+        "edge_f1",
+        "gateway_f1", "gateway_type_acc", "gateway_fn", "gateway_fp",
+        "branch_tuple_f1",
+    ]
+    totals = {k: 0.0 for k in metric_keys}
+    n = 0
+
+    print(f"Predictions: {args.predictions}")
+    print(f"Ground truth: {args.gt}")
+    print()
+
+    for pred in predictions:
+        fidx = pred["file_index"]
+        gt_rec = gt_by_idx.get(fidx)
+        if gt_rec is None:
+            print(f"  WARNING: file_index={fidx} not found in GT — skipping")
+            continue
+        if pred.get("workflow") is None:
+            print(f"  WARNING: file_index={fidx} has null workflow — skipping")
+            continue
+
+        m = validate_record(gt_rec["workflow"], pred["workflow"])
+        n += 1
+
+        for k in metric_keys:
+            totals[k] += m[k]
+
+
+    print()
+    print(f"--- AVERAGES ({n} records) ---")
+    print(f"Action Precision:   {totals['action_precision']/n:.3f}")
+    print(f"Action Recall:      {totals['action_recall']/n:.3f}")
+    print(f"Action F1:          {totals['action_f1']/n:.3f}  (avg FN={totals['action_fn']/n:.1f}, avg FP={totals['action_fp']/n:.1f})")
+    print(f"Edge F1:            {totals['edge_f1']/n:.3f}")
+
+    print(f"Gateway F1:         {totals['gateway_f1']/n:.3f}  (avg FN={totals['gateway_fn']/n:.1f}, avg FP={totals['gateway_fp']/n:.1f})")
+    print(f"Gateway type acc:   {totals['gateway_type_acc']/n:.3f}")
+
+    print(f"Branch tuple F1:    {totals['branch_tuple_f1']/n:.3f}")
+
+
+if __name__ == "__main__":
+    main()
