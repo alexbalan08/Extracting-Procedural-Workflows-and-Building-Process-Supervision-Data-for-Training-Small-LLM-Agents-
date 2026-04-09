@@ -159,7 +159,9 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
 
-    trainer.train()
+    #resume_from_checkpoint=True automatically finds the last checkpoint in output_dir
+    #if no checkpoint exists it starts from scratch
+    trainer.train(resume_from_checkpoint=True if Path(output_dir).exists() else False)
     trainer.save_model(str(output_dir))
     tokenizer.save_pretrained(str(output_dir))
     print(f"PRM model saved to {output_dir}")
