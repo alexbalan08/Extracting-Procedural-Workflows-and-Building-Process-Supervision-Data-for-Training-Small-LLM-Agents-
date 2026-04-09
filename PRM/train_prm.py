@@ -25,7 +25,11 @@ from transformers import (
     TrainingArguments,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from trl import SFTTrainer
+try:
+    from trl import DataCollatorForCompletionOnlyLM
+except ImportError:
+    from trl.trainer import DataCollatorForCompletionOnlyLM
 
 try:
     from unsloth import FastLanguageModel
