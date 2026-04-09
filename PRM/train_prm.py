@@ -50,7 +50,7 @@ class ModelConfig:
 class LoRAConfig:
     r: int = 16
     lora_alpha: int = 32
-    lora_dropout: float = 0.05
+    lora_dropout: float = 0.0
     target_modules: tuple = ("q_proj", "v_proj", "k_proj", "o_proj",
                              "gate_proj", "up_proj", "down_proj")
 
@@ -142,8 +142,8 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
     training_args = TrainingArguments(
         output_dir=str(output_dir),
         num_train_epochs=num_epochs,
-        per_device_train_batch_size=1,
-        gradient_accumulation_steps=4,
+        per_device_train_batch_size=2,
+        gradient_accumulation_steps=2,
         learning_rate=lr,
         warmup_ratio=0.05,
         lr_scheduler_type="cosine",
