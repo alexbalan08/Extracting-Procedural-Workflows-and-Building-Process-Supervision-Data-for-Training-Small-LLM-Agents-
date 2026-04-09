@@ -81,7 +81,7 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         max_seq_length = model_cfg.max_seq_length
 
     sft_data_path = sft_data_path or (_here / "prm_sft_train.jsonl")
-    output_dir    = output_dir    or (_here / "prm_model_output")
+    output_dir    = output_dir    or str(_here / "prm_model_output")
 
     if UNSLOTH_AVAILABLE:
         #unsloth gives ~2x speedup and uses Flash Attention 2 automatically
@@ -147,7 +147,9 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
         logging_steps=10,
-        save_strategy="epoch",
+        save_strategy="steps",
+        save_steps=200,
+        save_total_limit=3,
         report_to="none",
     )
 
@@ -167,4 +169,16 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
 
 
 if __name__ == "__main__":
-    train()
+    import argparse
+    parser = argparse.ArgumentParser(description="Train PRM via SFT on step-level Yes/No labels")
+    parser.add_argument("--sft_data", type=str, default=None, help="Path to prm_sft_train.jsonl")
+    parser.add_argument("--output", type=str, default=None, help="Path to save model (use gdrive path on Colab)")
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--lr", type=float, default=2e-4)
+    args = parser.parse_args()
+    train(
+        sft_data_path=Path(args.sft_data) if args.sft_data else None,
+        output_dir=args.output,
+        num_epochs=args.epochs,
+        lr=args.lr,
+    )
