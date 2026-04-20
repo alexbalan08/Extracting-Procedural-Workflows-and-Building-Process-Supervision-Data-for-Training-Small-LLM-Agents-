@@ -4,11 +4,20 @@
 
 #use same model as critic to verify the extracted workflow against the original procedure text,
 #the structural checker catches structure issues (missing actions, wrong conditions, etc.)
-#return the feedback for hext iteration
+#return the feedback for next iteration
 #YAML version: shows workflow as YAML to the checker model
+#
+#reflexion memory: the checker remembers issues found in previous procedures
+#so it learns from past mistakes and catches recurring patterns
 
 from openai import OpenAI
 import yaml
+
+#reuse the same ReflexionMemory class from the json checker
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent / "Extraction_api"))
+from llm_checker import ReflexionMemory
 
 CHECKER_SYSTEM_PROMPT = """You are an expert workflow validator. You will be given:
 1. An original procedure text
@@ -32,13 +41,14 @@ Do NOT flag:
 - Missing actor fields — actors are not part of the extraction schema
 - Execution states coverage or ID formatting — handled separately
 
-Output ONLY a YAML list of issue strings. Each issue must be specific and actionable.
-If no issues are found, output an empty list: []
+Output ONLY a JSON array of issue strings. Each issue must be specific and actionable.
+If no issues are found, output an empty array: []
 
 Example output:
-- "Action 'Review Request' is mentioned in the text but missing from the workflow"
-- "Gateway gateway_xor_2 has condition 'Approved' but the text says 'Accepted'"
-"""
+[
+  "Action 'Review Request' is mentioned in the text but missing from the workflow",
+  "Gateway gateway_xor_2 has condition 'Approved' but the text says 'Accepted'"
+]"""
 
 
 def check_with_llm(
@@ -46,8 +56,18 @@ def check_with_llm(
     workflow: dict,
     client: OpenAI,
     model: str = "gpt-4o",
+    memory: ReflexionMemory | None = None,
+    file_index: int | str | None = None,
+    fmt: str = "yaml",
 ) -> list[str]:
     """Run the LLM checker and return a list of issues (empty = no issues)."""
+    import json
+
+    #build the system prompt with reflexion memory if available
+    system_prompt = CHECKER_SYSTEM_PROMPT
+    if memory and len(memory) > 0:
+        system_prompt += memory.format_for_prompt(fmt=fmt)
+
     #show workflow as YAML to the checker for consistency with the extraction format
     workflow_yaml = yaml.dump(workflow, allow_unicode=True, sort_keys=False, default_flow_style=False)
 
@@ -62,26 +82,33 @@ Identify any issues with the extracted workflow compared to the procedure text."
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": CHECKER_SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ],
         temperature=0.0,
         max_completion_tokens=1024,
         seed=42,
+        response_format={"type": "json_object"},
     )
 
     raw = response.choices[0].message.content
     try:
-        parsed = yaml.safe_load(raw)
+        parsed = json.loads(raw)
+        #ideal case: model returns array ["issue1", "issue2"]
         if isinstance(parsed, list):
-            return parsed
-
-        # fallback: model may wrap in a dict
-        if isinstance(parsed, dict):
+            issues = parsed
+        else:
+            issues = []
             for key in ("issues", "errors", "problems"):
                 if key in parsed and isinstance(parsed[key], list):
-                    return parsed[key]
+                    issues = parsed[key]
+                    break
 
-        return []
-    except yaml.YAMLError:
+        #add found issues to reflexion memory for future procedures
+        if memory and issues:
+            memory.add(issues, file_index=file_index)
+
+        return issues
+    except (json.JSONDecodeError, KeyError):
+        #skip the check if parsing fails
         return []

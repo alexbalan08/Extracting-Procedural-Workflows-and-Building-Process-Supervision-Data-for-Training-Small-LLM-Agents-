@@ -132,7 +132,7 @@ def main():
         #expand the trace into one training example per step
         #steps_so_far starts empty (the agent always begins from scratch)
         for i, step in enumerate(steps):
-            steps_so_far = [s["action"] for s in steps[:i] if s["label"] == 1]
+            steps_so_far = [s["action"] for s in steps[:i]]
             candidate    = step["action"]
             label        = step["label"]
 

@@ -62,13 +62,14 @@ def retrieve_similar_workflows(
 
 
 def format_retrieval_results(results: list[tuple[dict, float]]) -> str:
-    #format retrieved examples as procedure text + workflow JSON as extra context
+    #format retrieved examples as procedure text + workflow YAML as extra context
     #similarity score included so model can judge relevance (below ~0.5 = weak match)
+    import yaml
 
     parts = []
     for i, (record, score) in enumerate(results, 1):
         parts.append(f"--- Retrieved Example {i} (similarity: {score:.2f}) ---")
         parts.append(f"PROCEDURE:\n{record['procedure_text']}")
-        #no CoT — just the procedure and workflow JSON as structural reference
-        parts.append(f"WORKFLOW:\n{json.dumps(record['workflow'], indent=2, ensure_ascii=False)}")
+        #no CoT — just the procedure and workflow YAML as structural reference
+        parts.append(f"WORKFLOW:\n{yaml.dump(record['workflow'], allow_unicode=True, sort_keys=False, default_flow_style=False)}")
     return "\n\n".join(parts)

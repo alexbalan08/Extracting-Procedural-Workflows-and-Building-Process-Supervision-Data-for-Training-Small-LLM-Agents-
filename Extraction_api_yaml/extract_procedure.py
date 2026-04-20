@@ -15,7 +15,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 
 from structural_checker import StructuralChecker
 from prompts import SYSTEM_PROMPT, FEW_SHOT_EXAMPLES
-from llm_checker import check_with_llm
+from llm_checker import check_with_llm, ReflexionMemory
 from retrieval import build_example_pool, retrieve_similar_workflows, format_retrieval_results
 from trace_builder import build_traces
 
@@ -115,6 +115,7 @@ def extract_workflow(
     file_index: int | str | None = None,
     pool: list | None = None,
     embeddings=None,
+    memory: ReflexionMemory | None = None,
     rag_k: int = 2,
 ) -> dict:
     #we finally run the orchestration loop
@@ -173,7 +174,8 @@ def extract_workflow(
                 continue
 
         if use_llm_checker:
-            semantic_issues = check_with_llm(procedure_text, workflow, client, model)
+            semantic_issues = check_with_llm(procedure_text, workflow, client, model,
+                                                memory=memory, file_index=file_index, fmt="yaml")
             if semantic_issues:
                 issues_feedback = semantic_issues
                 print(f"  Attempt {attempt}: {len(semantic_issues)} semantic issue(s) — retrying...")
@@ -225,6 +227,9 @@ def main():
 
     rag_kwargs = dict(pool=pool, embeddings=embeddings, rag_k=args.rag_k)
 
+    #reflexion memory persists across procedures so the checker learns from past mistakes
+    reflexion_memory = ReflexionMemory()
+
     if not args.input.exists():
         parser.error(f"Input file not found: {args.input}.")
 
@@ -263,6 +268,7 @@ def main():
                 True,
                 file_index,
                 **rag_kwargs,
+                memory=reflexion_memory,
             )
         except BadRequestError as e:
             print(f"  WARNING: skipping file_index={file_index} — BadRequestError: {e}")

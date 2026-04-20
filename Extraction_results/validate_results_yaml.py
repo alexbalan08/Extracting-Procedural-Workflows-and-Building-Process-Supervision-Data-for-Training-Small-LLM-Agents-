@@ -41,8 +41,8 @@ def main():
                         default=_here / "extraction_predictions_yaml.yaml",
                         help="Path to predictions YAML")
     parser.add_argument("--gt", type=Path,
-                        default=_here.parent / "Data" / "Processed" / "extracted_test.yaml",
-                        help="Path to ground truth YAML (default: extracted_test.yaml)")
+                        default=_here.parent / "Data" / "Processed" / "extracted_test.json",
+                        help="Path to ground truth JSON (same as json validator)")
     args = parser.parse_args()
 
     with open(args.predictions, encoding="utf-8") as f:
@@ -89,7 +89,7 @@ def main():
     print()
 
     with open(args.gt, encoding="utf-8") as f:
-        ground_truth = yaml.safe_load(f) or []
+        ground_truth = json.load(f)
 
 
     gt_by_idx = {r["file_index"]: r for r in ground_truth}
