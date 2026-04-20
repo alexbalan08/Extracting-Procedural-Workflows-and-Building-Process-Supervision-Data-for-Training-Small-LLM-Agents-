@@ -107,6 +107,17 @@ def main():
     print(f"Ground truth: {args.gt}")
     print()
 
+    #per-complexity buckets: linear (0 gateways), simple (1 gateway), complex (2+ gateways)
+    #we group by ground truth gateway count so the categories are stable across runs
+    complexity_buckets = {"linear (0 gw)": [], "simple (1 gw)": [], "complex (2+ gw)": []}
+
+    def _bucket_name(gt_gw_count):
+        if gt_gw_count == 0:
+            return "linear (0 gw)"
+        elif gt_gw_count == 1:
+            return "simple (1 gw)"
+        return "complex (2+ gw)"
+
     for pred in predictions:
         fidx = pred["file_index"]
         gt_rec = gt_by_idx.get(fidx)
@@ -123,6 +134,9 @@ def main():
         for k in metric_keys:
             totals[k] += m[k]
 
+        gt_gw_count = len(gt_rec["workflow"].get("gateways", []))
+        complexity_buckets[_bucket_name(gt_gw_count)].append(m)
+
 
     print()
     print(f"--- AVERAGES ({n} records) ---")
@@ -135,6 +149,20 @@ def main():
     print(f"Gateway type acc:   {totals['gateway_type_acc']/n:.3f}")
 
     print(f"Branch tuple F1:    {totals['branch_tuple_f1']/n:.3f}")
+
+    #per-complexity breakdown so we can see where the extractor struggles
+    print()
+    print(f"--- BY COMPLEXITY ---")
+    for bucket_name, bucket_metrics in complexity_buckets.items():
+        bn = len(bucket_metrics)
+        if bn == 0:
+            print(f"  {bucket_name:20s}  (no records)")
+            continue
+        avg = {k: sum(m[k] for m in bucket_metrics) / bn for k in metric_keys}
+        print(f"  {bucket_name:20s}  n={bn:3d}  "
+              f"act_f1={avg['action_f1']:.3f}  edge_f1={avg['edge_f1']:.3f}  "
+              f"gw_f1={avg['gateway_f1']:.3f}  gw_type={avg['gateway_type_acc']:.3f}  "
+              f"branch_f1={avg['branch_tuple_f1']:.3f}")
 
 
 if __name__ == "__main__":

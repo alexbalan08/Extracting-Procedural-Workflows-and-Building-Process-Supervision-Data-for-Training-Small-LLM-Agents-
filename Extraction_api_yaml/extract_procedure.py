@@ -101,8 +101,9 @@ def _run_single_extraction(
     kwargs = dict(model=model, messages=clean_messages, temperature=0.0, max_completion_tokens=8192, seed=42)
     response = client.chat.completions.create(**kwargs)
     raw = response.choices[0].message.content or ""
+    usage = response.usage
     messages.append({"role": "assistant", "content": raw})
-    return messages, raw
+    return messages, raw, usage
 
 
 def extract_workflow(
@@ -129,6 +130,8 @@ def extract_workflow(
     messages = build_messages(procedure_text, file_index, use_rag)
     issues_feedback = None
     reasoning, workflow = "", None
+    total_prompt_tokens = 0
+    total_completion_tokens = 0
 
     #retrieve once per procedure and reuse the same context across retries
     if pool is not None:
@@ -156,7 +159,10 @@ def extract_workflow(
                 }
             )
 
-        messages, raw = _run_single_extraction(messages, client, model)
+        messages, raw, usage = _run_single_extraction(messages, client, model)
+        if usage:
+            total_prompt_tokens += usage.prompt_tokens
+            total_completion_tokens += usage.completion_tokens
         reasoning, workflow = parse_response(raw)
 
         #if the model output is fucked, ask it to fix the YAML format and retry
@@ -182,7 +188,8 @@ def extract_workflow(
                 continue
 
         #all checks passed return early with the attempt number 3 i mean for now
-        return {"attempt": attempt, "reasoning": reasoning, "workflow": workflow}
+        return {"attempt": attempt, "reasoning": reasoning, "workflow": workflow,
+                "prompt_tokens": total_prompt_tokens, "completion_tokens": total_completion_tokens}
 
     #max attempts reached
     return {
@@ -190,6 +197,8 @@ def extract_workflow(
         "reasoning": reasoning,
         "workflow": workflow,
         "remaining_issues": issues_feedback,
+        "prompt_tokens": total_prompt_tokens,
+        "completion_tokens": total_completion_tokens,
     }
 
 
@@ -283,15 +292,24 @@ def main():
                 "workflow": result["workflow"],
                 "execution_states": execution_states,
                 "remaining_issues": result.get("remaining_issues"),
+                "prompt_tokens": result.get("prompt_tokens", 0),
+                "completion_tokens": result.get("completion_tokens", 0),
             }
         )
-        print(f"  -> done in {result['attempt']} attempt(s), {len(execution_states)} execution states")
+        print(f"  -> done in {result['attempt']} attempt(s), {len(execution_states)} execution states, "
+              f"{result.get('completion_tokens', 0)} output tokens")
 
         # save after every record so a crash doesn't lose progress
         with open(args.output, "w", encoding="utf-8") as f:
             yaml.dump(results, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
 
+    #token usage summary for comparing json vs yaml efficiency
+    total_prompt = sum(r.get("prompt_tokens", 0) for r in results)
+    total_completion = sum(r.get("completion_tokens", 0) for r in results)
     print(f"\nSaved {len(results)} results to {args.output}")
+    print(f"Token usage — prompt: {total_prompt:,}  completion: {total_completion:,}  total: {total_prompt + total_completion:,}")
+    if results:
+        print(f"  avg per procedure — prompt: {total_prompt // len(results):,}  completion: {total_completion // len(results):,}")
 
 
 if __name__ == "__main__":
