@@ -109,12 +109,17 @@ def main():
 
     #per-complexity buckets: linear (0 gateways), simple (1 gateway), complex (2+ gateways)
     #we group by ground truth gateway count so the categories are stable across runs
-    complexity_buckets = {"linear (0 gw)": [], "simple (1 gw)": [], "complex (2+ gw)": []}
+    #3 complexity buckets based on ground truth gateway count
+    complexity_buckets = {
+        "linear (0 gw)": [],
+        "simple (1 gw)": [],
+        "complex (2+ gw)": [],
+    }
 
     def _bucket_name(gt_gw_count):
         if gt_gw_count == 0:
             return "linear (0 gw)"
-        elif gt_gw_count == 1:
+        if gt_gw_count == 1:
             return "simple (1 gw)"
         return "complex (2+ gw)"
 
@@ -149,6 +154,9 @@ def main():
     print(f"Gateway type acc:   {totals['gateway_type_acc']/n:.3f}")
 
     print(f"Branch tuple F1:    {totals['branch_tuple_f1']/n:.3f}")
+
+    total_completion = sum(p.get("completion_tokens", 0) for p in predictions)
+    print(f"Avg completion tokens: {total_completion // n if n else 0:,}")
 
     #per-complexity breakdown so we can see where the extractor struggles
     print()

@@ -201,7 +201,8 @@ def main():
     parser.add_argument("--max_attempts", type=int, default=3)
     parser.add_argument("--no_rag", action="store_true", help="Disable RAG retrieval tool")
     parser.add_argument("--rag_k", type=int, default=1, help="Number of similar procedures to retrieve")
- 
+    parser.add_argument("--no_checker", action="store_true", help="Disable LLM semantic checker (critic)")
+    parser.add_argument("--no_memory", action="store_true", help="Disable reflexion memory across procedures")
     parser.add_argument("--limit", type=int, default=0, help="Only process first N procedures")
     args = parser.parse_args()
 
@@ -225,7 +226,7 @@ def main():
     rag_kwargs = dict(pool=pool, embeddings=embeddings, rag_k=args.rag_k)
 
     #reflexion memory persists across procedures so the checker learns from past mistakes
-    reflexion_memory = ReflexionMemory()
+    reflexion_memory = None if args.no_memory else ReflexionMemory()
 
     if not args.input.exists():
         parser.error(f"Input file not found: {args.input}.")
@@ -262,7 +263,7 @@ def main():
                 args.model,
                 args.max_attempts,
                 structural_checker,
-                True,
+                not args.no_checker,
                 file_index,
                 **rag_kwargs,
                 memory=reflexion_memory,

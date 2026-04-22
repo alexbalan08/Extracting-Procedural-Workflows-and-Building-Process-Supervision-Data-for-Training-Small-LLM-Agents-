@@ -46,6 +46,29 @@ def char_similarity(a, b):
     return SequenceMatcher(None, normalize(a), normalize(b)).ratio()
 
 
+#polar equivalence for branch conditions — catches cases where Jaccard and char similarity both fail
+#e.g. "no" vs "not approved" have 0 shared words and low char overlap but mean the same thing
+#group 0 = positive outcome, group 1 = negative outcome
+#a condition belongs to a group if any of its words is in that group
+#presence of "not" flips the group so "not approved" ends up in group 1 (negative)
+_POLAR_GROUPS = [
+    {"yes", "true", "approved", "accepted", "ok", "pass", "success", "valid",
+     "complete", "known", "correct", "positive", "available", "present"},
+    {"no", "false", "rejected", "denied", "declined", "fail", "failure",
+     "invalid", "incomplete", "unknown", "incorrect", "negative", "unavailable", "absent"},
+]
+
+def _polar_group(text):
+    t = normalize(text)
+    had_not = "not " in t or t.startswith("no ") or t == "no"
+    stripped = t.replace("not ", "").replace("no ", "").strip() or t
+    words = set(stripped.split())
+    for i, group in enumerate(_POLAR_GROUPS):
+        if words & group:
+            return 1 - i if had_not else i
+    return None
+
+
 #first tries word overlap then falls back to character similarity
 #example char match where gt="initialise" pred="initialize" no word overlap but char_similarity around 0.90
 def fuzzy_name_match(name_a, name_b, char_threshold=0.6):
@@ -145,7 +168,7 @@ def validate_record(gt_workflow, pred_workflow):
             for b in gw_branches.get(node_id, []):
                 nxt = b.get("next")
                 if nxt:
-                    result = reach_actions(nxt, visited)
+                    result |= reach_actions(nxt, visited)
             return result
 
         edges = set()
@@ -257,6 +280,12 @@ def validate_record(gt_workflow, pred_workflow):
                     jaccard = len(gt_w & pred_w) / len(gt_w | pred_w)
                     cond_ok = jaccard >= cond_threshold or char_similarity(gt_cond, pred_cond) >= 0.5 #0.5 because they can get longer than actions and 0.6 would be too strict
                     #for conditions we fallback also to edit distance because we can have "approval" ad "approved"
+                    #polar equivalence catches "no" vs "not approved" etc that jaccard and char similarity both miss
+                    if not cond_ok:
+                        gt_polar = _polar_group(gt_cond)
+                        pred_polar = _polar_group(pred_cond)
+                        if gt_polar is not None and gt_polar == pred_polar:
+                            cond_ok = True
 
                 if cond_ok:
                     tp += 1
@@ -358,14 +387,17 @@ def main():
     print(f"Ground truth: {args.gt}")
     print()
 
-    #per-complexity buckets: linear (0 gateways), simple (1 gateway), complex (2+ gateways)
-    #we group by ground truth gateway count so the categories are stable across runs
-    complexity_buckets = {"linear (0 gw)": [], "simple (1 gw)": [], "complex (2+ gw)": []}
+    #3 complexity buckets based on ground truth gateway count
+    complexity_buckets = {
+        "linear (0 gw)": [],
+        "simple (1 gw)": [],
+        "complex (2+ gw)": [],
+    }
 
     def _bucket_name(gt_gw_count):
         if gt_gw_count == 0:
             return "linear (0 gw)"
-        elif gt_gw_count == 1:
+        if gt_gw_count == 1:
             return "simple (1 gw)"
         return "complex (2+ gw)"
 
@@ -376,7 +408,7 @@ def main():
             print(f"  WARNING: file_index={fidx} not found in GT — skipping")
             continue
         if pred.get("workflow") is None:
-            #null workflow means the extractor gave up or returned unparseable json, we skip but dont crash
+            #null workflow means the extractor returned unparseable json, we skip 
             print(f"  WARNING: file_index={fidx} has null workflow — skipping")
             continue
 
@@ -400,11 +432,13 @@ def main():
     print(f"Gateway F1:         {totals['gateway_f1']/n:.3f}  (avg FN={totals['gateway_fn']/n:.1f}, avg FP={totals['gateway_fp']/n:.1f})")
     print(f"Gateway type acc:   {totals['gateway_type_acc']/n:.3f}")
 
+    total_completion = sum(p.get("completion_tokens", 0) for p in predictions)
+    print(f"Avg tokens per procedure extracted: {total_completion // n if n else 0:,}")
     print(f"Branch tuple F1:    {totals['branch_tuple_f1']/n:.3f}")
 
-    #per-complexity breakdown so we can see where the extractor struggles
+
     print()
-    print(f"--- BY COMPLEXITY ---")
+    print(f"    BY COMPLEXITY   ")
     for bucket_name, bucket_metrics in complexity_buckets.items():
         bn = len(bucket_metrics)
         if bn == 0:

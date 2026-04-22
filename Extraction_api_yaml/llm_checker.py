@@ -13,11 +13,43 @@
 from openai import OpenAI
 import yaml
 
-#reuse the same ReflexionMemory class from the json checker
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent / "Extraction_api"))
-from llm_checker import ReflexionMemory
+#max number of past issues to keep in memory so we dont blow up the context window
+MAX_MEMORY_SIZE = 15
+
+
+class ReflexionMemory:
+    #keeps a running list of issues found across procedures
+    #the checker sees these as context so it can catch recurring patterns
+    #same class as in the json checker but kept local to avoid sys.path hacks
+
+    def __init__(self, max_size=MAX_MEMORY_SIZE):
+        self.issues = []
+        self.max_size = max_size
+
+    def add(self, new_issues, file_index=None):
+        for issue in new_issues:
+            entry = f"[file_index={file_index}] {issue}" if file_index else issue
+            self.issues.append(entry)
+        if len(self.issues) > self.max_size:
+            self.issues = self.issues[-self.max_size:]
+
+    def format_for_prompt(self, fmt="yaml"):
+        if not self.issues:
+            return ""
+        header = (
+            "\n\n─── REFLEXION MEMORY ──────────────────────────────────────────────────────\n"
+            "Below are issues found in PREVIOUS extractions. Use them to catch recurring patterns.\n"
+            "Do NOT blindly copy these — only flag an issue if it actually exists in the current extraction.\n\n"
+        )
+        if fmt == "yaml":
+            body = yaml.dump(self.issues, allow_unicode=True, default_flow_style=False)
+        else:
+            import json
+            body = json.dumps(self.issues, indent=2, ensure_ascii=False)
+        return header + body
+
+    def __len__(self):
+        return len(self.issues)
 
 CHECKER_SYSTEM_PROMPT = """You are an expert workflow validator. You will be given:
 1. An original procedure text
