@@ -1,6 +1,6 @@
-# Extraction pipeline: procedure text → structured workflow YAML + execution states
-# Same as JSON version but prompts and parsing use YAML format
-# Output file is still JSON for pipeline compatibility with validation and PRM scripts
+#extraction pipeline: procedure text → structured workflow YAML + execution states
+#same as JSON version but prompts and parsing use YAML format
+
 
 import argparse
 import json
@@ -18,6 +18,22 @@ from prompts import SYSTEM_PROMPT, FEW_SHOT_EXAMPLES
 from llm_checker import check_with_llm, ReflexionMemory
 from retrieval import build_example_pool, retrieve_similar_workflows, format_retrieval_results
 from trace_builder import build_traces
+
+
+#PyYAML defaults to YAML 1.1, which parses unquoted Yes/No/On/Off/True/False as booleans.
+#Branch conditions like "Yes" / "No" / "Approved" must stay as strings, so we strip the
+#bool resolver from a SafeLoader subclass and use it everywhere we load model YAML output.
+class _SafeLoaderNoBool(yaml.SafeLoader):
+    pass
+
+_SafeLoaderNoBool.yaml_implicit_resolvers = {
+    k: [(tag, regex) for tag, regex in v if tag != "tag:yaml.org,2002:bool"]
+    for k, v in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
+
+
+def _yaml_load(text_or_stream):
+    return yaml.load(text_or_stream, Loader=_SafeLoaderNoBool)
 
 #note added to system prompt when RAG is enabled
 _RAG_NOTE = (
@@ -77,7 +93,7 @@ def parse_response(response_text: str) -> tuple[str, dict | None]:
     if not block:
         return reasoning, None
     try:
-        workflow = yaml.safe_load(block.group(1).strip())
+        workflow = _yaml_load(block.group(1).strip())
     except yaml.YAMLError:
         #fallback to json.loads in case it was actually json inside yaml block
         try:
@@ -200,7 +216,7 @@ def extract_workflow(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Extract workflows with GPT 5.4 mini — YAML format (3-shot + RAG + self-refine)")
+    parser = argparse.ArgumentParser(description="Extract workflows with GPT 5.4  — YAML format (5-shot + RAG + self-refine)")
     default_input = PROJECT_ROOT / "Data" / "Processed" / "extracted_test.json"
     default_train = PROJECT_ROOT / "Data" / "Processed" / "extracted_train.json"
     parser.add_argument("--input", type=Path, default=default_input, help="Path to input JSON (default: extracted_test.json)")
@@ -221,6 +237,37 @@ def main():
     client = OpenAI(api_key=api_key)
     structural_checker = StructuralChecker()
 
+    if not args.input.exists():
+        parser.error(f"Input file not found: {args.input}.")
+
+    with open(args.input, encoding="utf-8") as f:
+        records = json.load(f)
+
+    if args.limit:
+        records = records[: args.limit]
+
+    # resume: load already-processed results FIRST so we can short-circuit before any slow setup
+    results = []
+    done_indices = set()
+    if args.output.exists():
+        print(f"Loading existing predictions from {args.output} ...")
+        with open(args.output, encoding="utf-8") as f:
+            results = _yaml_load(f) or []
+        done_indices = {r["file_index"] for r in results}
+
+    input_indices = [record.get("file_index", i) for i, record in enumerate(records)]
+    remaining = [idx for idx in input_indices if idx not in done_indices]
+    print(f"Resume status: {len(done_indices)} already done, {len(remaining)} remaining out of {len(records)} input records")
+
+    #nothing left to do — skip the slow RAG pool build entirely
+    if not remaining:
+        print("All input procedures already extracted — nothing to do.")
+        total_completion = sum(r.get("completion_tokens", 0) for r in results)
+        print(f"Saved {len(results)} results to {args.output}")
+        if results:
+            print(f"Avg completion tokens per procedure: {total_completion // len(results):,}")
+        return
+
     #we load the embedded procedures for RAG only once at startup same OpenAI client
     pool, embeddings = None, None
     if not args.no_rag:
@@ -236,25 +283,6 @@ def main():
 
     #reflexion memory persists across procedures so the checker learns from past mistakes
     reflexion_memory = None if args.no_memory else ReflexionMemory()
-
-    if not args.input.exists():
-        parser.error(f"Input file not found: {args.input}.")
-
-    with open(args.input, encoding="utf-8") as f:
-        records = json.load(f)
-
-    if args.limit:
-        records = records[: args.limit]
-
-    # resume: load already-processed results so a crashed run can continue
-    results = []
-    done_indices = set()
-    if args.output.exists():
-        with open(args.output, encoding="utf-8") as f:
-            results = yaml.safe_load(f) or []
-        done_indices = {r["file_index"] for r in results}
-        if done_indices:
-            print(f"Resuming — {len(done_indices)} already done: {sorted(done_indices)}")
 
     for i, record in enumerate(records):
         file_index = record.get("file_index", i)

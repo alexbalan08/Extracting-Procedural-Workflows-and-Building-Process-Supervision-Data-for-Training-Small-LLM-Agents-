@@ -34,6 +34,18 @@ from validate_results import (
 )
 
 
+#PyYAML defaults to YAML 1.1 and parses unquoted Yes/No/On/Off/True/False as booleans.
+#Branch conditions like "Yes"/"No"/"Approved" must stay as strings, so we strip the
+#bool resolver from a SafeLoader subclass for any read of the predictions file.
+class _SafeLoaderNoBool(yaml.SafeLoader):
+    pass
+
+_SafeLoaderNoBool.yaml_implicit_resolvers = {
+    k: [(tag, regex) for tag, regex in v if tag != "tag:yaml.org,2002:bool"]
+    for k, v in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
+
+
 def main():
     parser = argparse.ArgumentParser(description="Validate YAML extraction predictions against YAML ground truth")
     _here = Path(__file__).parent
@@ -46,7 +58,7 @@ def main():
     args = parser.parse_args()
 
     with open(args.predictions, encoding="utf-8") as f:
-        predictions = yaml.safe_load(f) or []
+        predictions = yaml.load(f, Loader=_SafeLoaderNoBool) or []
 
     #keep only the same file_indices as the json extraction so the comparison is fair
     #the json predictions already had the holdout removed and the filter applied
