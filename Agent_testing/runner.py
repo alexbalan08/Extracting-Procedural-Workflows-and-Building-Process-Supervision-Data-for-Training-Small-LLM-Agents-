@@ -1,9 +1,7 @@
 
-#we run each plaer on each held-out procedure and save the picked action
-#trajectory for manual val
-
-#one held-out procedure plus the action names the
-#extractor predicted for it (the candidates the agent chooses from).
+#we run each agent on every predicted branch of every held-out procedure and save the picks
+#paths come from the EXTRACTED graph (extraction_predictions.json execution_states) so this
+#evaluates the end-to-end pipeline — exactly what prepare_prm_data.py does at training time
 
 
 import json
@@ -20,109 +18,121 @@ class PlanningAgent:
 
 @dataclass
 class ProcedureCase:
-    #One held-out procedure paired with the action list the extractor pipelie geerated
-    #we will use the list of actios extracted to see if helps model to hallucinate less
+    #one held-out procedure plus the predicted graph the extractor produced
     file_index: int
     procedure_text: str
-    pred_action_names: list[str]   #extracted action
+    pred_action_names: list[str]            #candidates for methods 2/3
+    pred_id_to_name: dict[str, str]         #predicted action ID → predicted action name
+    pred_execution_states: list[dict]       #predicted execution graph (action IDs)
 
     @classmethod
     def build(cls, held_out_record: dict, prediction_record: dict) -> "ProcedureCase":
-        #We pull the action names (not ids) from the predicted workflow because the PRM was trained on names 
-        pred_actions = (prediction_record.get("workflow") or {}).get("actions") or []
+        wf = prediction_record.get("workflow") or {}
+        pred_actions = wf.get("actions") or []
         return cls(
             file_index=held_out_record["file_index"],
             procedure_text=held_out_record["procedure_text"],
             pred_action_names=[a["name"] for a in pred_actions],
+            pred_id_to_name={a["id"]: a["name"] for a in pred_actions},
+            pred_execution_states=prediction_record.get("execution_states") or [],
         )
 
 
-def walk_trajectory(case: ProcedureCase, agent: PlanningAgent, max_steps: int = 20,
-                    give_candidates: bool = True) -> list[dict]:
-    #Roll the agent forward for up to max_steps. The chosen action is appended to
-    #`completed` and fed back on the next call. There is NO termination check —
-    #the trace runs the full max_steps so the user sees what the model would do
-    #(loops, repeats, dead-ends are all visible in the saved sequence).
-    #
-    #Worked example (max_steps=3, give_candidates=True):
-    #   case.pred_action_names = ["Submit Form", "Review Form", "Approve Form"]
-    #
-    #   step 1: completed=[]                      → agent picks "Submit Form"
-    #           trace[0] = {step:1, completed_before:[],            picked:"Submit Form"}
-    #   step 2: completed=["Submit Form"]         → agent picks "Review Form"
-    #           trace[1] = {step:2, completed_before:["Submit Form"], picked:"Review Form"}
-    #   step 3: completed=["Submit Form","Review Form"] → agent picks "Approve Form"
-    #           trace[2] = {step:3, completed_before:[...],          picked:"Approve Form"}
-    #
-    #   returns [trace[0], trace[1], trace[2]]
+def enumerate_paths(execution_states: list[dict], max_depth: int = 30) -> list[list[str]]:
+    #walk the execution-state graph and return one action-id sequence per distinct path
+    #from start to a can_terminate=True state. Loops are bounded because trace_builder
+    #pre-enumerates a finite list of states upstream.
+    by_prefix: dict[tuple, list[dict]] = {}
+    for s in execution_states:
+        by_prefix.setdefault(tuple(s["completed_actions"]), []).append(s)
 
-    #Method 1 (llama_bare) sets give_candidates=False so the agent generates free-form
+    paths: list[list[str]] = []
+
+    def walk(prefix: tuple, depth: int):
+        if depth > max_depth:
+            return
+        states = by_prefix.get(prefix)
+        if not states:
+            return
+
+        nexts: set[str] = set()
+        terminal = False
+        for s in states:
+            if s.get("can_terminate"):
+                terminal = True
+            nexts.update(s["available_next"])
+
+        if terminal:
+            #a terminal state with no outgoing options is a finished path
+            #(if it also has options, callers can both stop here and continue — keep both)
+            paths.append(list(prefix))
+            if not nexts:
+                return
+
+        for nxt in sorted(nexts):
+            walk(prefix + (nxt,), depth + 1)
+
+    walk((), 0)
+    return paths
+
+
+def walk_trajectories(case: ProcedureCase, agent: PlanningAgent,
+                      give_candidates: bool = True) -> list[dict]:
+    #for each predicted path, ask the agent at every step what it would pick given the
+    #path's history. We advance along the predicted path (teacher-forced) so each branch
+    #produces its own clean trace — the agent's pick is recorded next to what the path expects.
     candidates = case.pred_action_names if give_candidates else None
     if give_candidates and not candidates:
-        return []  #no extracted actions for this procedure, nothing to give the agent
+        return []
 
-    completed: list[str] = []
-    trace: list[dict] = []
-    for step_num in range(1, max_steps + 1):
-        picked, info = agent.pick(case.procedure_text, completed, candidates)
-        #Spread `info` into the step dict so PRM scores / raw responses appear inline
-        trace.append({
-            "step": step_num,
-            "completed_before": list(completed),
-            "picked": picked,
-            **info,
+    paths = enumerate_paths(case.pred_execution_states)
+    if not paths:
+        return []
+
+    trajectories: list[dict] = []
+    for branch_idx, path_ids in enumerate(paths):
+        path_names = [case.pred_id_to_name.get(aid, aid) for aid in path_ids]
+        completed_names: list[str] = []
+        steps: list[dict] = []
+        for step_idx, expected_name in enumerate(path_names):
+            picked, info = agent.pick(case.procedure_text, completed_names, candidates)
+            steps.append({
+                "step": step_idx + 1,
+                "completed_before": list(completed_names),
+                "expected": expected_name,
+                "picked": picked,
+                **info,
+            })
+            #advance along the predicted path, NOT the agent's pick — keeps the branch clean
+            completed_names.append(expected_name)
+        trajectories.append({
+            "branch": branch_idx,
+            "path": path_names,
+            "steps": steps,
         })
-        completed.append(picked)
-    return trace
+    return trajectories
 
 
 def run_inference(cases: list[ProcedureCase], agent: PlanningAgent,
-                  max_steps: int = 20, give_candidates: bool = True) -> list[dict]:
-    #Run the agent on every case and return a list of saved-trace records.
-    #
-    #Output record shape (one per procedure):
-    #   {
-    #     "file_index": 1623832427,
-    #     "procedure_text": "To start, reach out to the 1st Level Support...",
-    #     "predicted_actions": ["Reach out to ...", "Provide feedback ...", ...],
-    #     "picked_sequence":   ["Reach out to ...", "Provide feedback ...", ...],
-    #     "steps": [
-    #         { "step": 1, "completed_before": [], "picked": "...",
-    #           "raw_response": "..."          # Llama agents
-    #           "scores": {cand: P(yes), ...} # PRM agent
-    #         },
-    #         ...
-    #     ]
-    #   }
+                  give_candidates: bool = True) -> list[dict]:
     out = []
     for i, case in enumerate(cases):
+        n_paths = len(enumerate_paths(case.pred_execution_states))
         print(f"[{i+1}/{len(cases)}] file_index={case.file_index} "
-              f"({len(case.pred_action_names)} pred actions)")
-        trajectory = walk_trajectory(case, agent, max_steps, give_candidates)
+              f"({len(case.pred_action_names)} pred actions, {n_paths} predicted paths)")
+        trajectories = walk_trajectories(case, agent, give_candidates)
         out.append({
             "file_index": case.file_index,
             "procedure_text": case.procedure_text,
             "predicted_actions": case.pred_action_names if give_candidates else None,
-            #compact view first — just the picked sequence, ready for eyeballing
-            "picked_sequence": [t["picked"] for t in trajectory],
-            #full per-step record with diagnostics (raw model output / PRM scores)
-            "steps": trajectory,
+            "trajectories": trajectories,
         })
     return out
 
 
 def load_cases(held_out_path: Path, predictions_path: Path) -> list[ProcedureCase]:
-    #Join held-out gold with extraction predictions on file_index. We need both:
-    #  - held_out: gives us procedure_text and the file_index keyspace
-    #  - predictions: gives us the predicted action names (the candidate list)
-    #
-    #Procedures with no matching prediction (or null workflow) are skipped — the
-    #agent would have nothing to choose from in methods 2/3.
-    #
-    #Example join:
-    #   held_out has: [{file_index: 100, procedure_text: "...", ...}, ...]
-    #   predictions has: [{file_index: 100, workflow: {actions: [...]}}, ...]
-    #   → ProcedureCase(file_index=100, procedure_text="...", pred_action_names=[...])
+    #held_out: gives us procedure_text and the file_index keyspace
+    #predictions: gives us predicted actions AND the execution-state graph for path enumeration
     with open(held_out_path, encoding="utf-8") as f:
         held_out = json.load(f)
     with open(predictions_path, encoding="utf-8") as f:
@@ -133,10 +143,10 @@ def load_cases(held_out_path: Path, predictions_path: Path) -> list[ProcedureCas
     skipped = 0
     for record in held_out:
         pred = pred_by_idx.get(record["file_index"])
-        if pred is None or pred.get("workflow") is None:
+        if pred is None or pred.get("workflow") is None or not pred.get("execution_states"):
             skipped += 1
             continue
         cases.append(ProcedureCase.build(record, pred))
 
-    print(f"Loaded {len(cases)} cases (skipped {skipped} with no prediction or null workflow)")
+    print(f"Loaded {len(cases)} cases (skipped {skipped} with no prediction / null workflow / no execution states)")
     return cases

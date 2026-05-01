@@ -1,12 +1,11 @@
 #runs one of the three agents over the held-out procedures and saves the picked traces
 #we use this to manually compare the methods later
 
-#  python run_eval.py --method llama_bare      method 1: vanilla llama, no actions list
-#  python run_eval.py --method llama_actions   method 2: llama + extracted actions
-#  python run_eval.py --method prm             method 3: prm as the picker
+#  python run_eval.py --method llama_bare      
+#  python run_eval.py --method llama_actions  
+#  python run_eval.py --method prm            
 
 #each loads its own model so run them sequentially
-#flags: --limit N for a smoke test, --max_steps N to cap rollout length
 
 import argparse
 import json
@@ -42,8 +41,6 @@ def main():
     parser.add_argument("--held_out", type=Path, default=DEFAULT_HELD_OUT)
     parser.add_argument("--predictions", type=Path, default=DEFAULT_PREDICTIONS)
     parser.add_argument("--output_dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--max_steps", type=int, default=20,
-                        help="Number of steps to roll the agent forward per procedure")
     parser.add_argument("--limit", type=int, default=0,
                         help="Only run the first N procedures (0 = all)")
     args = parser.parse_args()
@@ -58,11 +55,9 @@ def main():
     agent = make_agent(args.method)
 
     print(f"\nRunning method={args.method} on {len(cases)} procedures "
-          f"(give_candidates={give_candidates}, max_steps={args.max_steps})\n")
+          f"(give_candidates={give_candidates})\n")
 
-
-    traces = run_inference(cases, agent, max_steps=args.max_steps,
-                           give_candidates=give_candidates)
+    traces = run_inference(cases, agent, give_candidates=give_candidates)
 
 
     out_path = args.output_dir / f"inference_{args.method}.json"

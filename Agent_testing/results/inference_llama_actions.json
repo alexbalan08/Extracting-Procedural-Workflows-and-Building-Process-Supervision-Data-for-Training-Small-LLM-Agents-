@@ -1,0 +1,98 @@
+[
+  {
+    "file_index": 1623832427,
+    "procedure_text": "To start, reach out to the 1st Level Support. If they are able to handle the issue, provide feedback to the account manager. If not, ask a developer for assistance. After receiving assistance from the 1st Level Support or the developer, provide feedback to the account manager. Finally, provide feedback to the 1st Level Support and the account manager.",
+    "predicted_actions": [
+      "Reach out to the 1st Level Support",
+      "Provide feedback to the account manager",
+      "Ask a developer for assistance",
+      "Provide feedback to the 1st Level Support"
+    ],
+    "trajectories": [
+      {
+        "branch": 0,
+        "path": [
+          "Reach out to the 1st Level Support",
+          "Ask a developer for assistance",
+          "Provide feedback to the account manager",
+          "Provide feedback to the 1st Level Support"
+        ],
+        "steps": [
+          {
+            "step": 1,
+            "completed_before": [],
+            "expected": "Reach out to the 1st Level Support",
+            "picked": "Reach out to the 1st Level Support",
+            "raw_response": "Reach out to the 1st Level Support"
+          },
+          {
+            "step": 2,
+            "completed_before": [
+              "Reach out to the 1st Level Support"
+            ],
+            "expected": "Ask a developer for assistance",
+            "picked": "Provide feedback to the account manager",
+            "raw_response": "Provide feedback to the account manager"
+          },
+          {
+            "step": 3,
+            "completed_before": [
+              "Reach out to the 1st Level Support",
+              "Ask a developer for assistance"
+            ],
+            "expected": "Provide feedback to the account manager",
+            "picked": "Provide feedback to the account manager",
+            "raw_response": "Provide feedback to the account manager"
+          },
+          {
+            "step": 4,
+            "completed_before": [
+              "Reach out to the 1st Level Support",
+              "Ask a developer for assistance",
+              "Provide feedback to the account manager"
+            ],
+            "expected": "Provide feedback to the 1st Level Support",
+            "picked": "Provide feedback to the 1st Level Support",
+            "raw_response": "Provide feedback to the 1st Level Support"
+          }
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Reach out to the 1st Level Support",
+          "Provide feedback to the account manager",
+          "Provide feedback to the 1st Level Support"
+        ],
+        "steps": [
+          {
+            "step": 1,
+            "completed_before": [],
+            "expected": "Reach out to the 1st Level Support",
+            "picked": "Reach out to the 1st Level Support",
+            "raw_response": "Reach out to the 1st Level Support"
+          },
+          {
+            "step": 2,
+            "completed_before": [
+              "Reach out to the 1st Level Support"
+            ],
+            "expected": "Provide feedback to the account manager",
+            "picked": "Provide feedback to the account manager",
+            "raw_response": "Provide feedback to the account manager"
+          },
+          {
+            "step": 3,
+            "completed_before": [
+              "Reach out to the 1st Level Support",
+              "Provide feedback to the account manager"
+            ],
+            "expected": "Provide feedback to the 1st Level Support",
+            "picked": "Ask a developer for assistance",
+            "raw_response": "Ask a developer for assistance"
+          }
+        ]
+      }
+    ]
+  }
+]
