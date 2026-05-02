@@ -3,7 +3,7 @@
 #we have the RAG implemented anyways if more context is needed
 
 
-#!!the prompts were refined using Claude Code!!
+
 
 
 SYSTEM_PROMPT = """You are an expert procedural workflow analyst. Given a natural-language procedure description, extract a fully structured workflow. It will be used to train a PRM and agent for planning tasks.
@@ -19,7 +19,6 @@ actions       : list of action objects, one per step/activity:
   name        : str  – EXACT wording from the procedure text (do not paraphrase)
   predecessors: list[str] – action IDs (or "start") that immediately precede this action
   successors  : list[str] – action IDs or gateway IDs that immediately follow
-  postconditions: ["{id}_done"]
 
 gateways      : list of gateway objects (only when the flow branches or merges):
   id          : str  – "gateway_{type}_{index}" (e.g. "gateway_xor_3")
@@ -60,7 +59,7 @@ PARALLEL fan-out (rare):
 ─── OUTPUT FORMAT ─────────────────────────────────────────────────────────────
 
 <reasoning>
-Step 0 — Scan for signals: loop? parallel fan-out? multi-branch convergence?
+Step 0 — Scan for signals: loop? parallel? multi-branch convergence?
 Step 1 — Identify actions with their IDs.
 Step 2 — Trace predecessors and successors.
 Step 3 — Identify gateways (splits, merges, loop-backs).
@@ -282,7 +281,7 @@ Step 3 — Gateways:
 #example 4 XOR loop with exit condition (artificial)
 #targets the loop-detection failure mode: "again" / "repeat" caused sequential
 #duplication instead of a cycle back via merge gateway. most valuable artificial
-#example — no real PAGED example in the selected set shows this pattern cleanly.
+
 _EX4_PROCEDURE = (
     "To process the request, first review the submission. "
     "If changes are needed, send it back to the author for revision, then review "
@@ -360,9 +359,9 @@ Step 3 — Gateways:
 }
 ```"""
 
-#example 5 parallel fan-out without a split gateway (artificial)
+#example 5
 #"also" / "and" signals without a synchronization requirement
-#kept because the merge-based examples above do not show multi-successor fan-out
+#kept because the merge-based examples above do not show multi-successor
 _EX5_PROCEDURE = (
     "After receiving the invoice, the clerk records it in the ledger. "
     "The clerk also files the invoice in the archive. "
@@ -414,7 +413,6 @@ Step 3 — Gateways: none. Unconditional fan-out uses direct multi-successor edg
 
 #those i picked manually such they innclude examples or OR gateways, AND gatways and liear as well
 #EX4 covers loops with exit conditions, EX5 covers parallel fan-out without split gateway
-#dropped the synthetic XOR-merge example (EX4 in previous version) since EX3 already
 #shows the merge-before-convergence pattern and we have many real PAGED merges in RAG
 FEW_SHOT_EXAMPLES = [
     (1310881958, _EX1_PROCEDURE, _EX1_OUTPUT),

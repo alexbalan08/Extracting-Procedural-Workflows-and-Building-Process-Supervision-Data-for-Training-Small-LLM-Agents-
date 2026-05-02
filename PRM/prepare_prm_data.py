@@ -59,6 +59,13 @@ def generate_answer(label: int, step_index: int, corruption_type, corruption_det
         elif corruption_type == "premature_stop":
             return (f"No. Error: premature_stop. "
                     f"Execution ended at step {corruption_detail['stopped_at']} of {corruption_detail['full_length']}.")
+        elif corruption_type == "repeat_completed":
+            return (f"No. Error: repeat_completed. "
+                    f"Action '{corruption_detail['repeated_action']}' was already completed earlier.")
+        elif corruption_type == "wrong_start":
+            return (f"No. Error: wrong_start. "
+                    f"Procedure should begin with '{corruption_detail['correct_first']}', "
+                    f"not '{corruption_detail['wrong_first']}'.")
 
     #cascading errors after the first wrong step get a plain No
     return "No"
@@ -129,9 +136,17 @@ def main():
         corruption_type   = trace.get("corruption_type")
         corruption_detail = trace.get("corruption_detail")
 
-        #expand the trace into one training example per step
-        #steps_so_far starts empty (the agent always begins from scratch)
-        for i, step in enumerate(steps):
+        #for corrupted traces, only emit the labeled-wrong step (one No example per trace)
+        #the leading Yes steps in a corrupted trace are byte-identical to the positive path's Yes steps
+        #emitting them duplicates positives and inflates dataset size for no signal
+        #for positive traces, emit every step as Yes (this is where all positives come from)
+        if corruption_detail and "first_wrong_step" in corruption_detail:
+            indices_to_emit = [corruption_detail["first_wrong_step"]]
+        else:
+            indices_to_emit = list(range(len(steps)))
+
+        for i in indices_to_emit:
+            step         = steps[i]
             steps_so_far = [s["action"] for s in steps[:i]]
             candidate    = step["action"]
             label        = step["label"]
@@ -151,14 +166,20 @@ def main():
         for ex in examples:
             f.write(json.dumps(ex, ensure_ascii=False) + "\n")
 
+    #count answers — every negative now starts with "No. Error: ..." after cascade cut,
+    #so we match any answer beginning with "No" to capture both plain "No" and explained negatives
     n_yes = sum(1 for e in examples if e["messages"][-1]["content"] == "Yes")
-    n_no  = sum(1 for e in examples if e["messages"][-1]["content"] == "No")
+    n_no  = sum(1 for e in examples if e["messages"][-1]["content"].startswith("No"))
+    n_no_explained = sum(1 for e in examples if e["messages"][-1]["content"].startswith("No. Error: "))
+    n_no_plain     = n_no - n_no_explained
 
     print(f"Traces processed : {len(traces)}")
     print(f"Step examples    : kept={kept}  dropped={dropped}")
-    print(f"  Yes (correct)  : {n_yes}")
-    print(f"  No  (wrong)    : {n_no}")
-    print(f"  Ratio          : 1 : {n_no / max(n_yes, 1):.1f}")
+    print(f"  Yes (correct)        : {n_yes}")
+    print(f"  No  (wrong)          : {n_no}")
+    print(f"    with explanation   : {n_no_explained}")
+    print(f"    plain (cascade)    : {n_no_plain}")
+    print(f"  Ratio                : 1 : {n_no / max(n_yes, 1):.2f}")
     print(f"Saved to {OUTPUT_PATH}")
 
 

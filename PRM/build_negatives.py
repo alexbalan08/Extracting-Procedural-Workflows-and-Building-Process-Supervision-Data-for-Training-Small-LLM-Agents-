@@ -2,10 +2,14 @@
 #Each records execution_states are split into individual execution paths
 #and converted to flat sequences of human-readable action names.
 
-#we will do skip_action which drops an action and from that point we have label 0 
+#we will do skip_action which drops an action and from that point we have label 0
 #swap_adjacent where we swap two consecutive actions
-#wrong_branch at a split we continue with actions from the wrong branch (the wrong condition) 
-#premature_stop just fiish faster all steps are correct but can_terminate will be null 
+#wrong_branch at a split we continue with actions from the wrong branch (the wrong condition)
+#premature_stop just fiish faster all steps are correct but can_terminate will be null
+#repeat_completed replaces a step with a previously completed action — teaches the PRM not to score
+#  already-done actions highly (failure mode seen in held-out: PRM picks the very first action again at step 2)
+#wrong_start replaces the very first action with a wrong one — currently no corruption produces a step-0
+#  negative so the PRM defaults to ~0.99 confidence on every candidate at trajectory start
 
 #we need to show the corruption type and the step so the traces are easy to follow by non experts humans
 
@@ -134,9 +138,12 @@ def corrupt_wrong_branch(steps, all_paths_steps, path_idx):
     """After a shared prefix, continue with actions from a different branch."""
     current = steps
 
-    for other_idx, other in enumerate(all_paths_steps):
-        if other_idx == path_idx:
-            continue
+    #shuffle so calling this multiple times per path picks different "other" branches
+    other_indices = [i for i in range(len(all_paths_steps)) if i != path_idx]
+    random.shuffle(other_indices)
+
+    for other_idx in other_indices:
+        other = all_paths_steps[other_idx]
 
         #to find where the two paths diverge
         diverge_at = None
@@ -165,6 +172,61 @@ def corrupt_wrong_branch(steps, all_paths_steps, path_idx):
     return None
 
 
+#replaces a step with an action that was already completed earlier in the same trace
+#cascades label=0 from that point on — the action is wrong and any continuation off this branch is also wrong
+#we need at least 3 steps so there is a valid pos with at least one different prior action to repeat
+def corrupt_repeat_completed(steps):
+    if len(steps) < 3:
+        return None
+
+    pos = random.randint(1, len(steps) - 1)
+    prior_actions = [s["action"] for s in steps[:pos]]
+    #must pick a prior action that isn't already what this step is — otherwise it's not a corruption
+    candidates = [a for a in prior_actions if a != steps[pos]["action"]]
+    if not candidates:
+        return None
+
+    repeated = random.choice(candidates)
+    corrupted = copy.deepcopy(steps)
+    corrupted[pos]["action"] = repeated
+
+    for s in corrupted[pos:]:
+        s["label"] = 0
+
+    return corrupted, {
+        "repeated_action": repeated,
+        "at_position": pos,
+        "first_wrong_step": pos,
+    }
+
+
+#replaces step 0 with a wrong opening action — teaches the PRM to reject incorrect first steps
+#without this, history=empty has only positive examples in training data and the PRM scores every
+#candidate at ~0.99 at trajectory start (seen in held-out: all four candidates >0.99 at step 1)
+#we need the workflow's full action set so we can pick a non-first action to substitute in
+def corrupt_wrong_start(steps, all_action_names):
+    if len(steps) < 2:
+        return None
+
+    correct_first = steps[0]["action"]
+    wrong_options = [a for a in all_action_names if a != correct_first]
+    if not wrong_options:
+        return None
+
+    wrong_first = random.choice(wrong_options)
+    corrupted = copy.deepcopy(steps)
+    corrupted[0]["action"] = wrong_first
+
+    for s in corrupted:
+        s["label"] = 0
+
+    return corrupted, {
+        "wrong_first":   wrong_first,
+        "correct_first": correct_first,
+        "first_wrong_step": 0,
+    }
+
+
 #truncates the trace at a random point before the end
 #this teaches the PRM that a trace can have all green steps and still be wrong if it stopped too early
 #lower bound is 2 so we always keep at least two steps and bcs of this we need at least 3 steps so stop_at can be strictly less than the full length
@@ -181,6 +243,7 @@ def corrupt_premature_stop(steps):
     return corrupted, {
         "stopped_at": stop_at,
         "full_length": len(steps),
+        "first_wrong_step": stop_at - 1,
     }
 
 
@@ -211,6 +274,7 @@ def main():
         states   = record.get("execution_states", [])
         workflow  = record.get("workflow", {})
         action_map = build_action_map(workflow)
+        all_action_names = list(action_map.values())
 
         paths = split_into_paths(states)
         if not paths:
@@ -241,10 +305,12 @@ def main():
             #just the wrong one, whereas premature_stop never reaches any terminal state at all
             for _ in range(args.n_per_corruption):
                 attempts = [
-                    ("skip_action",    corrupt_skip_action(steps)),
-                    ("swap_adjacent",  corrupt_swap_adjacent(steps)),
-                    ("wrong_branch",   corrupt_wrong_branch(steps, all_paths_steps, path_idx)),
-                    ("premature_stop", corrupt_premature_stop(steps)),
+                    ("skip_action",      corrupt_skip_action(steps)),
+                    ("swap_adjacent",    corrupt_swap_adjacent(steps)),
+                    ("wrong_branch",     corrupt_wrong_branch(steps, all_paths_steps, path_idx)),
+                    ("premature_stop",   corrupt_premature_stop(steps)),
+                    ("repeat_completed", corrupt_repeat_completed(steps)),
+                    ("wrong_start",      corrupt_wrong_start(steps, all_action_names)),
                 ]
                 for ctype, result in attempts:
                     if result is None:

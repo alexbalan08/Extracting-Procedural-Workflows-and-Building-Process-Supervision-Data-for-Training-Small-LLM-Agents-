@@ -9,7 +9,7 @@
 #
 #Training setup:
 #  - Llama 3.1 8B, 4-bit quantization (bitsandbytes), LoRA r=16
-#  - batch_size=1, gradient_accumulation=4 (effective batch=4) for 16GB VRAM
+#  - per_device_batch=2, gradient_accumulation=2 (effective batch=4)
 #  - max_seq_length=5120
 #  - uses transformers Trainer directly to avoid trl version hell
 
@@ -159,9 +159,11 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
 
-    #resume_from_checkpoint=True automatically finds the last checkpoint in output_dir
-    #if no checkpoint exists it starts from scratch
-    trainer.train(resume_from_checkpoint=True if Path(output_dir).exists() else False)
+    #resume only if there's actually a checkpoint subdir — Path.exists() is True for an empty
+    #pre-created directory (common on Colab when mounting Drive first) and would crash with
+    #"Can't find a valid checkpoint" otherwise
+    has_ckpt = Path(output_dir).exists() and any(Path(output_dir).glob("checkpoint-*"))
+    trainer.train(resume_from_checkpoint=has_ckpt)
     trainer.save_model(str(output_dir))
     tokenizer.save_pretrained(str(output_dir))
     print(f"PRM model saved to {output_dir}")
