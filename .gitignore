@@ -1,8 +1,4 @@
-# python cache
 __pycache__/
 *.pyc
 *.pyo
 .env
-
-# trained model weights — too large for github (160 MB > 100 MB limit)
-PRM/trained_model/adapter_model.safetensors
