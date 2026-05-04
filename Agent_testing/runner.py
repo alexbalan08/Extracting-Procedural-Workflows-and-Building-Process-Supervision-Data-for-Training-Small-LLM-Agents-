@@ -11,8 +11,13 @@ from pathlib import Path
 
 class PlanningAgent:
 
+    #predicted_states + id_to_name are optional and only used by agents that consult the
+    #extracted graph as a tool (eg the ensemble agent narrowing candidates when uncertain)
+    #other agents accept and ignore them
     def pick(self, procedure_text: str, completed_names: list[str],
-             candidate_names: list[str] | None) -> tuple[str, dict]:
+             candidate_names: list[str] | None,
+             predicted_states: list[dict] | None = None,
+             id_to_name: dict[str, str] | None = None) -> tuple[str, dict]:
         raise NotImplementedError
 
 
@@ -95,7 +100,11 @@ def walk_trajectories(case: ProcedureCase, agent: PlanningAgent,
         completed_names: list[str] = []
         steps: list[dict] = []
         for step_idx, expected_name in enumerate(path_names):
-            picked, info = agent.pick(case.procedure_text, completed_names, candidates)
+            picked, info = agent.pick(
+                case.procedure_text, completed_names, candidates,
+                predicted_states=case.pred_execution_states,
+                id_to_name=case.pred_id_to_name,
+            )
             steps.append({
                 "step": step_idx + 1,
                 "completed_before": list(completed_names),

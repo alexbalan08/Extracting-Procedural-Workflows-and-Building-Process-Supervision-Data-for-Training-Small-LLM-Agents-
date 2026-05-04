@@ -304,11 +304,13 @@ def main():
             #complete is True for all corruptions except premature_stop since those traces do reach an end
             #just the wrong one, whereas premature_stop never reaches any terminal state at all
             for _ in range(args.n_per_corruption):
+                #premature_stop dropped — it labeled the same (history, candidate) that exists
+                #as a positive elsewhere as No, creating contradictory labels the PRM cannot learn from.
+                #termination decisions belong in a trajectory-level outcome verifier, not the step PRM.
                 attempts = [
                     ("skip_action",      corrupt_skip_action(steps)),
                     ("swap_adjacent",    corrupt_swap_adjacent(steps)),
                     ("wrong_branch",     corrupt_wrong_branch(steps, all_paths_steps, path_idx)),
-                    ("premature_stop",   corrupt_premature_stop(steps)),
                     ("repeat_completed", corrupt_repeat_completed(steps)),
                     ("wrong_start",      corrupt_wrong_start(steps, all_action_names)),
                 ]
