@@ -1,7 +1,7 @@
 
 #we run each agent on every predicted branch of every held-out procedure and save the picks
-#paths come from the EXTRACTED graph (extraction_predictions.json execution_states) so this
-#evaluates the end-to-end pipeline — exactly what prepare_prm_data.py does at training time
+#paths come from the EXTRACTED graph so this
+#evaluates the end-to-end pipeline 
 
 
 import json
@@ -11,9 +11,8 @@ from pathlib import Path
 
 class PlanningAgent:
 
-    #predicted_states + id_to_name are optional and only used by agents that consult the
-    #extracted graph as a tool (eg the ensemble agent narrowing candidates when uncertain)
-    #other agents accept and ignore them
+    #predicted_states and id_to_name are optional and only used by agents that consult the
+    #extracted graph as a tool 
     def pick(self, procedure_text: str, completed_names: list[str],
              candidate_names: list[str] | None,
              predicted_states: list[dict] | None = None,
@@ -27,8 +26,8 @@ class ProcedureCase:
     file_index: int
     procedure_text: str
     pred_action_names: list[str]            #candidates for methods 2/3
-    pred_id_to_name: dict[str, str]         #predicted action ID → predicted action name
-    pred_execution_states: list[dict]       #predicted execution graph (action IDs)
+    pred_id_to_name: dict[str, str]         #predicted action ID transformed to act name
+    pred_execution_states: list[dict]       #predicted execution graph 
 
     @classmethod
     def build(cls, held_out_record: dict, prediction_record: dict) -> "ProcedureCase":
@@ -44,9 +43,6 @@ class ProcedureCase:
 
 
 def enumerate_paths(execution_states: list[dict], max_depth: int = 30) -> list[list[str]]:
-    #walk the execution-state graph and return one action-id sequence per distinct path
-    #from start to a can_terminate=True state. Loops are bounded because trace_builder
-    #pre-enumerates a finite list of states upstream.
     by_prefix: dict[tuple, list[dict]] = {}
     for s in execution_states:
         by_prefix.setdefault(tuple(s["completed_actions"]), []).append(s)
@@ -69,7 +65,6 @@ def enumerate_paths(execution_states: list[dict], max_depth: int = 30) -> list[l
 
         if terminal:
             #a terminal state with no outgoing options is a finished path
-            #(if it also has options, callers can both stop here and continue — keep both)
             paths.append(list(prefix))
             if not nexts:
                 return
@@ -84,8 +79,7 @@ def enumerate_paths(execution_states: list[dict], max_depth: int = 30) -> list[l
 def walk_trajectories(case: ProcedureCase, agent: PlanningAgent,
                       give_candidates: bool = True) -> list[dict]:
     #for each predicted path, ask the agent at every step what it would pick given the
-    #path's history. We advance along the predicted path (teacher-forced) so each branch
-    #produces its own clean trace — the agent's pick is recorded next to what the path expects.
+    #path history. 
     candidates = case.pred_action_names if give_candidates else None
     if give_candidates and not candidates:
         return []
@@ -112,8 +106,7 @@ def walk_trajectories(case: ProcedureCase, agent: PlanningAgent,
                 "picked": picked,
                 **info,
             })
-            #advance along the predicted path, NOT the agent's pick — keeps the branch clean
-            completed_names.append(expected_name)
+            
         trajectories.append({
             "branch": branch_idx,
             "path": path_names,
@@ -140,8 +133,8 @@ def run_inference(cases: list[ProcedureCase], agent: PlanningAgent,
 
 
 def load_cases(held_out_path: Path, predictions_path: Path) -> list[ProcedureCase]:
-    #held_out: gives us procedure_text and the file_index keyspace
-    #predictions: gives us predicted actions AND the execution-state graph for path enumeration
+    #held_out gives us procedure_text and the file_index 
+    #predictions gives us predicted actions AND the execution graph for path enumeration
     with open(held_out_path, encoding="utf-8") as f:
         held_out = json.load(f)
     with open(predictions_path, encoding="utf-8") as f:
