@@ -13,6 +13,15 @@
 #  - max_seq_length=5120
 #  - uses transformers Trainer directly to avoid trl version hell
 
+#unsloth must be imported BEFORE torch/transformers so its monkey-patches can apply
+#and we get the full 2x speedup. wrapped in try/except so the script still runs locally
+#without unsloth installed (falls back to the standard transformers path below).
+try:
+    from unsloth import FastLanguageModel
+    UNSLOTH_AVAILABLE = True
+except ImportError:
+    UNSLOTH_AVAILABLE = False
+
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,12 +37,6 @@ from transformers import (
     DataCollatorForLanguageModeling,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-
-try:
-    from unsloth import FastLanguageModel
-    UNSLOTH_AVAILABLE = True
-except ImportError:
-    UNSLOTH_AVAILABLE = False
 
 _here = Path(__file__).parent
 
