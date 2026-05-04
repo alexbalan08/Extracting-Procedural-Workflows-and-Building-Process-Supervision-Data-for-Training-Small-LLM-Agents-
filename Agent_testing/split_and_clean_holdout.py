@@ -21,8 +21,6 @@ def main():
 
     total = len(records)
 
-    #if the held-out file already exists we reuse those file_indices instead of re-shuffling
-    #this makes the script safe to re-run if the input gets reset or the training file gets corrupted
     #without this we d pick a different 50 every time the input size changes and leak data into PRM training
     holdout_file_indices = None
     if args.holdout_output.exists():
@@ -32,8 +30,8 @@ def main():
         print(f"Found existing {args.holdout_output.name} with {len(holdout_file_indices)} file_indices — reusing")
 
     if holdout_file_indices is None:
-        #fix the random seed so the split is always reproducible
-        #if we re-run this script from scratch we always get the same 50 held-out procedures
+        #random seed so the split is always reproducible
+        #if we rerun this script from scratch we always get the same 50 held-out procedures
         random.seed(args.seed)
         indices = list(range(total))
         random.shuffle(indices)
@@ -41,26 +39,18 @@ def main():
         holdout_records = [records[i] for i in sorted(holdout_idx_set)]
         holdout_file_indices = {r["file_index"] for r in holdout_records}
     else:
-        #reuse the same file_indices from the existing held-out file
         holdout_records = [r for r in records if r["file_index"] in holdout_file_indices]
 
     train = [r for r in records if r["file_index"] not in holdout_file_indices]
 
-    #if the training file already matches nothing to do
     if len(train) == total and not holdout_records:
         print(f"Held-out indices already removed from {args.input.name} — nothing to do")
         return
 
-    #build agent input from the held-out procedures
-    #we only expose what the agent actually needs to reason about the next step
-    #procedure_text is the task description the agent has to follow
-    #actions is the flat list of action names pulled from the extracted workflow
-    #conditions is the flat list of condition strings pulled from extracted gateways
-    #we use the extracted workflow not ground truth on purpose so the end to end
-    #pipeline contribution including the extractor is what gets evaluated
-    #graph structure successors predecessors branch targets are intentionally excluded
-    #if the agent sees those it can just read the correct next action directly
-    #execution_states are excluded too as they leak the correct order step by step
+
+    #depending on what version we use of the testin agent we want to give them acces 
+    #only to the procedure text or also to the list of actions extracted 
+    #or even to the execution graph (for the ensemble agent that consults it as a tool)
     cleaned = []
     for r in holdout_records:
         wf = r.get("workflow") or {}
@@ -78,13 +68,11 @@ def main():
             "conditions":     conditions,
         })
 
-    #save held-out — these procedures are never used for PRM training
+    #these procedures are never used for PRM training
     #only used at the very end for agent evaluation
     with open(args.holdout_output, "w", encoding="utf-8") as f:
         json.dump(cleaned, f, indent=2, ensure_ascii=False)
 
-    #overwrite the clean predictions with only the training procedures
-    #from this point on extraction_predictions.json is the prm training source
     with open(args.train_output, "w", encoding="utf-8") as f:
         json.dump(train, f, indent=2, ensure_ascii=False)
 

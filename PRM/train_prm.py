@@ -1,21 +1,16 @@
 
-#Fine-tunes Llama 3.1 8B as a Process Reward Model (PRM) using SFT on step-level
-#Yes/No labels. The model learns to score whether a proposed next action is correct
+#Llama 3.1 8B as PRM using our sft created data
+#Yes/No labels so the model learns to score whether a proposed next action is correct
 #given the procedure, available actions, and steps completed so far.
-#
-#At inference, run the model on each candidate action and extract
-#P("Yes") / (P("Yes") + P("No")) from the logits to get a continuous score.
-#Rank all candidate actions by this score and pick the highest — this is the re-ranker.
-#
-#Training setup:
-#  - Llama 3.1 8B, 4-bit quantization (bitsandbytes), LoRA r=16
-#  - per_device_batch=2, gradient_accumulation=2 (effective batch=4)
-#  - max_seq_length=5120
-#  - uses transformers Trainer directly to avoid trl version hell
 
-#unsloth must be imported BEFORE torch/transformers so its monkey-patches can apply
-#and we get the full 2x speedup. wrapped in try/except so the script still runs locally
-#without unsloth installed (falls back to the standard transformers path below).
+#at inference time 
+#P("Yes") / (P("Yes") + P("No")) from the logits to get a continuous score.
+#Rank all candidate actions by this score and pick the highest or see what we do later with this score 
+#that we actually combine it with llama frozen next token proabbailtiies
+
+
+#!!this training script is entirelly generated with claude!! 
+
 try:
     from unsloth import FastLanguageModel
     UNSLOTH_AVAILABLE = True
