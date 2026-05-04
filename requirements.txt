@@ -1,4 +1,4 @@
-# LLM training this is needed for fine tunning i recommend just installig all
+#LLM training this is needed for fine tunning i recommend just installig all
 torch>=2.1.0
 transformers>=4.40.0
 datasets>=2.18.0
