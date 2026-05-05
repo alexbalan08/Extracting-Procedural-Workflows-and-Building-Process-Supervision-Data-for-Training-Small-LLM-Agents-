@@ -3,10 +3,21 @@
 
 #  python run_eval.py --method llama_bare
 #  python run_eval.py --method llama_actions
-#  python run_eval.py --method ensemble        --alpha 0.5
-#  python run_eval.py --method agentic_ensemble --alpha 0.5 --tool_threshold 0.85 --tool_margin 0.2
-#
+#  python run_eval.py --method ensemble        --alpha 0.9
+#  python run_eval.py --method agentic_ensemble --alpha 0.9 --tool_threshold 0.45 --tool_margin 0.2
+
+
+
+
+#to evaluate against the predicted graph so we could actually isolate the extarction quality from the agent capatbility
+#python run_eval.py --method ensemble --alpha 0.9 --graph predicted
+
+#to evaluate aginst ground truth traces
+#python run_eval.py --method ensemble --alpha 0.9 --graph gold
+
+
 #each loads its own model so run them sequentially
+#please use the parematers from here since i carefully tested and they are the best in practice
 
 import argparse
 import json
@@ -48,6 +59,9 @@ def main():
     parser.add_argument("--output_dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--limit", type=int, default=0,
                         help="Only run the first N procedures (0 = all)")
+    parser.add_argument("--graph", choices=["predicted", "gold"], default="predicted",
+                        help="Which graph to evaluate against. predicted = end-to-end (extractor + agent). "
+                             "gold = agent in isolation. running both lets us separate the two failure modes.")
     #ensemble + agentic_ensemble knobs (ignored for the other methods)
     parser.add_argument("--alpha", type=float, default=0.5,
                         help="Ensemble blend weight: 1.0=PRM only, 0.0=base Llama only (default 0.5)")
@@ -71,22 +85,21 @@ def main():
                        tool_threshold=args.tool_threshold, tool_margin=args.tool_margin)
 
     print(f"\nRunning method={args.method} on {len(cases)} procedures "
-          f"(give_candidates={give_candidates})")
+          f"(graph={args.graph}, give_candidates={give_candidates})")
     if args.method in ("ensemble", "agentic_ensemble"):
         print(f"  alpha={args.alpha}  llm_temp={args.llm_temp}")
     if args.method == "agentic_ensemble":
         print(f"  tool_threshold={args.tool_threshold}  tool_margin={args.tool_margin}")
     print()
 
-    traces = run_inference(cases, agent, give_candidates=give_candidates)
+    traces = run_inference(cases, agent, give_candidates=give_candidates, mode=args.graph)
 
-    #include alpha (and tool gates for method 4) in the filename so sweeps don't overwrite
+    #include graph mode + alpha (+ tool gates for method 4) in the filename so sweeps don't overwrite
+    suffix = f"_{args.graph}"
     if args.method == "ensemble":
-        suffix = f"_alpha{args.alpha:.2f}"
+        suffix += f"_alpha{args.alpha:.2f}"
     elif args.method == "agentic_ensemble":
-        suffix = f"_alpha{args.alpha:.2f}_t{args.tool_threshold:.2f}_m{args.tool_margin:.2f}"
-    else:
-        suffix = ""
+        suffix += f"_alpha{args.alpha:.2f}_t{args.tool_threshold:.2f}_m{args.tool_margin:.2f}"
     out_path = args.output_dir / f"inference_{args.method}{suffix}.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(traces, f, indent=2, ensure_ascii=False)
