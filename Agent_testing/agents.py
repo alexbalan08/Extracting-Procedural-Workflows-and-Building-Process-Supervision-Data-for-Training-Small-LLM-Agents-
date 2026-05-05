@@ -386,8 +386,9 @@ class AgenticEnsembleAgent(EnsemblePlannerAgent):
             "margin":         margin,
         }
 
-        #tool gate — both conditions must be true for the agent to consult the graph
-        gate_fires = (top_score < self.tool_threshold) and (margin < self.tool_margin)
+        #tool gate — either condition trips the tool. fires when the agent is unsure
+        #(top score below threshold) OR when the top is too close to runner-up (small margin)
+        gate_fires = (top_score < self.tool_threshold) or (margin < self.tool_margin)
         if not gate_fires:
             info["tool_called"] = False
             return candidate_names[top_idx], info
