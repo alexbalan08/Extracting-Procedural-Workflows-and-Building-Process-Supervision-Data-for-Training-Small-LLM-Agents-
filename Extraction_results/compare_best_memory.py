@@ -1,5 +1,5 @@
-#focused comparison of the winning config (exp4) with and without memory
-#used to decide whether to keep reflexion memory for the final full-set run
+#comparison of the winning config (exp4) with and without memory
+#we see the effect of memeory
 
 import json
 from pathlib import Path
