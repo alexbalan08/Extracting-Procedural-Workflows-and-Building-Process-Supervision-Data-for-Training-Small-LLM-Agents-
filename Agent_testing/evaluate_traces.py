@@ -6,7 +6,9 @@
 #  python evaluate_traces.py
 
 
+import contextlib
 import csv
+import io
 import json
 from pathlib import Path
 
@@ -83,7 +85,8 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
         if rollout.get("match_type") == "exact":
             exact_match += 1
         if rollout.get("status") == "off_path":
-            off_path_step_counts.append(len(steps))
+            #the failing step is appended before break, so subtract it to count only the valid prefix
+            off_path_step_counts.append(max(len(steps) - 1, 0))
 
     pct = lambda n, d: (100.0 * n / d) if d else 0.0
     avg = lambda xs: (sum(xs) / len(xs)) if xs else 0.0
@@ -102,7 +105,9 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
 
 
 def main():
-    cases = load_cases(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
+    #load_cases prints a "Loaded N cases" line we don't need here, swallow it
+    with contextlib.redirect_stdout(io.StringIO()):
+        cases = load_cases(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
     #cache action names per (file_index, mode) so llama_bare (no candidate_actions stored) works
     actions_lookup = {}
     for c in cases:
@@ -161,7 +166,7 @@ def _legend() -> str:
         "first_step_valid_%   = same metric but only on step 1 (no compounding error)\n"
         "completed_%          = % of procedures the agent walked all the way to a terminal state\n"
         "exact_branch_%       = % where the full trajectory equals one enumerated path through the graph\n"
-        "avg_steps_to_offpath = avg steps taken before going off-path (failures only)\n"
+        "avg_steps_to_offpath = avg # of valid steps the agent took before its first invalid pick (failures only)\n"
         "invented_%           = % of picks the fuzzy matcher could not snap to any real action (mainly llama_bare)\n"
         "snapped_%            = % of picks that were not exact strings but were fuzzy-matched to an action\n"
         "tool_fired_%         = % of steps where the agentic gate consulted the graph (agentic_ensemble only)\n"
