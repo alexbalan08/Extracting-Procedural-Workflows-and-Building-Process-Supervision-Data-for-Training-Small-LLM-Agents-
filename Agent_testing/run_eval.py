@@ -9,11 +9,12 @@
 
 
 
-#to evaluate against the predicted graph so we could actually isolate the extarction quality from the agent capatbility
-#python run_eval.py --method ensemble --alpha 0.9 --graph predicted
-
-#to evaluate aginst ground truth traces
-#python run_eval.py --method ensemble --alpha 0.9 --graph gold
+#both modes validate against gold execution_states (ground truth).
+#  --graph predicted (default) → agent sees predicted graph; measures real deployment quality
+#  --graph gold            → agent sees gold graph; measures agent's ceiling
+#gap between gold and predicted = cost of extraction errors.
+#  python run_eval.py --method ensemble --alpha 0.9 --graph predicted
+#  python run_eval.py --method ensemble --alpha 0.9 --graph gold
 
 
 #each loads its own model so run them sequentially
@@ -59,9 +60,11 @@ def main():
     parser.add_argument("--output_dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--limit", type=int, default=0,
                         help="Only run the first N procedures (0 = all)")
-    parser.add_argument("--graph", choices=["predicted", "gold"], default="predicted",
-                        help="Which graph to evaluate against. predicted = end-to-end (extractor + agent). "
-                             "gold = agent in isolation. running both lets us separate the two failure modes.")
+    parser.add_argument("--graph", choices=["gold", "predicted"], default="predicted",
+                        help="Evaluation mode. Both validate against the gold graph. "
+                             "gold = agent also SEES the gold graph — measures agent ceiling. "
+                             "predicted = agent sees the predicted graph — measures real deployment. "
+                             "gap between gold and predicted = cost of extraction errors.")
     #ensemble + agentic_ensemble knobs (ignored for the other methods)
     parser.add_argument("--alpha", type=float, default=0.5,
                         help="Ensemble blend weight: 1.0=PRM only, 0.0=base Llama only (default 0.5)")

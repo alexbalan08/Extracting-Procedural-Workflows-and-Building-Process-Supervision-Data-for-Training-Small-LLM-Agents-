@@ -1,7 +1,7 @@
-#reads the inference_*.json files in results/ and prints per-method-and-graph metrics
-#the gap between a method's "predicted" row and its "gold" row tells us how much extraction
-#noise costs that method. invented/snapped only matter for llama_bare since the others get
-#the candidate list — invented should be ~0 for them.
+#reads the inference_*.json files in results/ and prints per-method-and-graph metrics.
+#the gap between a method's "predicted" row (agent sees predicted graph) and its "gold" row
+#(agent sees gold graph) tells us how much extraction noise costs that method —
+#both rows are validated against ground truth.
 
 #  python evaluate_traces.py
 
@@ -53,8 +53,8 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
     first_correct = first_total = 0
     completed = exact_match = 0
     off_path_step_counts = []
-    invented = snapped = 0
-    tool_fired = tool_useful = 0
+    invented = 0
+    tool_fired = 0
 
     for tr in traces:
         rollout = tr["rollout"]
@@ -70,15 +70,10 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
                 first_total += 1
                 if s.get("is_valid"):
                     first_correct += 1
-            cls = _classify_pick(s["picked"], actions)
-            if cls == "invented":
+            if _classify_pick(s["picked"], actions) == "invented":
                 invented += 1
-            elif cls == "snapped":
-                snapped += 1
             if s.get("tool_called"):
                 tool_fired += 1
-                if (s.get("tool") or {}).get("tool_useful"):
-                    tool_useful += 1
 
         if rollout.get("status") == "completed":
             completed += 1
@@ -98,9 +93,7 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
         "exact_branch_%":       pct(exact_match, n_proc),
         "avg_steps_to_offpath": avg(off_path_step_counts),
         "invented_%":           pct(invented, total_steps),
-        "snapped_%":            pct(snapped, total_steps),
         "tool_fired_%":         pct(tool_fired, total_steps),
-        "tool_useful_%":        pct(tool_useful, tool_fired) if tool_fired else 0.0,
     }
 
 
@@ -133,7 +126,7 @@ def main():
         print(f"No inference_*.json files found in {RESULTS_DIR}")
         return
 
-    #group by method, predicted before gold so the gap reads top-to-bottom per pair
+    #group by method, predicted before gold so the extraction-cost gap reads top-to-bottom per pair
     rows.sort(key=lambda r: (METHODS.index(r["method"]), 0 if r["graph"] == "predicted" else 1))
 
     out_csv = RESULTS_DIR / "metrics.csv"
@@ -145,8 +138,8 @@ def main():
     #full metric names so the table reads on its own. tool_* columns are 0 outside agentic_ensemble.
     keys = ["method", "graph", "procedures",
             "step_valid_%", "first_step_valid_%", "completed_%", "exact_branch_%",
-            "avg_steps_to_offpath", "invented_%", "snapped_%",
-            "tool_fired_%", "tool_useful_%"]
+            "avg_steps_to_offpath", "invented_%",
+            "tool_fired_%"]
     widths = [max(len(k), max(len(_fmt(r.get(k, ""))) for r in rows)) for k in keys]
 
     line = " | ".join(k.ljust(w) for k, w in zip(keys, widths))
@@ -168,9 +161,7 @@ def _legend() -> str:
         "exact_branch_%       = % where the full trajectory equals one enumerated path through the graph\n"
         "avg_steps_to_offpath = avg # of valid steps the agent took before its first invalid pick (failures only)\n"
         "invented_%           = % of picks the fuzzy matcher could not snap to any real action (mainly llama_bare)\n"
-        "snapped_%            = % of picks that were not exact strings but were fuzzy-matched to an action\n"
-        "tool_fired_%         = % of steps where the agentic gate consulted the graph (agentic_ensemble only)\n"
-        "tool_useful_%        = of the firings, % where the graph actually narrowed the candidate set"
+        "tool_fired_%         = % of steps where the agentic gate consulted the graph (agentic_ensemble only)"
     )
 
 
