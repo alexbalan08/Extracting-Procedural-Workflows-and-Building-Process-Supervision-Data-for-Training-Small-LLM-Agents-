@@ -1,0 +1,713 @@
+[
+  {
+    "file_index": 1623832427,
+    "eval_mode": "predicted",
+    "procedure_text": "To start, reach out to the 1st Level Support. If they are able to handle the issue, provide feedback to the account manager. If not, ask a developer for assistance. After receiving assistance from the 1st Level Support or the developer, provide feedback to the account manager. Finally, provide feedback to the 1st Level Support and the account manager.",
+    "candidate_actions": [
+      "Reach out to the 1st Level Support",
+      "Provide feedback to the account manager",
+      "Ask a developer for assistance",
+      "Provide feedback to the 1st Level Support"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Reach out to the 1st Level Support",
+          "Ask a developer for assistance",
+          "Provide feedback to the account manager",
+          "Provide feedback to the 1st Level Support"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Reach out to the 1st Level Support",
+          "Provide feedback to the account manager",
+          "Provide feedback to the 1st Level Support"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Reach out to the 1st Level Support"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Reach out to the 1st Level Support"
+          ],
+          "picked": "Reach out to the 1st Level Support",
+          "is_valid": true,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Reach out to the 1st Level Support": 0.6199507488067154,
+              "Provide feedback to the account manager": 0.1239979505288491,
+              "Ask a developer for assistance": 0.01327509916923073,
+              "Provide feedback to the 1st Level Support": 0.2427762014952046
+            },
+            "prm_dist": {
+              "Reach out to the 1st Level Support": 0.47535646001927473,
+              "Provide feedback to the account manager": 0.17488044714886203,
+              "Ask a developer for assistance": 0.1748818234051058,
+              "Provide feedback to the 1st Level Support": 0.17488126942675747
+            },
+            "llm_dist": {
+              "Reach out to the 1st Level Support": 0.6199507488067154,
+              "Provide feedback to the account manager": 0.1239979505288491,
+              "Ask a developer for assistance": 0.01327509916923073,
+              "Provide feedback to the 1st Level Support": 0.2427762014952046
+            }
+          }
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Reach out to the 1st Level Support"
+          ],
+          "conditions_active": [
+            [
+              "They are able to handle the issue"
+            ],
+            [
+              "They are not able to handle the issue"
+            ]
+          ],
+          "valid_options": [
+            "Provide feedback to the account manager",
+            "Ask a developer for assistance"
+          ],
+          "picked": "Provide feedback to the 1st Level Support",
+          "is_valid": false,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Reach out to the 1st Level Support": 0.32833737100525223,
+              "Provide feedback to the account manager": 0.27433614194421163,
+              "Ask a developer for assistance": 0.019412489545041538,
+              "Provide feedback to the 1st Level Support": 0.37791399750549454
+            },
+            "prm_dist": {
+              "Reach out to the 1st Level Support": 0.20163675343141307,
+              "Provide feedback to the account manager": 0.26726779935537637,
+              "Ask a developer for assistance": 0.32833557418689113,
+              "Provide feedback to the 1st Level Support": 0.2027598730263194
+            },
+            "llm_dist": {
+              "Reach out to the 1st Level Support": 0.32833737100525223,
+              "Provide feedback to the account manager": 0.27433614194421163,
+              "Ask a developer for assistance": 0.019412489545041538,
+              "Provide feedback to the 1st Level Support": 0.37791399750549454
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1819704602,
+    "eval_mode": "predicted",
+    "procedure_text": "To start the SSP process, begin by validating the invoice within 7 days. After that, select all eligible invoices. When selecting all eligible invoices, pay attention to the assumption that all invoices ready for processing are stored in an invoice log that can be accessed by the system. Each invoice will only be checked once. Once all eligible invoices are selected, proceed to the sub-process of processing invoices in the payment run log. After processing the invoices in the payment run log, generate the payment report. Once the payment report is generated, receive it. The step of generating the payment report produces the data object called \"Payment Report\". After receiving the payment report, the process ends. The step of receiving the payment report requires accessing the data object \"Payment Report\". Once the payment report is received, archive the paid invoices. The step of archiving the paid invoices also requires accessing the data object \"Payment Report\". The step of archiving the paid invoices produces the data object called \"Paper Based Invoice\". After archiving the paid invoices, proceed to the sub-process of archiving paid invoices. Finally, the process ends.",
+    "candidate_actions": [
+      "Validate the invoice within 7 days",
+      "Select all eligible invoices",
+      "Proceed to the sub-process of processing invoices in the payment run log",
+      "Generate the payment report",
+      "Receive the payment report",
+      "Archive the paid invoices",
+      "Proceed to the sub-process of archiving paid invoices"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Validate the invoice within 7 days",
+          "Select all eligible invoices",
+          "Process invoices in the payment run log",
+          "Generate the payment report",
+          "Receive the payment report",
+          "Archive the paid invoices",
+          "Archive paid invoices"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Validate the invoice within 7 days"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Validate the invoice within 7 days"
+          ],
+          "picked": "Validate the invoice within 7 days",
+          "is_valid": true,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Validate the invoice within 7 days": 0.4694771376740919,
+              "Select all eligible invoices": 0.05651081876638436,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.2633528063998616,
+              "Generate the payment report": 0.028415424172730915,
+              "Receive the payment report": 0.011127639990449353,
+              "Archive the paid invoices": 0.01013183150901096,
+              "Proceed to the sub-process of archiving paid invoices": 0.16098434148747104
+            },
+            "prm_dist": {
+              "Validate the invoice within 7 days": 0.31178366605681246,
+              "Select all eligible invoices": 0.1147032758343483,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.11470312112529558,
+              "Generate the payment report": 0.11470275777681058,
+              "Receive the payment report": 0.1147022920909523,
+              "Archive the paid invoices": 0.11470244355789046,
+              "Proceed to the sub-process of archiving paid invoices": 0.11470244355789046
+            },
+            "llm_dist": {
+              "Validate the invoice within 7 days": 0.4694771376740919,
+              "Select all eligible invoices": 0.05651081876638436,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.2633528063998616,
+              "Generate the payment report": 0.028415424172730915,
+              "Receive the payment report": 0.011127639990449353,
+              "Archive the paid invoices": 0.01013183150901096,
+              "Proceed to the sub-process of archiving paid invoices": 0.16098434148747104
+            }
+          }
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Validate the invoice within 7 days"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Select all eligible invoices"
+          ],
+          "picked": "Proceed to the sub-process of processing invoices in the payment run log",
+          "is_valid": false,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Validate the invoice within 7 days": 0.30652472585777163,
+              "Select all eligible invoices": 0.2074050042008136,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.3113517879151936,
+              "Generate the payment report": 0.009550069421782825,
+              "Receive the payment report": 0.010165995981768702,
+              "Archive the paid invoices": 0.005614196189279185,
+              "Proceed to the sub-process of archiving paid invoices": 0.1493882204333905
+            },
+            "prm_dist": {
+              "Validate the invoice within 7 days": 0.11470978192100148,
+              "Select all eligible invoices": 0.31175085596696994,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.1147074607825578,
+              "Generate the payment report": 0.11470741738441419,
+              "Receive the payment report": 0.114708026786001,
+              "Archive the paid invoices": 0.1147074444754236,
+              "Proceed to the sub-process of archiving paid invoices": 0.11470901268363207
+            },
+            "llm_dist": {
+              "Validate the invoice within 7 days": 0.30652472585777163,
+              "Select all eligible invoices": 0.2074050042008136,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.3113517879151936,
+              "Generate the payment report": 0.009550069421782825,
+              "Receive the payment report": 0.010165995981768702,
+              "Archive the paid invoices": 0.005614196189279185,
+              "Proceed to the sub-process of archiving paid invoices": 0.1493882204333905
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 924468826,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin with, you should choose your destination and calculate the distance. While doing so, continue to check if you need to book a train or a flight. If the answer is \"no\", then proceed to book a train. However, if the answer is \"yes\", then book a flight. If a code is available within 24 hours, the process will end. Otherwise, if 24 hours have passed, you should call a travel agency. If a code is available, the process will end along with the hotel reservation. On the other hand, if a code is not available, you should cancel your journey. In that case, the process will end as well.",
+    "candidate_actions": [
+      "Choose your destination",
+      "Calculate the distance",
+      "Check if you need to book a train or a flight",
+      "Book a train",
+      "Book a flight",
+      "Call a travel agency",
+      "Cancel your journey"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a flight"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a flight",
+          "Call a travel agency"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a flight",
+          "Call a travel agency",
+          "Cancel your journey"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a train"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a train",
+          "Call a travel agency"
+        ]
+      },
+      {
+        "branch": 5,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a train",
+          "Call a travel agency",
+          "Cancel your journey"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": null,
+      "match_type": "off_path",
+      "completed_trajectory": [],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Choose your destination"
+          ],
+          "picked": "Check if you need to book a train or a flight",
+          "is_valid": false,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Choose your destination": 0.09393569319302887,
+              "Calculate the distance": 0.030976703847599832,
+              "Check if you need to book a train or a flight": 0.8504243270273181,
+              "Book a train": 0.004192240988951593,
+              "Book a flight": 0.002706714216947205,
+              "Call a travel agency": 0.01607050225061933,
+              "Cancel your journey": 0.001693818475534973
+            },
+            "prm_dist": {
+              "Choose your destination": 0.3117803488703374,
+              "Calculate the distance": 0.11470569135025456,
+              "Check if you need to book a train or a flight": 0.11470243444372473,
+              "Book a train": 0.1147019296423993,
+              "Book a flight": 0.11470266126113722,
+              "Call a travel agency": 0.11470380662476726,
+              "Cancel your journey": 0.1147031278073795
+            },
+            "llm_dist": {
+              "Choose your destination": 0.09393569319302887,
+              "Calculate the distance": 0.030976703847599832,
+              "Check if you need to book a train or a flight": 0.8504243270273181,
+              "Book a train": 0.004192240988951593,
+              "Book a flight": 0.002706714216947205,
+              "Call a travel agency": 0.01607050225061933,
+              "Cancel your journey": 0.001693818475534973
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 580079858,
+    "eval_mode": "predicted",
+    "procedure_text": "For Landlord/Agent: To begin, you need to register on RenTool. Once you have registered, enter the details of the unit you want to rent. After entering the details, upload pictures of the unit. Once the pictures are uploaded, you can publish the unit for rent. Once the unit is published, you will start receiving requests for inspection. If you reject the request, the process ends. However, if you accept the request, you need to schedule an inspection time. After scheduling the inspection time, you should publish the inspection time for potential applicants. Once this is done, the process ends. For Student: To get started, you need to register on RenTool. Simultaneously, complete the following steps: enter your personal details and upload the required documents. Once you have completed these steps, you can search for available units. Select the unit(s) you are interested in for inspection. If the unit is available for inspection, you can proceed with the check. However, if the unit is not available for inspection, the process ends. If you accept the scheduled inspection time, you can continue with the process. On the other hand, if you reject the scheduled inspection time, you can still continue with the process. In the end, the process ends.",
+    "candidate_actions": [
+      "Register on RenTool",
+      "Enter the details of the unit you want to rent",
+      "Upload pictures of the unit",
+      "Publish the unit for rent",
+      "Receive requests for inspection",
+      "Reject the request",
+      "Accept the request",
+      "Schedule an inspection time",
+      "Publish the inspection time for potential applicants",
+      "Register on RenTool",
+      "Enter your personal details",
+      "Upload the required documents",
+      "Search for available units",
+      "Select the unit(s) you are interested in for inspection",
+      "Check whether the unit is available for inspection",
+      "Proceed with the check",
+      "Accept the scheduled inspection time",
+      "Reject the scheduled inspection time",
+      "Continue with the process"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Register on RenTool",
+          "Enter the details of the unit you want to rent",
+          "Upload pictures of the unit",
+          "Publish the unit for rent",
+          "Receive requests for inspection",
+          "Accept the request",
+          "Schedule an inspection time",
+          "Publish the inspection time for potential applicants"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Register on RenTool",
+          "Enter the details of the unit you want to rent",
+          "Upload pictures of the unit",
+          "Publish the unit for rent",
+          "Receive requests for inspection",
+          "Reject the request"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Register on RenTool",
+          "Enter your personal details",
+          "Upload the required documents",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Register on RenTool",
+          "Enter your personal details",
+          "Upload the required documents",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Accept the scheduled inspection time"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "Register on RenTool",
+          "Enter your personal details",
+          "Upload the required documents",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Reject the scheduled inspection time"
+        ]
+      },
+      {
+        "branch": 5,
+        "path": [
+          "Register on RenTool",
+          "Upload the required documents",
+          "Enter your personal details",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection"
+        ]
+      },
+      {
+        "branch": 6,
+        "path": [
+          "Register on RenTool",
+          "Upload the required documents",
+          "Enter your personal details",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Accept the scheduled inspection time"
+        ]
+      },
+      {
+        "branch": 7,
+        "path": [
+          "Register on RenTool",
+          "Upload the required documents",
+          "Enter your personal details",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Reject the scheduled inspection time"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": null,
+      "match_type": "off_path",
+      "completed_trajectory": [],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Register on RenTool",
+            "Register on RenTool"
+          ],
+          "picked": "Enter the details of the unit you want to rent",
+          "is_valid": false,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Register on RenTool": 0.1374303541376588,
+              "Enter the details of the unit you want to rent": 0.32456709318172516,
+              "Upload pictures of the unit": 0.04324437959712529,
+              "Publish the unit for rent": 0.02107562740226744,
+              "Receive requests for inspection": 0.000985720210736469,
+              "Reject the request": 0.0004656212579127324,
+              "Accept the request": 0.0002653029955882823,
+              "Schedule an inspection time": 0.01238972219181933,
+              "Publish the inspection time for potential applicants": 0.03367875669367826,
+              "Enter your personal details": 0.007514746374660433,
+              "Upload the required documents": 0.012783014192154926,
+              "Search for available units": 0.013188790620723312,
+              "Select the unit(s) you are interested in for inspection": 0.21620829536760977,
+              "Check whether the unit is available for inspection": 0.019798719688679675,
+              "Proceed with the check": 0.0008698950327899685,
+              "Accept the scheduled inspection time": 0.0025970268550439897,
+              "Reject the scheduled inspection time": 0.007753290031083684,
+              "Continue with the process": 0.007753290031083684
+            },
+            "prm_dist": {
+              "Register on RenTool": 0.1187659833676534,
+              "Enter the details of the unit you want to rent": 0.0473503416088601,
+              "Upload pictures of the unit": 0.04460065630602214,
+              "Publish the unit for rent": 0.04459195386449751,
+              "Receive requests for inspection": 0.04459234601154987,
+              "Reject the request": 0.04459386443721812,
+              "Accept the request": 0.04459386443721812,
+              "Schedule an inspection time": 0.04459103285947961,
+              "Publish the inspection time for potential applicants": 0.044598080097507216,
+              "Enter your personal details": 0.04608895633310761,
+              "Upload the required documents": 0.044686440023794814,
+              "Search for available units": 0.0446059549198298,
+              "Select the unit(s) you are interested in for inspection": 0.04459195386449751,
+              "Check whether the unit is available for inspection": 0.0445905850956113,
+              "Proceed with the check": 0.04458996478681603,
+              "Accept the scheduled inspection time": 0.044594510948855026,
+              "Reject the scheduled inspection time": 0.04461366323261019,
+              "Continue with the process": 0.04459386443721812
+            },
+            "llm_dist": {
+              "Register on RenTool": 0.1374303541376588,
+              "Enter the details of the unit you want to rent": 0.32456709318172516,
+              "Upload pictures of the unit": 0.04324437959712529,
+              "Publish the unit for rent": 0.02107562740226744,
+              "Receive requests for inspection": 0.000985720210736469,
+              "Reject the request": 0.0004656212579127324,
+              "Accept the request": 0.0002653029955882823,
+              "Schedule an inspection time": 0.01238972219181933,
+              "Publish the inspection time for potential applicants": 0.03367875669367826,
+              "Enter your personal details": 0.007514746374660433,
+              "Upload the required documents": 0.012783014192154926,
+              "Search for available units": 0.013188790620723312,
+              "Select the unit(s) you are interested in for inspection": 0.21620829536760977,
+              "Check whether the unit is available for inspection": 0.019798719688679675,
+              "Proceed with the check": 0.0008698950327899685,
+              "Accept the scheduled inspection time": 0.0025970268550439897,
+              "Reject the scheduled inspection time": 0.007753290031083684,
+              "Continue with the process": 0.007753290031083684
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1202352282,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, start by placing an order. If the payment method chosen is by credit card, then proceed with the process. If the payment method chosen is by bank account transfer, then continue with the process. Alternatively, if the payment method chosen is PayPal, then proceed with the process. Once the payment has been made, the shipment will be arranged and the process will come to an end. Remember to start the process by placing an order, followed by making the payment, and finally arranging for the shipment.",
+    "candidate_actions": [
+      "Place an order",
+      "Make the payment",
+      "Arrange for the shipment"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Place an order",
+          "Make the payment",
+          "Arrange for the shipment"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Place an order",
+        "Make the payment",
+        "Arrange for the shipment"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Place an order"
+          ],
+          "picked": "Place an order",
+          "is_valid": true,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Place an order": 0.7572809754594374,
+              "Make the payment": 0.03889961503358035,
+              "Arrange for the shipment": 0.20381940950698227
+            },
+            "prm_dist": {
+              "Place an order": 0.5761030352836777,
+              "Make the payment": 0.21194920825197558,
+              "Arrange for the shipment": 0.2119477564643467
+            },
+            "llm_dist": {
+              "Place an order": 0.7572809754594374,
+              "Make the payment": 0.03889961503358035,
+              "Arrange for the shipment": 0.20381940950698227
+            }
+          }
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Place an order"
+          ],
+          "conditions_active": [
+            [
+              "Bank account transfer"
+            ],
+            [
+              "Credit card"
+            ],
+            [
+              "PayPal"
+            ]
+          ],
+          "valid_options": [
+            "Make the payment"
+          ],
+          "picked": "Make the payment",
+          "is_valid": true,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Place an order": 0.3481440956842112,
+              "Make the payment": 0.41994193937160784,
+              "Arrange for the shipment": 0.23191396494418098
+            },
+            "prm_dist": {
+              "Place an order": 0.21230679230287702,
+              "Make the payment": 0.57524807812974,
+              "Arrange for the shipment": 0.212445129567383
+            },
+            "llm_dist": {
+              "Place an order": 0.3481440956842112,
+              "Make the payment": 0.41994193937160784,
+              "Arrange for the shipment": 0.23191396494418098
+            }
+          }
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Place an order",
+            "Make the payment"
+          ],
+          "conditions_active": [
+            [
+              "Bank account transfer"
+            ],
+            [
+              "Credit card"
+            ],
+            [
+              "PayPal"
+            ]
+          ],
+          "valid_options": [
+            "Arrange for the shipment"
+          ],
+          "picked": "Arrange for the shipment",
+          "is_valid": true,
+          "scores": {
+            "alpha": 0.0,
+            "final": {
+              "Place an order": 0.1412639964162407,
+              "Make the payment": 0.20553790198028657,
+              "Arrange for the shipment": 0.6531981016034727
+            },
+            "prm_dist": {
+              "Place an order": 0.21198101527280316,
+              "Make the payment": 0.2119899417946787,
+              "Arrange for the shipment": 0.5760290429325181
+            },
+            "llm_dist": {
+              "Place an order": 0.1412639964162407,
+              "Make the payment": 0.20553790198028657,
+              "Arrange for the shipment": 0.6531981016034727
+            }
+          }
+        }
+      ]
+    }
+  }
+]

@@ -24,6 +24,13 @@ DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.jso
 #longest first so "agentic_ensemble" matches before "ensemble"
 METHODS = ["agentic_ensemble", "ensemble", "llama_actions", "llama_bare"]
 
+#only the canonical config of each method shows up in the main table.
+#ensemble alpha sweeps live in evaluate_alpha.py — that script reads every
+#inference_ensemble_*.json file, this one keeps the table to one ensemble row per graph.
+#we match against "_alpha0.90_final" because the sweep run overwrote the N=49 file at
+#the bare "_alpha0.90.json" name; the final-N file was renamed to keep both intact.
+ENSEMBLE_CANONICAL_SUFFIX = "_alpha0.90_final"
+
 
 #mirror runner._resolve_picked_id rules so we know whether a pick was already a real action,
 #fuzzy-matched to one (snapped), or unmatchable (invented). only meaningful for llama_bare.
@@ -111,6 +118,9 @@ def main():
     for path in sorted(RESULTS_DIR.glob("inference_*.json")):
         method = _parse_method(path.name)
         if method is None:
+            continue
+        #ensemble alpha sweep is reported separately — only keep the canonical alpha here
+        if method == "ensemble" and ENSEMBLE_CANONICAL_SUFFIX not in path.name:
             continue
         with open(path, encoding="utf-8") as f:
             traces = json.load(f)

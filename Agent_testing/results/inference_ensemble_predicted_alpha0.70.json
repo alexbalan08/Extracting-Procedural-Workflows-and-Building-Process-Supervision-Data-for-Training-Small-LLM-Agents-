@@ -30,11 +30,10 @@
     ],
     "rollout": {
       "status": "completed",
-      "matched_branch": 0,
+      "matched_branch": 1,
       "match_type": "exact",
       "completed_trajectory": [
         "Reach out to the 1st Level Support",
-        "Ask a developer for assistance",
         "Provide feedback to the account manager",
         "Provide feedback to the 1st Level Support"
       ],
@@ -51,12 +50,12 @@
           "picked": "Reach out to the 1st Level Support",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Reach out to the 1st Level Support": 0.4898158888980188,
-              "Provide feedback to the account manager": 0.16979219748686075,
-              "Ask a developer for assistance": 0.1587211509815183,
-              "Provide feedback to the 1st Level Support": 0.18167076263360218
+              "Reach out to the 1st Level Support": 0.5187347466555069,
+              "Provide feedback to the account manager": 0.15961569816285814,
+              "Ask a developer for assistance": 0.12639980613434326,
+              "Provide feedback to the 1st Level Support": 0.19524974904729162
             },
             "prm_dist": {
               "Reach out to the 1st Level Support": 0.47535646001927473,
@@ -89,15 +88,15 @@
             "Ask a developer for assistance",
             "Provide feedback to the account manager"
           ],
-          "picked": "Ask a developer for assistance",
+          "picked": "Provide feedback to the account manager",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Reach out to the 1st Level Support": 0.21430681518879696,
-              "Provide feedback to the account manager": 0.2679746336142599,
-              "Ask a developer for assistance": 0.2974432657227062,
-              "Provide feedback to the 1st Level Support": 0.22027528547423691
+              "Reach out to the 1st Level Support": 0.23964693870356482,
+              "Provide feedback to the account manager": 0.2693883021320269,
+              "Ask a developer for assistance": 0.23565864879433626,
+              "Provide feedback to the 1st Level Support": 0.25530611037007195
             },
             "prm_dist": {
               "Reach out to the 1st Level Support": 0.20163675343141307,
@@ -117,50 +116,11 @@
           "step": 3,
           "completed_before": [
             "Reach out to the 1st Level Support",
-            "Ask a developer for assistance"
-          ],
-          "conditions_active": [
-            [
-              "They are not able to handle the issue"
-            ]
-          ],
-          "valid_options": [
-            "Provide feedback to the account manager"
-          ],
-          "picked": "Provide feedback to the account manager",
-          "is_valid": true,
-          "scores": {
-            "alpha": 0.9,
-            "final": {
-              "Reach out to the 1st Level Support": 0.19089326270677873,
-              "Provide feedback to the account manager": 0.44002779289682126,
-              "Ask a developer for assistance": 0.15954049271901422,
-              "Provide feedback to the 1st Level Support": 0.20953845167738588
-            },
-            "prm_dist": {
-              "Reach out to the 1st Level Support": 0.16972720470233504,
-              "Provide feedback to the account manager": 0.4604695870270217,
-              "Ask a developer for assistance": 0.169728666151999,
-              "Provide feedback to the 1st Level Support": 0.20007454211864434
-            },
-            "llm_dist": {
-              "Reach out to the 1st Level Support": 0.38138778474677176,
-              "Provide feedback to the account manager": 0.2560516457250175,
-              "Ask a developer for assistance": 0.06784693182215101,
-              "Provide feedback to the 1st Level Support": 0.29471363770605974
-            }
-          }
-        },
-        {
-          "step": 4,
-          "completed_before": [
-            "Reach out to the 1st Level Support",
-            "Ask a developer for assistance",
             "Provide feedback to the account manager"
           ],
           "conditions_active": [
             [
-              "They are not able to handle the issue"
+              "They are able to handle the issue"
             ]
           ],
           "valid_options": [
@@ -169,24 +129,24 @@
           "picked": "Provide feedback to the 1st Level Support",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Reach out to the 1st Level Support": 0.19128880065822218,
-              "Provide feedback to the account manager": 0.1687619383285695,
-              "Ask a developer for assistance": 0.1621699669578559,
-              "Provide feedback to the 1st Level Support": 0.4777792940553524
+              "Reach out to the 1st Level Support": 0.23212861234734794,
+              "Provide feedback to the account manager": 0.1737910316177612,
+              "Ask a developer for assistance": 0.15345607166915234,
+              "Provide feedback to the 1st Level Support": 0.4406242843657384
             },
             "prm_dist": {
-              "Reach out to the 1st Level Support": 0.1748908621749706,
-              "Provide feedback to the account manager": 0.1749994877193002,
-              "Ask a developer for assistance": 0.1748901855722905,
-              "Provide feedback to the 1st Level Support": 0.47521946453343866
+              "Reach out to the 1st Level Support": 0.17478717870196753,
+              "Provide feedback to the account manager": 0.17758628060135281,
+              "Ask a developer for assistance": 0.17498840196843984,
+              "Provide feedback to the 1st Level Support": 0.4726381387282397
             },
             "llm_dist": {
-              "Reach out to the 1st Level Support": 0.33887024700748636,
-              "Provide feedback to the account manager": 0.11262399381199305,
-              "Ask a developer for assistance": 0.047687999427944446,
-              "Provide feedback to the 1st Level Support": 0.5008177597525761
+              "Reach out to the 1st Level Support": 0.3659252908532355,
+              "Provide feedback to the account manager": 0.16493545065604742,
+              "Ask a developer for assistance": 0.10321396763748153,
+              "Provide feedback to the 1st Level Support": 0.3659252908532355
             }
           }
         }
@@ -246,15 +206,15 @@
           "picked": "Validate the invoice within 7 days",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Validate the invoice within 7 days": 0.3275530132185404,
-              "Select all eligible invoices": 0.1088840301275519,
-              "Proceed to the sub-process of processing invoices in the payment run log": 0.12956808965275218,
-              "Generate the payment report": 0.10607402441640261,
-              "Receive the payment report": 0.104344826880902,
-              "Archive the paid invoices": 0.10424538235300251,
-              "Proceed to the sub-process of archiving paid invoices": 0.11933063335084851
+              "Validate the invoice within 7 days": 0.35909170754199626,
+              "Select all eligible invoices": 0.09724553871395913,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.1592980267076654,
+              "Generate the payment report": 0.08881655769558668,
+              "Receive the payment report": 0.08362989646080142,
+              "Archive the paid invoices": 0.08333125994322661,
+              "Proceed to the sub-process of archiving paid invoices": 0.12858701293676464
             },
             "prm_dist": {
               "Validate the invoice within 7 days": 0.31178366605681246,
@@ -290,15 +250,15 @@
           "picked": "Select all eligible invoices",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Validate the invoice within 7 days": 0.13389127631467848,
-              "Select all eligible invoices": 0.30131627079035433,
-              "Proceed to the sub-process of processing invoices in the payment run log": 0.13437189349582135,
-              "Generate the payment report": 0.10419168258815106,
-              "Receive the payment report": 0.10425382370557779,
-              "Archive the paid invoices": 0.10379811964680916,
-              "Proceed to the sub-process of archiving paid invoices": 0.11817693345860791
+              "Validate the invoice within 7 days": 0.17225426510203254,
+              "Select all eligible invoices": 0.28044710043712306,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.17370075892234854,
+              "Generate the payment report": 0.08316021299562477,
+              "Receive the payment report": 0.0833454175447313,
+              "Archive the paid invoices": 0.08197946998958026,
+              "Proceed to the sub-process of archiving paid invoices": 0.1251127750085596
             },
             "prm_dist": {
               "Validate the invoice within 7 days": 0.11470978192100148,
@@ -335,15 +295,15 @@
           "picked": "Proceed to the sub-process of processing invoices in the payment run log",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Validate the invoice within 7 days": 0.11844618666494222,
-              "Select all eligible invoices": 0.10996179705980429,
-              "Proceed to the sub-process of processing invoices in the payment run log": 0.33461841249383056,
-              "Generate the payment report": 0.10515043409862718,
-              "Receive the payment report": 0.10438883187682264,
-              "Archive the paid invoices": 0.10515043409862718,
-              "Proceed to the sub-process of archiving paid invoices": 0.12228390370734589
+              "Validate the invoice within 7 days": 0.12560767354435617,
+              "Select all eligible invoices": 0.10015342111730066,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.3822564987733764,
+              "Generate the payment report": 0.08572063043334331,
+              "Receive the payment report": 0.0834345255683557,
+              "Archive the paid invoices": 0.08572063043334331,
+              "Proceed to the sub-process of archiving paid invoices": 0.1371066201299244
             },
             "prm_dist": {
               "Validate the invoice within 7 days": 0.11486544322523524,
@@ -381,15 +341,15 @@
           "picked": "Generate the payment report",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Validate the invoice within 7 days": 0.11801351146507866,
-              "Select all eligible invoices": 0.11010773457537873,
-              "Proceed to the sub-process of processing invoices in the payment run log": 0.15245616575287227,
-              "Generate the payment report": 0.2854599399255762,
-              "Receive the payment report": 0.10481863943976753,
-              "Archive the paid invoices": 0.10648160102792535,
-              "Proceed to the sub-process of archiving paid invoices": 0.12266240781340117
+              "Validate the invoice within 7 days": 0.12462971241047402,
+              "Select all eligible invoices": 0.10091203043174683,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.2279556658479167,
+              "Generate the payment report": 0.23285435046457298,
+              "Receive the payment report": 0.08504157933308733,
+              "Archive the paid invoices": 0.09003332684680922,
+              "Proceed to the sub-process of archiving paid invoices": 0.1385733346653929
             },
             "prm_dist": {
               "Validate the invoice within 7 days": 0.11470541099238098,
@@ -428,15 +388,15 @@
           "picked": "Receive the payment report",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Validate the invoice within 7 days": 0.11777428679444064,
-              "Select all eligible invoices": 0.1082850837841514,
-              "Proceed to the sub-process of processing invoices in the payment run log": 0.13397153138853307,
-              "Generate the payment report": 0.11206991019046633,
-              "Receive the payment report": 0.2878780309586416,
-              "Archive the paid invoices": 0.10790905835483858,
-              "Proceed to the sub-process of archiving paid invoices": 0.13211209852892836
+              "Validate the invoice within 7 days": 0.123825755721543,
+              "Select all eligible invoices": 0.09535788673449949,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.1724172991437051,
+              "Generate the payment report": 0.10671004622575236,
+              "Receive the payment report": 0.24062248370687256,
+              "Archive the paid invoices": 0.09422852725457848,
+              "Proceed to the sub-process of archiving paid invoices": 0.166838001213049
             },
             "prm_dist": {
               "Validate the invoice within 7 days": 0.11474855233088947,
@@ -476,15 +436,15 @@
           "picked": "Archive the paid invoices",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Validate the invoice within 7 days": 0.11972175626499927,
-              "Select all eligible invoices": 0.10754392586613704,
-              "Proceed to the sub-process of processing invoices in the payment run log": 0.1252144025364567,
-              "Generate the payment report": 0.10908773706097935,
-              "Receive the payment report": 0.10614667016724458,
-              "Archive the paid invoices": 0.297320653886502,
-              "Proceed to the sub-process of archiving paid invoices": 0.13496485421768106
+              "Validate the invoice within 7 days": 0.12953095318072425,
+              "Select all eligible invoices": 0.09299717243603912,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.1460080907967094,
+              "Generate the payment report": 0.09762854503085233,
+              "Receive the payment report": 0.0885965596051247,
+              "Archive the paid invoices": 0.27062235348011004,
+              "Proceed to the sub-process of archiving paid invoices": 0.1746163254704401
             },
             "prm_dist": {
               "Validate the invoice within 7 days": 0.11481715780713679,
@@ -525,15 +485,15 @@
           "picked": "Proceed to the sub-process of archiving paid invoices",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Validate the invoice within 7 days": 0.11802399907901599,
-              "Select all eligible invoices": 0.10711314492688151,
-              "Proceed to the sub-process of processing invoices in the payment run log": 0.12871111128060325,
-              "Generate the payment report": 0.10857891300761854,
-              "Receive the payment report": 0.10584178837675959,
-              "Archive the paid invoices": 0.11344544207669649,
-              "Proceed to the sub-process of archiving paid invoices": 0.3182856012524247
+              "Validate the invoice within 7 days": 0.12442297166525346,
+              "Select all eligible invoices": 0.09168940919629352,
+              "Proceed to the sub-process of processing invoices in the payment run log": 0.15648222711495116,
+              "Generate the payment report": 0.0960836124695149,
+              "Receive the payment report": 0.08781659488300499,
+              "Archive the paid invoices": 0.11065920669279412,
+              "Proceed to the sub-process of archiving paid invoices": 0.33284597797818793
             },
             "prm_dist": {
               "Validate the invoice within 7 days": 0.11482451278589727,
@@ -634,17 +594,10 @@
       }
     ],
     "rollout": {
-      "status": "completed",
-      "matched_branch": 2,
-      "match_type": "exact",
-      "completed_trajectory": [
-        "Choose your destination",
-        "Calculate the distance",
-        "Check if you need to book a train or a flight",
-        "Book a flight",
-        "Call a travel agency",
-        "Cancel your journey"
-      ],
+      "status": "off_path",
+      "matched_branch": null,
+      "match_type": "off_path",
+      "completed_trajectory": [],
       "steps": [
         {
           "step": 1,
@@ -655,18 +608,18 @@
           "valid_options": [
             "Choose your destination"
           ],
-          "picked": "Choose your destination",
-          "is_valid": true,
+          "picked": "Check if you need to book a train or a flight",
+          "is_valid": false,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Choose your destination": 0.28999588330260656,
-              "Calculate the distance": 0.1063327925999891,
-              "Check if you need to book a train or a flight": 0.18827462370208403,
-              "Book a train": 0.10365096077705453,
-              "Book a flight": 0.10350306655671822,
-              "Call a travel agency": 0.10484047618735245,
-              "Cancel your journey": 0.10340219687419505
+              "Choose your destination": 0.24642695216714483,
+              "Calculate the distance": 0.08958699509945814,
+              "Check if you need to book a train or a flight": 0.3354190022188028,
+              "Book a train": 0.08154902304636498,
+              "Book a flight": 0.08110387714788021,
+              "Call a travel agency": 0.08511381531252288,
+              "Cancel your journey": 0.08080033500782613
             },
             "prm_dist": {
               "Choose your destination": 0.3117803488703374,
@@ -685,258 +638,6 @@
               "Book a flight": 0.002706714216947205,
               "Call a travel agency": 0.01607050225061933,
               "Cancel your journey": 0.001693818475534973
-            }
-          }
-        },
-        {
-          "step": 2,
-          "completed_before": [
-            "Choose your destination"
-          ],
-          "conditions_active": [
-            []
-          ],
-          "valid_options": [
-            "Calculate the distance"
-          ],
-          "picked": "Calculate the distance",
-          "is_valid": true,
-          "scores": {
-            "alpha": 0.9,
-            "final": {
-              "Choose your destination": 0.1101387555404405,
-              "Calculate the distance": 0.294009004177482,
-              "Check if you need to book a train or a flight": 0.18028366463907552,
-              "Book a train": 0.10375393495831342,
-              "Book a flight": 0.10365435103131869,
-              "Call a travel agency": 0.10454188925922764,
-              "Cancel your journey": 0.10361840039414223
-            },
-            "prm_dist": {
-              "Choose your destination": 0.11471969625971266,
-              "Calculate the distance": 0.31168558283353665,
-              "Check if you need to book a train or a flight": 0.11471876609688167,
-              "Book a train": 0.11471876609688167,
-              "Book a flight": 0.11471880949931892,
-              "Call a travel agency": 0.11471900365490809,
-              "Cancel your journey": 0.11471937555876031
-            },
-            "llm_dist": {
-              "Choose your destination": 0.06891028906699095,
-              "Calculate the distance": 0.1349197962729898,
-              "Check if you need to book a train or a flight": 0.7703677515188203,
-              "Book a train": 0.005070454711199161,
-              "Book a flight": 0.0040742248193165725,
-              "Call a travel agency": 0.012947859698103678,
-              "Cancel your journey": 0.0037096239125794365
-            }
-          }
-        },
-        {
-          "step": 3,
-          "completed_before": [
-            "Choose your destination",
-            "Calculate the distance"
-          ],
-          "conditions_active": [
-            []
-          ],
-          "valid_options": [
-            "Check if you need to book a train or a flight"
-          ],
-          "picked": "Check if you need to book a train or a flight",
-          "is_valid": true,
-          "scores": {
-            "alpha": 0.9,
-            "final": {
-              "Choose your destination": 0.10753122529613368,
-              "Calculate the distance": 0.10827843378120185,
-              "Check if you need to book a train or a flight": 0.3677103649837432,
-              "Book a train": 0.10428462393091237,
-              "Book a flight": 0.10399915292933262,
-              "Call a travel agency": 0.104355314879419,
-              "Cancel your journey": 0.1038408841992573
-            },
-            "prm_dist": {
-              "Choose your destination": 0.11512474983463133,
-              "Calculate the distance": 0.11513840553134758,
-              "Check if you need to book a train or a flight": 0.3090737388972491,
-              "Book a train": 0.11513840553134758,
-              "Book a flight": 0.11513673630530503,
-              "Call a travel agency": 0.1151448688221577,
-              "Cancel your journey": 0.11524309507796177
-            },
-            "llm_dist": {
-              "Choose your destination": 0.0391895044496547,
-              "Calculate the distance": 0.04653868802989023,
-              "Check if you need to book a train or a flight": 0.8954399997621907,
-              "Book a train": 0.0066005895269955345,
-              "Book a flight": 0.0037609025455808626,
-              "Call a travel agency": 0.007249329394770657,
-              "Cancel your journey": 0.0012209862909171253
-            }
-          }
-        },
-        {
-          "step": 4,
-          "completed_before": [
-            "Choose your destination",
-            "Calculate the distance",
-            "Check if you need to book a train or a flight"
-          ],
-          "conditions_active": [
-            [
-              "No"
-            ],
-            [
-              "Yes"
-            ]
-          ],
-          "valid_options": [
-            "Book a train",
-            "Book a flight"
-          ],
-          "picked": "Book a flight",
-          "is_valid": true,
-          "scores": {
-            "alpha": 0.9,
-            "final": {
-              "Choose your destination": 0.10108223951896245,
-              "Calculate the distance": 0.10216813696121765,
-              "Check if you need to book a train or a flight": 0.19469425640252602,
-              "Book a train": 0.1735225297887702,
-              "Book a flight": 0.2001709563527711,
-              "Call a travel agency": 0.10243781906679043,
-              "Cancel your journey": 0.12592406190896208
-            },
-            "prm_dist": {
-              "Choose your destination": 0.10938209849796461,
-              "Calculate the distance": 0.1093860731932829,
-              "Check if you need to book a train or a flight": 0.11538182503255824,
-              "Book a train": 0.19190875359484902,
-              "Book a flight": 0.22154562369448547,
-              "Call a travel agency": 0.11263536550305617,
-              "Cancel your journey": 0.13976026048380352
-            },
-            "llm_dist": {
-              "Choose your destination": 0.026383508707942982,
-              "Calculate the distance": 0.037206710872630396,
-              "Check if you need to book a train or a flight": 0.9085061387322362,
-              "Book a train": 0.008046515534060794,
-              "Book a flight": 0.00779895027734189,
-              "Call a travel agency": 0.010659901140398796,
-              "Cancel your journey": 0.0013982747353890087
-            }
-          }
-        },
-        {
-          "step": 5,
-          "completed_before": [
-            "Choose your destination",
-            "Calculate the distance",
-            "Check if you need to book a train or a flight",
-            "Book a flight"
-          ],
-          "conditions_active": [
-            [
-              "Yes",
-              "24 hours have passed"
-            ],
-            [
-              "Yes",
-              "Code is available within 24 hours"
-            ]
-          ],
-          "valid_options": [
-            "Call a travel agency"
-          ],
-          "picked": "Call a travel agency",
-          "is_valid": true,
-          "scores": {
-            "alpha": 0.9,
-            "final": {
-              "Choose your destination": 0.09494318940685609,
-              "Calculate the distance": 0.09530429919746299,
-              "Check if you need to book a train or a flight": 0.17552021656996622,
-              "Book a train": 0.093978099015157,
-              "Book a flight": 0.09943430480338214,
-              "Call a travel agency": 0.22384298020488613,
-              "Cancel your journey": 0.21697691080228945
-            },
-            "prm_dist": {
-              "Choose your destination": 0.10249934225998769,
-              "Calculate the distance": 0.10250205000210925,
-              "Check if you need to book a train or a flight": 0.10263475508605786,
-              "Book a train": 0.10260470891327808,
-              "Book a flight": 0.10554778906146696,
-              "Call a travel agency": 0.24393147758653624,
-              "Cancel your journey": 0.24027987709056398
-            },
-            "llm_dist": {
-              "Choose your destination": 0.02693781372867163,
-              "Calculate the distance": 0.030524541955646578,
-              "Check if you need to book a train or a flight": 0.8314893699251417,
-              "Book a train": 0.01633860993206724,
-              "Book a flight": 0.04441294648061885,
-              "Call a travel agency": 0.04304650377003497,
-              "Cancel your journey": 0.007250214207818853
-            }
-          }
-        },
-        {
-          "step": 6,
-          "completed_before": [
-            "Choose your destination",
-            "Calculate the distance",
-            "Check if you need to book a train or a flight",
-            "Book a flight",
-            "Call a travel agency"
-          ],
-          "conditions_active": [
-            [
-              "Yes",
-              "24 hours have passed",
-              "Code is available"
-            ],
-            [
-              "Yes",
-              "24 hours have passed",
-              "Code is not available"
-            ]
-          ],
-          "valid_options": [
-            "Cancel your journey"
-          ],
-          "picked": "Cancel your journey",
-          "is_valid": true,
-          "scores": {
-            "alpha": 0.9,
-            "final": {
-              "Choose your destination": 0.1061809230467594,
-              "Calculate the distance": 0.10658297522139883,
-              "Check if you need to book a train or a flight": 0.17919680589488407,
-              "Book a train": 0.10531172716599757,
-              "Book a flight": 0.10703956893775937,
-              "Call a travel agency": 0.11447753071193241,
-              "Cancel your journey": 0.28121046902126834
-            },
-            "prm_dist": {
-              "Choose your destination": 0.11462553823117365,
-              "Calculate the distance": 0.11462578080166864,
-              "Check if you need to book a train or a flight": 0.11462906380316482,
-              "Book a train": 0.11463520913230721,
-              "Book a flight": 0.11462717668851176,
-              "Call a travel agency": 0.11670581784224207,
-              "Cancel your journey": 0.3101514135009319
-            },
-            "llm_dist": {
-              "Choose your destination": 0.030179386387031132,
-              "Calculate the distance": 0.034197724998970364,
-              "Check if you need to book a train or a flight": 0.7603064847203576,
-              "Book a train": 0.021400389469210836,
-              "Book a flight": 0.038751099180988006,
-              "Call a travel agency": 0.09442294653914536,
-              "Cancel your journey": 0.02074196870429671
             }
           }
         }
@@ -1064,11 +765,9 @@
     ],
     "rollout": {
       "status": "off_path",
-      "matched_branch": 2,
-      "match_type": "prefix",
-      "completed_trajectory": [
-        "Register on RenTool"
-      ],
+      "matched_branch": null,
+      "match_type": "off_path",
+      "completed_trajectory": [],
       "steps": [
         {
           "step": 1,
@@ -1080,29 +779,29 @@
             "Register on RenTool",
             "Register on RenTool"
           ],
-          "picked": "Register on RenTool",
-          "is_valid": true,
+          "picked": "Enter the details of the unit you want to rent",
+          "is_valid": false,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Register on RenTool": 0.12063242044465394,
-              "Enter the details of the unit you want to rent": 0.0750720167661466,
-              "Upload pictures of the unit": 0.04446502863513245,
-              "Publish the unit for rent": 0.0422403212182745,
-              "Receive requests for inspection": 0.04023168343146853,
-              "Reject the request": 0.04018104011928758,
-              "Accept the request": 0.040161008293055134,
-              "Schedule an inspection time": 0.041370901792713584,
-              "Publish the inspection time for potential applicants": 0.04350614775712432,
-              "Enter your personal details": 0.04223153533726289,
-              "Upload the required documents": 0.041496097440630826,
-              "Search for available units": 0.04146423848991915,
-              "Select the unit(s) you are interested in for inspection": 0.061753588014808736,
-              "Check whether the unit is available for inspection": 0.042111398554918134,
-              "Proceed with the check": 0.04021795781141343,
-              "Accept the scheduled inspection time": 0.040394762539473925,
-              "Reject the scheduled inspection time": 0.04092762591245754,
-              "Continue with the process": 0.040909806996604674
+              "Register on RenTool": 0.12436529459865503,
+              "Enter the details of the unit you want to rent": 0.13051536708071965,
+              "Upload pictures of the unit": 0.044193773293353084,
+              "Publish the unit for rent": 0.03753705592582849,
+              "Receive requests for inspection": 0.03151035827130585,
+              "Reject the request": 0.031355391483426504,
+              "Accept the request": 0.03129529600472916,
+              "Schedule an inspection time": 0.03493063965918153,
+              "Publish the inspection time for potential applicants": 0.041322283076358525,
+              "Enter your personal details": 0.03451669334557345,
+              "Upload the required documents": 0.03511541227430285,
+              "Search for available units": 0.03518080563009785,
+              "Select the unit(s) you are interested in for inspection": 0.0960768563154312,
+              "Check whether the unit is available for inspection": 0.03715302547353181,
+              "Proceed with the check": 0.031473943860608214,
+              "Accept the scheduled inspection time": 0.031995265720711714,
+              "Reject the scheduled inspection time": 0.03355555127215224,
+              "Continue with the process": 0.03354169211537779
             },
             "prm_dist": {
               "Register on RenTool": 0.1187659833676534,
@@ -1143,84 +842,6 @@
               "Accept the scheduled inspection time": 0.0025970268550439897,
               "Reject the scheduled inspection time": 0.007753290031083684,
               "Continue with the process": 0.007753290031083684
-            }
-          }
-        },
-        {
-          "step": 2,
-          "completed_before": [
-            "Register on RenTool"
-          ],
-          "conditions_active": [
-            []
-          ],
-          "valid_options": [
-            "Upload the required documents",
-            "Enter your personal details"
-          ],
-          "picked": "Enter the details of the unit you want to rent",
-          "is_valid": false,
-          "scores": {
-            "alpha": 0.9,
-            "final": {
-              "Register on RenTool": 0.10361696705797878,
-              "Enter the details of the unit you want to rent": 0.11301724331088435,
-              "Upload pictures of the unit": 0.04426046664837302,
-              "Publish the unit for rent": 0.04192576300103549,
-              "Receive requests for inspection": 0.03976050941143868,
-              "Reject the request": 0.0397218800751178,
-              "Accept the request": 0.03967992027791532,
-              "Schedule an inspection time": 0.04035097952409547,
-              "Publish the inspection time for potential applicants": 0.042585083163575774,
-              "Enter your personal details": 0.04202173043991089,
-              "Upload the required documents": 0.04138111337475532,
-              "Search for available units": 0.04146388503570222,
-              "Select the unit(s) you are interested in for inspection": 0.062426559883849375,
-              "Check whether the unit is available for inspection": 0.04266326428538528,
-              "Proceed with the check": 0.03970325989927563,
-              "Accept the scheduled inspection time": 0.04008742189497954,
-              "Reject the scheduled inspection time": 0.0413149305648736,
-              "Continue with the process": 0.0404020550928746
-            },
-            "prm_dist": {
-              "Register on RenTool": 0.1032693451761774,
-              "Enter the details of the unit you want to rent": 0.08449924838486206,
-              "Upload pictures of the unit": 0.04407710794419198,
-              "Publish the unit for rent": 0.04405890977105045,
-              "Receive requests for inspection": 0.044056486111535016,
-              "Reject the request": 0.044118930662190865,
-              "Accept the request": 0.044074246484491424,
-              "Schedule an inspection time": 0.044064257448050134,
-              "Publish the inspection time for potential applicants": 0.044074246484491424,
-              "Enter your personal details": 0.045534658132368754,
-              "Upload the required documents": 0.04434857714055565,
-              "Search for available units": 0.0441043000749994,
-              "Select the unit(s) you are interested in for inspection": 0.04405698357259546,
-              "Check whether the unit is available for inspection": 0.04405818599927002,
-              "Proceed with the check": 0.04406065920416951,
-              "Accept the scheduled inspection time": 0.04431391976722569,
-              "Reject the scheduled inspection time": 0.04572817652873406,
-              "Continue with the process": 0.04423241593686325
-            },
-            "llm_dist": {
-              "Register on RenTool": 0.1067455639941911,
-              "Enter the details of the unit you want to rent": 0.3696791976450851,
-              "Upload pictures of the unit": 0.04591069498600239,
-              "Publish the unit for rent": 0.02272744207090082,
-              "Receive requests for inspection": 0.0010967191105716763,
-              "Reject the request": 0.00014842479146022375,
-              "Accept the request": 0.00013098441873041198,
-              "Schedule an inspection time": 0.006931478208503544,
-              "Publish the inspection time for potential applicants": 0.029182613275334935,
-              "Enter your personal details": 0.010405381207790141,
-              "Upload the required documents": 0.014673939482552393,
-              "Search for available units": 0.01770014968202755,
-              "Select the unit(s) you are interested in for inspection": 0.22775274668513473,
-              "Check whether the unit is available for inspection": 0.030108968860422615,
-              "Proceed with the check": 0.0004866661552306958,
-              "Accept the scheduled inspection time": 0.002048941044764197,
-              "Reject the scheduled inspection time": 0.001595716890129499,
-              "Continue with the process": 0.00592880749697673
             }
           }
         }
@@ -1268,11 +889,11 @@
           "picked": "Place an order",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Place an order": 0.5942208293012536,
-              "Make the payment": 0.19464424893013607,
-              "Arrange for the shipment": 0.21113492176861026
+              "Place an order": 0.6304564173364056,
+              "Make the payment": 0.160034330286457,
+              "Arrange for the shipment": 0.20950925237713736
             },
             "prm_dist": {
               "Place an order": 0.5761030352836777,
@@ -1308,11 +929,11 @@
           "picked": "Make the payment",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Place an order": 0.22589052264101042,
-              "Make the payment": 0.5597174642539268,
-              "Arrange for the shipment": 0.2143920131050628
+              "Place an order": 0.25305798331727725,
+              "Make the payment": 0.5286562365023003,
+              "Arrange for the shipment": 0.2182857801804224
             },
             "prm_dist": {
               "Place an order": 0.21230679230287702,
@@ -1349,11 +970,11 @@
           "picked": "Arrange for the shipment",
           "is_valid": true,
           "scores": {
-            "alpha": 0.9,
+            "alpha": 0.7,
             "final": {
-              "Place an order": 0.20490931338714694,
-              "Make the payment": 0.21134473781323948,
-              "Arrange for the shipment": 0.5837459487996136
+              "Place an order": 0.19076590961583442,
+              "Make the payment": 0.21005432985036104,
+              "Arrange for the shipment": 0.5991797605338045
             },
             "prm_dist": {
               "Place an order": 0.21198101527280316,
