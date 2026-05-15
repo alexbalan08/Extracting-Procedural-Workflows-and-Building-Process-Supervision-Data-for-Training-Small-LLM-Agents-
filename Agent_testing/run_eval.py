@@ -33,20 +33,34 @@ _ROOT = _HERE.parent
 DEFAULT_HELD_OUT = _HERE / "held_out.json"
 DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.json"
 DEFAULT_OUTPUT_DIR = _HERE / "results"
+DEFAULT_PRM_ADAPTER = _ROOT / "PRM" / "trained_model"
 
 
 def make_agent(method: str, alpha: float = 0.5, llm_temp: float = 1.0,
-               tool_threshold: float = 0.85, tool_margin: float = 0.2):
+               tool_threshold: float = 0.85, tool_margin: float = 0.2,
+               prm_adapter: Path = DEFAULT_PRM_ADAPTER):
     if method == "llama_bare":
         return LlamaBareAgent()
     if method == "llama_actions":
         return LlamaActionsAgent()
     if method == "ensemble":
-        return EnsemblePlannerAgent(alpha=alpha, llm_temp=llm_temp)
+        return EnsemblePlannerAgent(adapter_path=prm_adapter, alpha=alpha, llm_temp=llm_temp)
     if method == "agentic_ensemble":
-        return AgenticEnsembleAgent(alpha=alpha, llm_temp=llm_temp,
+        return AgenticEnsembleAgent(adapter_path=prm_adapter, alpha=alpha, llm_temp=llm_temp,
                                     tool_threshold=tool_threshold, tool_margin=tool_margin)
     raise ValueError(f"Unknown method: {method}")
+
+
+def _prm_tag(adapter_path: Path) -> str:
+    #returns a short suffix encoding the PRM model variant so the output filename is unique.
+    #conventions: PRM/trained_model → "" (default, no tag), PRM/trained_model_small → "_small".
+    #any other adapter path uses the folder name minus the "trained_model_" prefix.
+    name = adapter_path.name
+    if name == "trained_model":
+        return ""
+    if name.startswith("trained_model_"):
+        return "_" + name[len("trained_model_"):]
+    return "_" + name
 
 
 def main():
@@ -75,6 +89,9 @@ def main():
                         help="Tool fires when top blended score is below this (default 0.85)")
     parser.add_argument("--tool_margin", type=float, default=0.2,
                         help="Tool fires when margin to runner-up is below this (default 0.2)")
+    parser.add_argument("--prm_adapter", type=Path, default=DEFAULT_PRM_ADAPTER,
+                        help="Path to the PRM LoRA adapter folder. Use PRM/trained_model_small "
+                             "to compare the dedup-data PRM against the default model.")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -85,24 +102,28 @@ def main():
 
     give_candidates = args.method != "llama_bare"
     agent = make_agent(args.method, alpha=args.alpha, llm_temp=args.llm_temp,
-                       tool_threshold=args.tool_threshold, tool_margin=args.tool_margin)
+                       tool_threshold=args.tool_threshold, tool_margin=args.tool_margin,
+                       prm_adapter=args.prm_adapter)
 
     print(f"\nRunning method={args.method} on {len(cases)} procedures "
           f"(graph={args.graph}, give_candidates={give_candidates})")
     if args.method in ("ensemble", "agentic_ensemble"):
-        print(f"  alpha={args.alpha}  llm_temp={args.llm_temp}")
+        print(f"  alpha={args.alpha}  llm_temp={args.llm_temp}  prm_adapter={args.prm_adapter}")
     if args.method == "agentic_ensemble":
         print(f"  tool_threshold={args.tool_threshold}  tool_margin={args.tool_margin}")
     print()
 
     traces = run_inference(cases, agent, give_candidates=give_candidates, mode=args.graph)
 
-    #include graph mode + alpha (+ tool gates for method 4) in the filename so sweeps don't overwrite
+    #include graph mode + alpha + PRM variant (+ tool gates for method 4) so sweeps don't overwrite
     suffix = f"_{args.graph}"
     if args.method == "ensemble":
         suffix += f"_alpha{args.alpha:.2f}"
     elif args.method == "agentic_ensemble":
         suffix += f"_alpha{args.alpha:.2f}_t{args.tool_threshold:.2f}_m{args.tool_margin:.2f}"
+    #PRM tag only appended for methods that actually use the PRM
+    if args.method in ("ensemble", "agentic_ensemble"):
+        suffix += _prm_tag(args.prm_adapter)
     out_path = args.output_dir / f"inference_{args.method}{suffix}.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(traces, f, indent=2, ensure_ascii=False)

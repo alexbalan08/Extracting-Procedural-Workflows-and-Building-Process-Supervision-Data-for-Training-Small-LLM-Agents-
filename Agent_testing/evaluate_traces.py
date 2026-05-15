@@ -26,10 +26,10 @@ METHODS = ["agentic_ensemble", "ensemble", "llama_actions", "llama_bare"]
 
 #only the canonical config of each method shows up in the main table.
 #ensemble alpha sweeps live in evaluate_alpha.py — that script reads every
-#inference_ensemble_*.json file, this one keeps the table to one ensemble row per graph.
-#we match against "_alpha0.90_final" because the sweep run overwrote the N=49 file at
-#the bare "_alpha0.90.json" name; the final-N file was renamed to keep both intact.
-ENSEMBLE_CANONICAL_SUFFIX = "_alpha0.90_final"
+#inference_ensemble_*.json file; here we keep only files at the canonical alpha=0.90.
+#note: the alpha-sweep run for alpha=0.90 writes to the same filename, so this picks
+#up whichever was written most recently. re-run the main N=49 ensemble to refresh.
+ENSEMBLE_CANONICAL_SUFFIX = "_alpha0.90.json"
 
 
 #mirror runner._resolve_picked_id rules so we know whether a pick was already a real action,
