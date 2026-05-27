@@ -73,7 +73,7 @@ def near_duplicates(traces: list[dict]) -> None:
         seq = tuple(s["action"] for s in t.get("steps", []))
         keys[(t["file_index"], seq)] += 1
     n_dup_traces = sum(n for n in keys.values() if n > 1)
-    print(f"\n--- 3. Near-duplicate traces (same procedure + identical action sequence) ---")
+    print(f"\n--- 3. Near-duplicate traces")
     print(f"  duplicates : {_pct(n_dup_traces, len(traces))} of all traces")
 
 
