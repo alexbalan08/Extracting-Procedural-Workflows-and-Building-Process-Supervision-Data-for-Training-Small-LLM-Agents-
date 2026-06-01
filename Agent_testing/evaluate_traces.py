@@ -25,11 +25,10 @@ DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.jso
 METHODS = ["agentic_ensemble", "ensemble", "llama_actions", "llama_bare"]
 
 #only the canonical config of each method shows up in the main table.
-#ensemble alpha sweeps live in evaluate_alpha.py — that script reads every
-#inference_ensemble_*.json file; here we keep only files at the canonical alpha=0.90.
-#note: the alpha-sweep run for alpha=0.90 writes to the same filename, so this picks
-#up whichever was written most recently. re-run the main N=49 ensemble to refresh.
+#ensemble alpha sweeps live in evaluate_alpha.py; big-vs-small PRM comparison lives in
+#evaluate_lora.py. here we keep only the canonical big-PRM run at alpha=0.90.
 ENSEMBLE_CANONICAL_SUFFIX = "_alpha0.90.json"
+SMALL_PRM_MARKER = "_small.json"
 
 
 #mirror runner._resolve_picked_id rules so we know whether a pick was already a real action,
@@ -118,6 +117,9 @@ def main():
     for path in sorted(RESULTS_DIR.glob("inference_*.json")):
         method = _parse_method(path.name)
         if method is None:
+            continue
+        #small-PRM runs are reported in evaluate_lora.py, drop them from the main table
+        if path.name.endswith(SMALL_PRM_MARKER):
             continue
         #ensemble alpha sweep is reported separately — only keep the canonical alpha here
         if method == "ensemble" and ENSEMBLE_CANONICAL_SUFFIX not in path.name:

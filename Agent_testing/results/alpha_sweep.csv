@@ -3,5 +3,4 @@ predicted,0.00,inference_ensemble_predicted_alpha0.00.json,5,55.55555555555556,6
 predicted,0.30,inference_ensemble_predicted_alpha0.30.json,5,55.55555555555556,60.0,20.0,20.0,0.5,0.0,0.0
 predicted,0.50,inference_ensemble_predicted_alpha0.50.json,5,63.63636363636363,60.0,20.0,20.0,1.0,0.0,0.0
 predicted,0.70,inference_ensemble_predicted_alpha0.70.json,5,86.66666666666667,60.0,60.0,60.0,0.0,0.0,0.0
-predicted,0.90,inference_ensemble_predicted_alpha0.90.json,5,95.45454545454545,100.0,80.0,80.0,1.0,0.0,0.0
 predicted,1.00,inference_ensemble_predicted_alpha1.00.json,5,95.45454545454545,100.0,80.0,80.0,1.0,0.0,0.0
