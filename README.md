@@ -47,12 +47,15 @@ can provide such service with good accuracy
 ### Agent Configurations
 Four methods, each adding one layer so we could properly isolate the effects of each added component:
 
-| Method | What it gets | All methods include the previous components by default |
-|--------|-------------|
-| M1: Bare Llama | Just the procedure text 
-| M2: Llama + Actions | + extracted action list 
-| M3: Ensemble | + PRM blend (α=0.9) 
-| M4: Agentic Ensemble | + graph tool when uncertain |
+
+M1: Bare Llama  Just the procedure text 
+
+M2: Llama + Actions  + extracted action list 
+
+M3: Ensemble  + PRM blend (α=0.9) 
+
+M4: Agentic Ensemble  + graph tool when uncertain 
+
 
 We show that extraction quality is the bottleneck, not the agent via experiemnts.
 
