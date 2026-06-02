@@ -47,7 +47,7 @@ can provide such service with good accuracy
 ### Agent Configurations
 Four methods, each adding one layer so we could properly isolate the effects of each added component:
 
-| Method | What it gets | All methods include the previous components by default
+| Method | What it gets | All methods include the previous components by default |
 |--------|-------------|
 | M1: Bare Llama | Just the procedure text 
 | M2: Llama + Actions | + extracted action list 
