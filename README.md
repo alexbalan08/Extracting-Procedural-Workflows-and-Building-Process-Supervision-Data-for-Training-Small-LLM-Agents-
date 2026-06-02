@@ -11,6 +11,10 @@ needs to be grounded in their own KB, be factual and never hallucinate. Relying 
 organization fully-dependedt on the Big AI players - when they release a new model, your system would already be outdated. 
 
 
+### Data Flywheel 
+The full process is iterative since every new procedure extracted at deployment produces a new graph and more training data, so the planner improves over time without manual labeling. This is a data flywheel that keeps up with an organization's new proprietary procedures. extraction phase is made specifically so there is no fine-tunning so a large set of annotated procedures would not actually be required. Also the costs of extraction are very low which was another goal. 
+
+
 
 ### Extraction Pipeline
 ## what we miss: 
@@ -63,13 +67,29 @@ agents and extraction agent into one unified method(vs 35.4% for bare Llama).
 - **Each component matters.** Action list eliminates hallucinations. PRM improves planning. Graph tool helps probably at gateways
 
 ## Dataset
-Built on [PAGED](https://github.com/HLR/PAGED) 
+Built on PAGED procedural-documents dataset (the largest annoated one out there)
+
+
 PAGED: A Benchmark for Procedural Graphs Extraction from Documents, 
+
 Weihong Du and Wenrui Liao and Hongru Liang and Wenqiang Lei
+
 2024
 
 ## My Trained Models
 
 - PRM (full data): [huggingface.co/alexbalan08/PRM](https://huggingface.co/alexbalan08/PRM)
 - PRM (deduplicated): [huggingface.co/alexbalan08/Procedural-small](https://huggingface.co/alexbalan08/Procedural-small)
+
+## How to run:
+
+- First install all the requirments.
+- Ideally use Linux for fast inference + you will need a GPU with around 16GB VRAM (maybe 8 is enough)
+- You will need an OpenAI API key for the extractor base model (very cheap)
+- First run final extracxtion, then build TR-data including negative examples
+- Then use the trained model at inference on the test set of procedures or new one and see results 
+
+## Master Thesis
+Maastricht University, Department of Advanced Computing Sciences
+
 
