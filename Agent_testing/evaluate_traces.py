@@ -18,11 +18,14 @@ from runner import load_cases
 _HERE = Path(__file__).parent
 _ROOT = _HERE.parent
 RESULTS_DIR = _HERE / "results"
+
 DEFAULT_HELD_OUT = _HERE / "held_out.json"
 DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.json"
 
 #longest first so "agentic_ensemble" matches before "ensemble"
-METHODS = ["agentic_ensemble", "ensemble", "llama_actions", "llama_bare"]
+METHODS = ["agentic_ensemble", "ensemble",
+           "llama_actions", "openai_actions",
+           "llama_bare",    "openai_bare"]
 
 #only the canonical config of each method shows up in the main table.
 #ensemble alpha sweeps live in evaluate_alpha.py; big-vs-small PRM comparison lives in
@@ -57,7 +60,7 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
     n_proc = len(traces)
     total_steps = valid_steps = 0
     first_correct = first_total = 0
-    completed = exact_match = 0
+    completed = 0
     off_path_step_counts = []
     invented = 0
     tool_fired = 0
@@ -83,8 +86,6 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
 
         if rollout.get("status") == "completed":
             completed += 1
-        if rollout.get("match_type") == "exact":
-            exact_match += 1
         if rollout.get("status") == "off_path":
             #the failing step is appended before break, so subtract it to count only the valid prefix
             off_path_step_counts.append(max(len(steps) - 1, 0))
@@ -96,7 +97,6 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
         "step_valid_%":         pct(valid_steps, total_steps),
         "first_step_valid_%":   pct(first_correct, first_total),
         "completed_%":          pct(completed, n_proc),
-        "exact_branch_%":       pct(exact_match, n_proc),
         "avg_steps_to_offpath": avg(off_path_step_counts),
         "invented_%":           pct(invented, total_steps),
         "tool_fired_%":         pct(tool_fired, total_steps),
@@ -149,7 +149,7 @@ def main():
 
     #full metric names so the table reads on its own. tool_* columns are 0 outside agentic_ensemble.
     keys = ["method", "graph", "procedures",
-            "step_valid_%", "first_step_valid_%", "completed_%", "exact_branch_%",
+            "step_valid_%", "first_step_valid_%", "completed_%",
             "avg_steps_to_offpath", "invented_%",
             "tool_fired_%"]
     widths = [max(len(k), max(len(_fmt(r.get(k, ""))) for r in rows)) for k in keys]
@@ -159,22 +159,7 @@ def main():
     print("-" * len(line))
     for r in rows:
         print(" | ".join(_fmt(r[k]).ljust(w) for k, w in zip(keys, widths)))
-    print(_legend())
     print(f"\nWrote {out_csv}")
-
-
-#one-liner per column so anyone reading the printout knows what each number means
-def _legend() -> str:
-    return (
-        "\n"
-        "step_valid_%         = % of steps where the pick was a valid next action in the active graph\n"
-        "first_step_valid_%   = same metric but only on step 1 (no compounding error)\n"
-        "completed_%          = % of procedures the agent walked all the way to a terminal state\n"
-        "exact_branch_%       = % where the full trajectory equals one enumerated path through the graph\n"
-        "avg_steps_to_offpath = avg # of valid steps the agent took before its first invalid pick (failures only)\n"
-        "invented_%           = % of picks the fuzzy matcher could not snap to any real action (mainly llama_bare)\n"
-        "tool_fired_%         = % of steps where the agentic gate consulted the graph (agentic_ensemble only)"
-    )
 
 
 def _fmt(v) -> str:

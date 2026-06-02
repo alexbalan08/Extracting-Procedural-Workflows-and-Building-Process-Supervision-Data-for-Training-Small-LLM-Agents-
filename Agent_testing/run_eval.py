@@ -25,7 +25,11 @@ import json
 from pathlib import Path
 
 from runner import load_cases, run_inference
-from agents import LlamaBareAgent, LlamaActionsAgent, EnsemblePlannerAgent, AgenticEnsembleAgent
+from agents import (
+    LlamaBareAgent, LlamaActionsAgent,
+    EnsemblePlannerAgent, AgenticEnsembleAgent,
+    OpenAIBareAgent, OpenAIActionsAgent,
+)
 
 
 _HERE = Path(__file__).parent
@@ -38,7 +42,8 @@ DEFAULT_PRM_ADAPTER = _ROOT / "PRM" / "trained_model"
 
 def make_agent(method: str, alpha: float = 0.5, llm_temp: float = 1.0,
                tool_threshold: float = 0.85, tool_margin: float = 0.2,
-               prm_adapter: Path = DEFAULT_PRM_ADAPTER):
+               prm_adapter: Path = DEFAULT_PRM_ADAPTER,
+               openai_model: str = "gpt-5.4-mini"):
     if method == "llama_bare":
         return LlamaBareAgent()
     if method == "llama_actions":
@@ -48,6 +53,10 @@ def make_agent(method: str, alpha: float = 0.5, llm_temp: float = 1.0,
     if method == "agentic_ensemble":
         return AgenticEnsembleAgent(adapter_path=prm_adapter, alpha=alpha, llm_temp=llm_temp,
                                     tool_threshold=tool_threshold, tool_margin=tool_margin)
+    if method == "openai_bare":
+        return OpenAIBareAgent(model=openai_model)
+    if method == "openai_actions":
+        return OpenAIActionsAgent(model=openai_model)
     raise ValueError(f"Unknown method: {method}")
 
 
@@ -68,7 +77,8 @@ def main():
         description="Run a planner over the held-out procedures and save the picked traces."
     )
     parser.add_argument("--method", required=True,
-                        choices=["llama_bare", "llama_actions", "ensemble", "agentic_ensemble"])
+                        choices=["llama_bare", "llama_actions", "ensemble", "agentic_ensemble",
+                                 "openai_bare", "openai_actions"])
     parser.add_argument("--held_out", type=Path, default=DEFAULT_HELD_OUT)
     parser.add_argument("--predictions", type=Path, default=DEFAULT_PREDICTIONS)
     parser.add_argument("--output_dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -92,6 +102,8 @@ def main():
     parser.add_argument("--prm_adapter", type=Path, default=DEFAULT_PRM_ADAPTER,
                         help="Path to the PRM LoRA adapter folder. Use PRM/trained_model_small "
                              "to compare the dedup-data PRM against the default model.")
+    parser.add_argument("--openai_model", type=str, default="gpt-5.4-mini",
+                        help="OpenAI model name for --method openai_bare (default gpt-5.4-mini)")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -100,10 +112,11 @@ def main():
     if args.limit:
         cases = cases[: args.limit]
 
-    give_candidates = args.method != "llama_bare"
+    give_candidates = args.method not in ("llama_bare", "openai_bare")
+    #(openai_actions / llama_actions both get candidates)
     agent = make_agent(args.method, alpha=args.alpha, llm_temp=args.llm_temp,
                        tool_threshold=args.tool_threshold, tool_margin=args.tool_margin,
-                       prm_adapter=args.prm_adapter)
+                       prm_adapter=args.prm_adapter, openai_model=args.openai_model)
 
     print(f"\nRunning method={args.method} on {len(cases)} procedures "
           f"(graph={args.graph}, give_candidates={give_candidates})")
@@ -124,6 +137,9 @@ def main():
     #PRM tag only appended for methods that actually use the PRM
     if args.method in ("ensemble", "agentic_ensemble"):
         suffix += _prm_tag(args.prm_adapter)
+    #openai model name in the filename so different models don't collide
+    if args.method in ("openai_bare", "openai_actions"):
+        suffix += f"_{args.openai_model}"
     out_path = args.output_dir / f"inference_{args.method}{suffix}.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(traces, f, indent=2, ensure_ascii=False)

@@ -122,6 +122,57 @@ class LlamaBareAgent(_LlamaInstructBase):
         return cleaned, {"raw_response": raw}
 
 
+#OpenAI baseline — same prompt and behaviour as LlamaBareAgent but routes the call
+#to the OpenAI API instead of the local llama. lets us cite a closed-source SOTA
+#model in the writeup as a reference point ("even gpt-5.4-mini at X% bare").
+#requires OPENAI_API_KEY in the environment (same as the extraction pipeline).
+class OpenAIBareAgent(PlanningAgent):
+    #default is large enough for reasoning models (gpt-5.5, o-series) which burn
+    #completion tokens internally on chain-of-thought before emitting the visible
+    #answer. 64 is fine for plain models but starves the reasoning ones.
+    def __init__(self, model: str = "gpt-5.4-mini", max_completion_tokens: int = 4000):
+        self.model = model
+        self.max_completion_tokens = max_completion_tokens
+        self._client = None
+
+    def _load(self):
+        if self._client is not None:
+            return
+        import os
+        from openai import OpenAI
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise EnvironmentError("OPENAI_API_KEY not set. Export it before running.")
+        self._client = OpenAI(api_key=api_key)
+        print(f"OpenAI client ready (model={self.model}).")
+
+    def pick(self, procedure_text, completed_names, candidate_names,
+             predicted_states=None, id_to_name=None):
+        self._load()
+        steps_str = " → ".join(completed_names) if completed_names else "(none)"
+        user = (
+            f"Procedure: {procedure_text}\n\n"
+            f"Steps completed so far: {steps_str}\n\n"
+            "What action should be done next? Reply with just the action name "
+            "(a short phrase, no full sentences)."
+        )
+        #temperature is intentionally not set — newer reasoning models (gpt-5.5, o1-style)
+        #reject any value other than the default 1. seed=42 gives best-effort determinism.
+        response = self._client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": "You are a procedural workflow planner."},
+                {"role": "user", "content": user},
+            ],
+            max_completion_tokens=self.max_completion_tokens,
+            seed=42,
+        )
+        raw = (response.choices[0].message.content or "").strip()
+        cleaned = re.sub(r"^[Nn]ext action:\s*", "", raw).strip(" \"'.")
+        cleaned = cleaned.split("\n")[0].strip()
+        return cleaned, {"raw_response": raw}
+
+
 #method 2 vanilla llama given the candidate list, picks one entry
 #raw output is mapped back to a canonical candidate via _best_candidate_match
 class LlamaActionsAgent(_LlamaInstructBase):
@@ -146,6 +197,56 @@ class LlamaActionsAgent(_LlamaInstructBase):
             {"role": "user", "content": user},
         ])
         #map paraphrases back to a canonical candidate
+        matched = _best_candidate_match(raw, candidate_names)
+        return matched, {"raw_response": raw}
+
+
+#OpenAI baseline given the candidate list — mirrors LlamaActionsAgent's prompt.
+#fair comparison vs the local pipeline: same closed action set, same picking task,
+#just routed through the OpenAI API instead of llama.
+class OpenAIActionsAgent(PlanningAgent):
+    def __init__(self, model: str = "gpt-5.4-mini", max_completion_tokens: int = 4000):
+        self.model = model
+        self.max_completion_tokens = max_completion_tokens
+        self._client = None
+
+    def _load(self):
+        if self._client is not None:
+            return
+        import os
+        from openai import OpenAI
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise EnvironmentError("OPENAI_API_KEY not set. Export it before running.")
+        self._client = OpenAI(api_key=api_key)
+        print(f"OpenAI client ready (model={self.model}).")
+
+    def pick(self, procedure_text, completed_names, candidate_names,
+             predicted_states=None, id_to_name=None):
+        if not candidate_names:
+            raise ValueError("OpenAIActionsAgent requires a candidate list.")
+        self._load()
+        steps_str = " → ".join(completed_names) if completed_names else "(none)"
+        actions_block = "\n".join(f"- {c}" for c in candidate_names)
+        user = (
+            f"Procedure: {procedure_text}\n\n"
+            f"Available actions:\n{actions_block}\n\n"
+            f"Steps completed so far: {steps_str}\n\n"
+            "Which action should be done next? Reply with just the action name "
+            "exactly as written in the list above."
+        )
+        response = self._client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content":
+                    "You are a procedural workflow planner. Pick exactly one action "
+                    "from the available list as the next step."},
+                {"role": "user", "content": user},
+            ],
+            max_completion_tokens=self.max_completion_tokens,
+            seed=42,
+        )
+        raw = (response.choices[0].message.content or "").strip()
         matched = _best_candidate_match(raw, candidate_names)
         return matched, {"raw_response": raw}
 

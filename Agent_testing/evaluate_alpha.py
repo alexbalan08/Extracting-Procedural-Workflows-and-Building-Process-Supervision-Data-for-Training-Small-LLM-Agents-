@@ -24,13 +24,11 @@ DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.jso
 
 
 def _parse_alpha(filename: str) -> str:
-    #pulls "0.90" out of "inference_ensemble_<graph>_alpha0.90.json"
     m = re.search(r"_alpha(\d+\.\d+)", filename)
     return m.group(1) if m else ""
 
 
 def main():
-    #load_cases prints a "Loaded N cases" line we don't need here, swallow it
     with contextlib.redirect_stdout(io.StringIO()):
         cases = load_cases(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
     actions_lookup = {}
@@ -40,8 +38,6 @@ def main():
 
     rows = []
     for path in sorted(RESULTS_DIR.glob("inference_ensemble_*.json")):
-        #skip agentic_ensemble — its filename also starts with "inference_ensemble" once
-        #we strip the prefix differently. easiest: explicit exclusion.
         if path.name.startswith("inference_agentic_ensemble"):
             continue
         alpha_str = _parse_alpha(path.name)
@@ -51,9 +47,7 @@ def main():
             traces = json.load(f)
         if not traces:
             continue
-        #the alpha sweep was only run on --limit 5, so we filter to N=5 here so the
-        #table is consistent. mixing N=5 sweep rows with the existing N=49 alpha=0.9
-        #file would make the curve misleading.
+
         if len(traces) != 5:
             continue
         graph = traces[0].get("eval_mode", "predicted")
@@ -68,7 +62,7 @@ def main():
         print(f"No inference_ensemble_*.json files found in {RESULTS_DIR}")
         return
 
-    #predicted before gold, then alpha ascending — sweep reads naturally top-to-bottom
+
     rows.sort(key=lambda r: (0 if r["graph"] == "predicted" else 1, float(r["alpha"])))
 
     out_csv = RESULTS_DIR / "alpha_sweep.csv"
@@ -78,8 +72,7 @@ def main():
         w.writerows(rows)
 
     
-    #only the columns we need for the writeup figure — alpha sweep is currently
-    #predicted-only so we drop the graph column too. add it back if you ever sweep on gold.
+    #only the columns we need
     keys = ["alpha", "step_valid_%", "completed_%"]
     widths = [max(len(k), max(len(_fmt(r.get(k, ""))) for r in rows)) for k in keys]
 

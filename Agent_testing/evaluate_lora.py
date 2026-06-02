@@ -112,20 +112,7 @@ def main():
     print("-" * len(line))
     for r in rows:
         print(" | ".join(_fmt(r[k]).ljust(w) for k, w in zip(keys, widths)))
-    print(_legend())
     print(f"\nWrote {out_csv}")
-
-
-def _legend() -> str:
-    return (
-        "\n"
-        "step_valid_%         = % of steps where the pick was a valid next action in the active graph\n"
-        "first_step_valid_%   = same metric but only on step 1 (no compounding error)\n"
-        "completed_%          = % of procedures the agent walked all the way to a terminal state\n"
-        "avg_steps_to_offpath = avg # of valid steps the agent took before its first invalid pick (failures only)\n"
-        "tool_fired_%         = % of steps where the agentic gate consulted the graph (agentic_ensemble only)\n"
-        "prm                  = which PRM adapter the agent used (big = default model, small = dedup-data model)"
-    )
 
 
 def _fmt(v) -> str:

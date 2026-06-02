@@ -1,0 +1,5914 @@
+[
+  {
+    "file_index": 1623832427,
+    "eval_mode": "predicted",
+    "procedure_text": "To start, reach out to the 1st Level Support. If they are able to handle the issue, provide feedback to the account manager. If not, ask a developer for assistance. After receiving assistance from the 1st Level Support or the developer, provide feedback to the account manager. Finally, provide feedback to the 1st Level Support and the account manager.",
+    "candidate_actions": [
+      "Reach out to the 1st Level Support",
+      "Provide feedback to the account manager",
+      "Ask a developer for assistance",
+      "Provide feedback to the 1st Level Support"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Reach out to the 1st Level Support",
+          "Ask a developer for assistance",
+          "Provide feedback to the account manager",
+          "Provide feedback to the 1st Level Support"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Reach out to the 1st Level Support",
+          "Provide feedback to the account manager",
+          "Provide feedback to the 1st Level Support"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 1,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Reach out to the 1st Level Support",
+        "Provide feedback to the account manager",
+        "Provide feedback to the 1st Level Support"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Reach out to the 1st Level Support"
+          ],
+          "picked": "Reach out to the 1st Level Support",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Reach out to the 1st Level Support"
+          ],
+          "conditions_active": [
+            [
+              "They are able to handle the issue"
+            ],
+            [
+              "They are not able to handle the issue"
+            ]
+          ],
+          "valid_options": [
+            "Provide feedback to the account manager",
+            "Ask a developer for assistance"
+          ],
+          "picked": "Provide feedback to the account manager",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Reach out to the 1st Level Support",
+            "Provide feedback to the account manager"
+          ],
+          "conditions_active": [
+            [
+              "They are able to handle the issue"
+            ]
+          ],
+          "valid_options": [
+            "Provide feedback to the 1st Level Support"
+          ],
+          "picked": "Provide feedback to the 1st Level Support",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1819704602,
+    "eval_mode": "predicted",
+    "procedure_text": "To start the SSP process, begin by validating the invoice within 7 days. After that, select all eligible invoices. When selecting all eligible invoices, pay attention to the assumption that all invoices ready for processing are stored in an invoice log that can be accessed by the system. Each invoice will only be checked once. Once all eligible invoices are selected, proceed to the sub-process of processing invoices in the payment run log. After processing the invoices in the payment run log, generate the payment report. Once the payment report is generated, receive it. The step of generating the payment report produces the data object called \"Payment Report\". After receiving the payment report, the process ends. The step of receiving the payment report requires accessing the data object \"Payment Report\". Once the payment report is received, archive the paid invoices. The step of archiving the paid invoices also requires accessing the data object \"Payment Report\". The step of archiving the paid invoices produces the data object called \"Paper Based Invoice\". After archiving the paid invoices, proceed to the sub-process of archiving paid invoices. Finally, the process ends.",
+    "candidate_actions": [
+      "Validate the invoice within 7 days",
+      "Select all eligible invoices",
+      "Proceed to the sub-process of processing invoices in the payment run log",
+      "Generate the payment report",
+      "Receive the payment report",
+      "Archive the paid invoices",
+      "Proceed to the sub-process of archiving paid invoices"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Validate the invoice within 7 days",
+          "Select all eligible invoices",
+          "Process invoices in the payment run log",
+          "Generate the payment report",
+          "Receive the payment report",
+          "Archive the paid invoices",
+          "Archive paid invoices"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Validate the invoice within 7 days",
+        "Select all eligible invoices",
+        "Process invoices in the payment run log",
+        "Generate the payment report",
+        "Receive the payment report",
+        "Archive the paid invoices",
+        "Archive paid invoices"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Validate the invoice within 7 days"
+          ],
+          "picked": "Validate the invoice within 7 days",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Validate the invoice within 7 days"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Select all eligible invoices"
+          ],
+          "picked": "Select all eligible invoices",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Validate the invoice within 7 days",
+            "Select all eligible invoices"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Process invoices in the payment run log"
+          ],
+          "picked": "Proceed to the sub-process of processing invoices in the payment run log",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Validate the invoice within 7 days",
+            "Select all eligible invoices",
+            "Proceed to the sub-process of processing invoices in the payment run log"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Generate the payment report"
+          ],
+          "picked": "Generate the payment report",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Validate the invoice within 7 days",
+            "Select all eligible invoices",
+            "Proceed to the sub-process of processing invoices in the payment run log",
+            "Generate the payment report"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receive the payment report"
+          ],
+          "picked": "Receive the payment report",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Validate the invoice within 7 days",
+            "Select all eligible invoices",
+            "Proceed to the sub-process of processing invoices in the payment run log",
+            "Generate the payment report",
+            "Receive the payment report"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Archive the paid invoices"
+          ],
+          "picked": "Archive the paid invoices",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 7,
+          "completed_before": [
+            "Validate the invoice within 7 days",
+            "Select all eligible invoices",
+            "Proceed to the sub-process of processing invoices in the payment run log",
+            "Generate the payment report",
+            "Receive the payment report",
+            "Archive the paid invoices"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Archive paid invoices"
+          ],
+          "picked": "Proceed to the sub-process of archiving paid invoices",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 924468826,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin with, you should choose your destination and calculate the distance. While doing so, continue to check if you need to book a train or a flight. If the answer is \"no\", then proceed to book a train. However, if the answer is \"yes\", then book a flight. If a code is available within 24 hours, the process will end. Otherwise, if 24 hours have passed, you should call a travel agency. If a code is available, the process will end along with the hotel reservation. On the other hand, if a code is not available, you should cancel your journey. In that case, the process will end as well.",
+    "candidate_actions": [
+      "Choose your destination",
+      "Calculate the distance",
+      "Check if you need to book a train or a flight",
+      "Book a train",
+      "Book a flight",
+      "Call a travel agency",
+      "Cancel your journey"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a flight"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a flight",
+          "Call a travel agency"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a flight",
+          "Call a travel agency",
+          "Cancel your journey"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a train"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a train",
+          "Call a travel agency"
+        ]
+      },
+      {
+        "branch": 5,
+        "path": [
+          "Choose your destination",
+          "Calculate the distance",
+          "Check if you need to book a train or a flight",
+          "Book a train",
+          "Call a travel agency",
+          "Cancel your journey"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 5,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Choose your destination",
+        "Calculate the distance",
+        "Check if you need to book a train or a flight",
+        "Book a train",
+        "Call a travel agency",
+        "Cancel your journey"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Choose your destination"
+          ],
+          "picked": "Choose your destination",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Choose your destination"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Calculate the distance"
+          ],
+          "picked": "Calculate the distance",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Choose your destination",
+            "Calculate the distance"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Check if you need to book a train or a flight"
+          ],
+          "picked": "Check if you need to book a train or a flight",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Choose your destination",
+            "Calculate the distance",
+            "Check if you need to book a train or a flight"
+          ],
+          "conditions_active": [
+            [
+              "No"
+            ],
+            [
+              "Yes"
+            ]
+          ],
+          "valid_options": [
+            "Book a flight",
+            "Book a train"
+          ],
+          "picked": "Book a train",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Choose your destination",
+            "Calculate the distance",
+            "Check if you need to book a train or a flight",
+            "Book a train"
+          ],
+          "conditions_active": [
+            [
+              "No",
+              "24 hours have passed"
+            ],
+            [
+              "No",
+              "Code is available within 24 hours"
+            ]
+          ],
+          "valid_options": [
+            "Call a travel agency"
+          ],
+          "picked": "Call a travel agency",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Choose your destination",
+            "Calculate the distance",
+            "Check if you need to book a train or a flight",
+            "Book a train",
+            "Call a travel agency"
+          ],
+          "conditions_active": [
+            [
+              "No",
+              "24 hours have passed",
+              "Code is available"
+            ],
+            [
+              "No",
+              "24 hours have passed",
+              "Code is not available"
+            ]
+          ],
+          "valid_options": [
+            "Cancel your journey"
+          ],
+          "picked": "Cancel your journey",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 580079858,
+    "eval_mode": "predicted",
+    "procedure_text": "For Landlord/Agent: To begin, you need to register on RenTool. Once you have registered, enter the details of the unit you want to rent. After entering the details, upload pictures of the unit. Once the pictures are uploaded, you can publish the unit for rent. Once the unit is published, you will start receiving requests for inspection. If you reject the request, the process ends. However, if you accept the request, you need to schedule an inspection time. After scheduling the inspection time, you should publish the inspection time for potential applicants. Once this is done, the process ends. For Student: To get started, you need to register on RenTool. Simultaneously, complete the following steps: enter your personal details and upload the required documents. Once you have completed these steps, you can search for available units. Select the unit(s) you are interested in for inspection. If the unit is available for inspection, you can proceed with the check. However, if the unit is not available for inspection, the process ends. If you accept the scheduled inspection time, you can continue with the process. On the other hand, if you reject the scheduled inspection time, you can still continue with the process. In the end, the process ends.",
+    "candidate_actions": [
+      "Register on RenTool",
+      "Enter the details of the unit you want to rent",
+      "Upload pictures of the unit",
+      "Publish the unit for rent",
+      "Receive requests for inspection",
+      "Reject the request",
+      "Accept the request",
+      "Schedule an inspection time",
+      "Publish the inspection time for potential applicants",
+      "Register on RenTool",
+      "Enter your personal details",
+      "Upload the required documents",
+      "Search for available units",
+      "Select the unit(s) you are interested in for inspection",
+      "Check whether the unit is available for inspection",
+      "Proceed with the check",
+      "Accept the scheduled inspection time",
+      "Reject the scheduled inspection time",
+      "Continue with the process"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Register on RenTool",
+          "Enter the details of the unit you want to rent",
+          "Upload pictures of the unit",
+          "Publish the unit for rent",
+          "Receive requests for inspection",
+          "Accept the request",
+          "Schedule an inspection time",
+          "Publish the inspection time for potential applicants"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Register on RenTool",
+          "Enter the details of the unit you want to rent",
+          "Upload pictures of the unit",
+          "Publish the unit for rent",
+          "Receive requests for inspection",
+          "Reject the request"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Register on RenTool",
+          "Enter your personal details",
+          "Upload the required documents",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Register on RenTool",
+          "Enter your personal details",
+          "Upload the required documents",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Accept the scheduled inspection time"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "Register on RenTool",
+          "Enter your personal details",
+          "Upload the required documents",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Reject the scheduled inspection time"
+        ]
+      },
+      {
+        "branch": 5,
+        "path": [
+          "Register on RenTool",
+          "Upload the required documents",
+          "Enter your personal details",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection"
+        ]
+      },
+      {
+        "branch": 6,
+        "path": [
+          "Register on RenTool",
+          "Upload the required documents",
+          "Enter your personal details",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Accept the scheduled inspection time"
+        ]
+      },
+      {
+        "branch": 7,
+        "path": [
+          "Register on RenTool",
+          "Upload the required documents",
+          "Enter your personal details",
+          "Search for available units",
+          "Select the unit(s) you are interested in for inspection",
+          "Proceed with the check",
+          "Reject the scheduled inspection time"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 2,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Register on RenTool"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Register on RenTool",
+            "Register on RenTool"
+          ],
+          "picked": "Register on RenTool",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Register on RenTool"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Enter your personal details",
+            "Upload the required documents"
+          ],
+          "picked": "Enter the details of the unit you want to rent",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1202352282,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, start by placing an order. If the payment method chosen is by credit card, then proceed with the process. If the payment method chosen is by bank account transfer, then continue with the process. Alternatively, if the payment method chosen is PayPal, then proceed with the process. Once the payment has been made, the shipment will be arranged and the process will come to an end. Remember to start the process by placing an order, followed by making the payment, and finally arranging for the shipment.",
+    "candidate_actions": [
+      "Place an order",
+      "Make the payment",
+      "Arrange for the shipment"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Place an order",
+          "Make the payment",
+          "Arrange for the shipment"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Place an order",
+        "Make the payment",
+        "Arrange for the shipment"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Place an order"
+          ],
+          "picked": "Place an order",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Place an order"
+          ],
+          "conditions_active": [
+            [
+              "Bank account transfer"
+            ],
+            [
+              "Credit card"
+            ],
+            [
+              "PayPal"
+            ]
+          ],
+          "valid_options": [
+            "Make the payment"
+          ],
+          "picked": "Make the payment",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Place an order",
+            "Make the payment"
+          ],
+          "conditions_active": [
+            [
+              "Bank account transfer"
+            ],
+            [
+              "Credit card"
+            ],
+            [
+              "PayPal"
+            ]
+          ],
+          "valid_options": [
+            "Arrange for the shipment"
+          ],
+          "picked": "Arrange for the shipment",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 344905903,
+    "eval_mode": "predicted",
+    "procedure_text": "To start with, you need to verify the contents. Once you have verified the contents, you can proceed to perform quality inspection. During the quality inspection, you should check if the material is okay. If it is, then you can store the materials in the appropriate location. However, if there is a problem reported, the process will come to an end. After storing the materials in the right location, the process will also come to an end.",
+    "candidate_actions": [
+      "Verify the contents",
+      "Perform quality inspection",
+      "Store the materials in the appropriate location"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Verify the Contents",
+          "Perform quality inspection",
+          "Problem Reported"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Verify the Contents",
+          "Perform quality inspection",
+          "Store the materials in the appropriate location"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 1,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Verify the Contents",
+        "Perform quality inspection",
+        "Store the materials in the appropriate location"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Verify the Contents"
+          ],
+          "picked": "Verify the contents",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Verify the contents"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Perform quality inspection"
+          ],
+          "picked": "Perform quality inspection",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Verify the contents",
+            "Perform quality inspection"
+          ],
+          "conditions_active": [
+            [
+              "material is okay"
+            ],
+            [
+              "problem reported"
+            ]
+          ],
+          "valid_options": [
+            "Store the materials in the appropriate location",
+            "Problem Reported"
+          ],
+          "picked": "Store the materials in the appropriate location",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 637730773,
+    "eval_mode": "predicted",
+    "procedure_text": "To initiate the process at ACME Inc., begin by transitioning from the Purchase Requisition stage to the Purchase Order stage. If there is a delivery of goods, it is necessary to verify both the quantity and quality. However, if there is no delivery within the specified delivery period, it is important to reach out to the supplier. In the event of any queries from the supplier, it is crucial to consult the ordering department for clarification. After confirming the quantity and quality, proceed to receive the purchase invoice. Once the purchase invoice is received, move on to the Delivery-to-Payment stage, marking the end of the process.",
+    "candidate_actions": [
+      "from the Purchase Requisition stage to the Purchase Order stage",
+      "verify both the quantity and quality",
+      "reach out to the supplier",
+      "consult the ordering department for clarification",
+      "receive the purchase invoice",
+      "move on to the Delivery-to-Payment stage"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "transitioning from the Purchase Requisition stage to the Purchase Order stage",
+          "reach out to the supplier"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "transitioning from the Purchase Requisition stage to the Purchase Order stage",
+          "verify both the quantity and quality",
+          "receive the purchase invoice",
+          "move on to the Delivery-to-Payment stage"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 1,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "transitioning from the Purchase Requisition stage to the Purchase Order stage",
+        "verify both the quantity and quality",
+        "receive the purchase invoice",
+        "move on to the Delivery-to-Payment stage"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "transitioning from the Purchase Requisition stage to the Purchase Order stage"
+          ],
+          "picked": "from the Purchase Requisition stage to the Purchase Order stage",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "from the Purchase Requisition stage to the Purchase Order stage"
+          ],
+          "conditions_active": [
+            [
+              "There is a delivery of goods"
+            ],
+            [
+              "There is no delivery within the specified delivery period"
+            ]
+          ],
+          "valid_options": [
+            "verify both the quantity and quality",
+            "reach out to the supplier"
+          ],
+          "picked": "verify both the quantity and quality",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "from the Purchase Requisition stage to the Purchase Order stage",
+            "verify both the quantity and quality"
+          ],
+          "conditions_active": [
+            [
+              "There is a delivery of goods"
+            ]
+          ],
+          "valid_options": [
+            "receive the purchase invoice"
+          ],
+          "picked": "receive the purchase invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "from the Purchase Requisition stage to the Purchase Order stage",
+            "verify both the quantity and quality",
+            "receive the purchase invoice"
+          ],
+          "conditions_active": [
+            [
+              "There is a delivery of goods"
+            ]
+          ],
+          "valid_options": [
+            "move on to the Delivery-to-Payment stage"
+          ],
+          "picked": "move on to the Delivery-to-Payment stage",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 2120313457,
+    "eval_mode": "predicted",
+    "procedure_text": "For ABC Co., the process starts with Low Inventory and then moves on to Create Purchase Requisition. After creating the purchase requisition, the next step is to Consolidate PRs. The \"Create Purchase Requisition\" step generates the data object \"PR\". Once the PRs are consolidated, the next step is to Select Suitable Vendor. The \"Consolidate PRs\" step requires accessing the data object \"PRs\". After selecting the suitable vendor, the next step is to Submit Purchase Order. The \"Select Suitable Vendor\" step requires accessing the data object \"Approved Vendor List\". Submitting the purchase order leads to the PO being sent. The \"Submit Purchase Order\" step generates the data object \"PO\". Once the PO is sent, the next step is to receive the shipment. After receiving the shipment, the materials are received and inspected. The \"Receive and Inspect Materials\" step generates the data object \"GDR\". After inspecting the materials, the next step is to verify the documents. The \"Verify the documents\" step requires accessing the data object \"GDR\". Once the documents are verified, the payment is submitted. The \"Verify the documents\" step requires accessing the data object \"PO\". After submitting the payment, the payment is sent and the process ends. For the Supplier, the process starts with the PO being received and then the ordered materials are sent. After sending the ordered materials, the next step is to send the shipment. If a Payment Received Catch Event occurs, the process moves on to Process Payment. After processing the payment, the process ends.",
+    "candidate_actions": [
+      "Low Inventory",
+      "Create Purchase Requisition",
+      "Consolidate PRs",
+      "Select Suitable Vendor",
+      "Submit Purchase Order",
+      "PO Sent",
+      "Receive the shipment",
+      "Receive and Inspect Materials",
+      "Verify the documents",
+      "Submit the payment",
+      "Payment Sent",
+      "Send the ordered materials",
+      "Send the shipment",
+      "Process Payment"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Low Inventory",
+          "Create Purchase Requisition",
+          "Consolidate PRs",
+          "Select Suitable Vendor",
+          "Submit Purchase Order",
+          "PO is sent",
+          "Receive the shipment",
+          "Receive and Inspect Materials",
+          "Verify the documents",
+          "Submit Payment",
+          "Payment is sent"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "PO Received",
+          "Send the Ordered Materials",
+          "Send the Shipment",
+          "Payment Received Catch Event",
+          "Process Payment"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Low Inventory",
+        "Create Purchase Requisition",
+        "Consolidate PRs",
+        "Select Suitable Vendor",
+        "Submit Purchase Order",
+        "PO is sent",
+        "Receive the shipment",
+        "Receive and Inspect Materials",
+        "Verify the documents",
+        "Submit Payment",
+        "Payment is sent"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "PO Received",
+            "Low Inventory"
+          ],
+          "picked": "Low Inventory",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Low Inventory"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Create Purchase Requisition"
+          ],
+          "picked": "Create Purchase Requisition",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Consolidate PRs"
+          ],
+          "picked": "Consolidate PRs",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Select Suitable Vendor"
+          ],
+          "picked": "Select Suitable Vendor",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs",
+            "Select Suitable Vendor"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Submit Purchase Order"
+          ],
+          "picked": "Submit Purchase Order",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs",
+            "Select Suitable Vendor",
+            "Submit Purchase Order"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "PO is sent"
+          ],
+          "picked": "PO Sent",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 7,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs",
+            "Select Suitable Vendor",
+            "Submit Purchase Order",
+            "PO Sent"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receive the shipment"
+          ],
+          "picked": "Receive the shipment",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 8,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs",
+            "Select Suitable Vendor",
+            "Submit Purchase Order",
+            "PO Sent",
+            "Receive the shipment"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receive and Inspect Materials"
+          ],
+          "picked": "Receive and Inspect Materials",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 9,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs",
+            "Select Suitable Vendor",
+            "Submit Purchase Order",
+            "PO Sent",
+            "Receive the shipment",
+            "Receive and Inspect Materials"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Verify the documents"
+          ],
+          "picked": "Verify the documents",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 10,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs",
+            "Select Suitable Vendor",
+            "Submit Purchase Order",
+            "PO Sent",
+            "Receive the shipment",
+            "Receive and Inspect Materials",
+            "Verify the documents"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Submit Payment"
+          ],
+          "picked": "Submit the payment",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 11,
+          "completed_before": [
+            "Low Inventory",
+            "Create Purchase Requisition",
+            "Consolidate PRs",
+            "Select Suitable Vendor",
+            "Submit Purchase Order",
+            "PO Sent",
+            "Receive the shipment",
+            "Receive and Inspect Materials",
+            "Verify the documents",
+            "Submit the payment"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Payment is sent"
+          ],
+          "picked": "Payment Sent",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1771249998,
+    "eval_mode": "predicted",
+    "procedure_text": "For SSP: Initially, a request is made for a new vendor master record. This step, known as \"Request for new vendor master record\", involves accessing the data object called \"New vendor record request forms\". If the request is marked as \"Urgent\", the process continues. However, if it is marked as \"Not urgent\", the process still continues. Regardless of the urgency, the process continues. Finally, a new vendor record is created, marking the end of the process.",
+    "candidate_actions": [
+      "Request for new vendor master record",
+      "involves accessing the data object called \"New vendor record request forms\"",
+      "New vendor record is created"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Request for new vendor master record",
+          "New vendor record is created"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Request for new vendor master record"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Request for new vendor master record"
+          ],
+          "picked": "Request for new vendor master record",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Request for new vendor master record"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "New vendor record is created"
+          ],
+          "picked": "involves accessing the data object called \"New vendor record request forms\"",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1246774905,
+    "eval_mode": "predicted",
+    "procedure_text": "To start the process for a new employee, begin by requesting access to the necessary systems. If access is granted, proceed to set up the access. However, if access is denied, no access will be given. If access is granted and set up, proceed to send the training guide. On the other hand, if no access is given, the process will end. The step of sending the training guide will generate the data object called \"Training Documentation\". After sending the training guide, review it before concluding the process.",
+    "candidate_actions": [
+      "Requesting Access to the Necessary Systems",
+      "Set Up the Access",
+      "Send the Training Guide",
+      "Review It"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Request Access to the Necessary Systems"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Request Access to the Necessary Systems",
+          "Set Up the Access",
+          "Send the Training Guide",
+          "Review It"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 1,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Request Access to the Necessary Systems",
+        "Set Up the Access",
+        "Send the Training Guide",
+        "Review It"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Request Access to the Necessary Systems"
+          ],
+          "picked": "Requesting Access to the Necessary Systems",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Requesting Access to the Necessary Systems"
+          ],
+          "conditions_active": [
+            [
+              "Access is denied"
+            ],
+            [
+              "Access is granted"
+            ]
+          ],
+          "valid_options": [
+            "Set Up the Access"
+          ],
+          "picked": "Set Up the Access",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Requesting Access to the Necessary Systems",
+            "Set Up the Access"
+          ],
+          "conditions_active": [
+            [
+              "Access is granted"
+            ]
+          ],
+          "valid_options": [
+            "Send the Training Guide"
+          ],
+          "picked": "Send the Training Guide",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Requesting Access to the Necessary Systems",
+            "Set Up the Access",
+            "Send the Training Guide"
+          ],
+          "conditions_active": [
+            [
+              "Access is granted"
+            ]
+          ],
+          "valid_options": [
+            "Review It"
+          ],
+          "picked": "Review It",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1328626242,
+    "eval_mode": "predicted",
+    "procedure_text": "The process begins with the receipt of an order from the client. Next, the similarity is assessed. Finally, the process comes to an end.",
+    "candidate_actions": [
+      "Receipt of an Order from the Client",
+      "Assess the Similarity"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Receipt of an Order from the Client",
+          "Assess the Similarity"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Receipt of an Order from the Client",
+        "Assess the Similarity"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receipt of an Order from the Client"
+          ],
+          "picked": "Receipt of an Order from the Client",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Receipt of an Order from the Client"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Assess the Similarity"
+          ],
+          "picked": "Assess the Similarity",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1677731248,
+    "eval_mode": "predicted",
+    "procedure_text": "To start the process for the Organisational Unit, it is important to begin by the 10th day of the month. Once the process has been initiated, the next step is to kick off the activities. Following the kick off, the focus should shift to managing the members involved. After effectively managing the members, the next task is to handle any issues that may arise. Once the issues have been addressed, the attention should turn towards managing the decision procedures. Once the decision procedures have been managed, it is time to prepare the results. After the results have been prepared, they should be published. Once the results have been published, the procedures can be closed. Finally, when the procedures have been closed, the process comes to an end.",
+    "candidate_actions": [
+      "10th Day of Month",
+      "Kick off",
+      "Manage Members",
+      "Handle any issues",
+      "Manage Decision Procedures",
+      "Prepare Results",
+      "Publish Results",
+      "Close Procedures"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "10th Day of Month",
+          "Kick off",
+          "Manage Members",
+          "Manage Issues",
+          "Manage Decision Procedures",
+          "Prepare Results",
+          "Publish Results",
+          "Close Procedures"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "10th Day of Month",
+        "Kick off",
+        "Manage Members",
+        "Manage Issues",
+        "Manage Decision Procedures",
+        "Prepare Results",
+        "Publish Results",
+        "Close Procedures"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "10th Day of Month"
+          ],
+          "picked": "10th Day of Month",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "10th Day of Month"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Kick off"
+          ],
+          "picked": "Kick off",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "10th Day of Month",
+            "Kick off"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Manage Members"
+          ],
+          "picked": "Manage Members",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "10th Day of Month",
+            "Kick off",
+            "Manage Members"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Manage Issues"
+          ],
+          "picked": "Handle any issues",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "10th Day of Month",
+            "Kick off",
+            "Manage Members",
+            "Handle any issues"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Manage Decision Procedures"
+          ],
+          "picked": "Manage Decision Procedures",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "10th Day of Month",
+            "Kick off",
+            "Manage Members",
+            "Handle any issues",
+            "Manage Decision Procedures"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Prepare Results"
+          ],
+          "picked": "Prepare Results",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 7,
+          "completed_before": [
+            "10th Day of Month",
+            "Kick off",
+            "Manage Members",
+            "Handle any issues",
+            "Manage Decision Procedures",
+            "Prepare Results"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Publish Results"
+          ],
+          "picked": "Publish Results",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 8,
+          "completed_before": [
+            "10th Day of Month",
+            "Kick off",
+            "Manage Members",
+            "Handle any issues",
+            "Manage Decision Procedures",
+            "Prepare Results",
+            "Publish Results"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Close Procedures"
+          ],
+          "picked": "Close Procedures",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1191144576,
+    "eval_mode": "predicted",
+    "procedure_text": "For SSP, the process starts with processing invoices that have been returned with errors. After that, the system moves on to processing new invoices. Once all the invoices have been processed, the process comes to an end.",
+    "candidate_actions": [
+      "Processing invoices that have been returned with errors",
+      "Processing new invoices"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Processing Invoices That Have Been Returned With Errors",
+          "Processing New Invoices"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Processing Invoices That Have Been Returned With Errors",
+        "Processing New Invoices"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Processing Invoices That Have Been Returned With Errors"
+          ],
+          "picked": "Processing invoices that have been returned with errors",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Processing invoices that have been returned with errors"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Processing New Invoices"
+          ],
+          "picked": "Processing new invoices",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 2147475315,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, the Bank Officer should initiate it by mailing the Pin. Two days after mailing the Pin, the Bank Officer should proceed by mailing the TANs. Following the mailing of the TANs, the Bank Officer should wait for another two days before taking the next step. After the two-day wait, the Bank Officer should mail the Card, and that will mark the end of the process.",
+    "candidate_actions": [
+      "Mailing the Pin",
+      "Mailing the TANs",
+      "Wait for another two days",
+      "Mail the Card"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Mail the Pin",
+          "Mail the TANs",
+          "Mail the Card"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": null,
+      "match_type": "off_path",
+      "completed_trajectory": [],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Mail the Pin"
+          ],
+          "picked": "Mailing the Pin",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 925814319,
+    "eval_mode": "predicted",
+    "procedure_text": "For the requester, the process begins by checking the inventory level. If the inventory level is determined to be \"sufficient\", then the process ends. However, if the inventory level is determined to be \"insufficient\", the next step is to construct or rework a purchase order. Once the purchase order is constructed or reworked, it is then reviewed. If the purchase order is deemed \"IGO\" (in good order), the process continues. However, if the purchase order is deemed \"NIGO\" (not in good order), it must be reworked. After the purchase order is reviewed and either deemed \"IGO\" or \"NIGO\", the next step is to reserve purchasing funds and wait for the invoice. Once the invoice is received, the funds are released and payment is issued. Finally, after payment is issued, the process comes to an end.",
+    "candidate_actions": [
+      "Check the inventory level",
+      "Construct or rework a purchase order",
+      "Review the purchase order",
+      "Rework it",
+      "Reserve purchasing funds and wait for the invoice",
+      "Receive the invoice",
+      "Release the funds and issue payment"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Check the inventory level"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Check the inventory level",
+          "Construct or rework a purchase order",
+          "Review the purchase order",
+          "Reserve purchasing funds and wait for the invoice",
+          "Release the funds and payment is issued"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Check the inventory level",
+          "Construct or rework a purchase order",
+          "Review the purchase order",
+          "Rework it",
+          "Review the purchase order",
+          "Reserve purchasing funds and wait for the invoice",
+          "Release the funds and payment is issued"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Check the inventory level",
+          "Construct or rework a purchase order",
+          "Review the purchase order",
+          "Rework it",
+          "Review the purchase order",
+          "Rework it"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 1,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Check the inventory level",
+        "Construct or rework a purchase order",
+        "Review the purchase order",
+        "Reserve purchasing funds and wait for the invoice"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Check the inventory level"
+          ],
+          "picked": "Check the inventory level",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Check the inventory level"
+          ],
+          "conditions_active": [
+            [
+              "Insufficient"
+            ],
+            [
+              "Sufficient"
+            ]
+          ],
+          "valid_options": [
+            "Construct or rework a purchase order"
+          ],
+          "picked": "Construct or rework a purchase order",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Check the inventory level",
+            "Construct or rework a purchase order"
+          ],
+          "conditions_active": [
+            [
+              "Insufficient"
+            ]
+          ],
+          "valid_options": [
+            "Review the purchase order"
+          ],
+          "picked": "Review the purchase order",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Check the inventory level",
+            "Construct or rework a purchase order",
+            "Review the purchase order"
+          ],
+          "conditions_active": [
+            [
+              "Insufficient",
+              "IGO"
+            ],
+            [
+              "Insufficient",
+              "NIGO"
+            ]
+          ],
+          "valid_options": [
+            "Reserve purchasing funds and wait for the invoice",
+            "Rework it"
+          ],
+          "picked": "Reserve purchasing funds and wait for the invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Check the inventory level",
+            "Construct or rework a purchase order",
+            "Review the purchase order",
+            "Reserve purchasing funds and wait for the invoice"
+          ],
+          "conditions_active": [
+            [
+              "Insufficient",
+              "IGO"
+            ]
+          ],
+          "valid_options": [
+            "Release the funds and payment is issued"
+          ],
+          "picked": "Receive the invoice",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1607562970,
+    "eval_mode": "predicted",
+    "procedure_text": "For NAB: The process starts with accessing the Share Drive, followed by retrieving the Capacity Report. After that, attending the Forum and verifying Performance Issues concludes the process. For NAB: The process begins with archiving the Report on the Shared Network Drive, then reviewing the Report and highlighting any issues. After that, attending the Forum and raising any issues concludes the process. For Telstra: The process starts with creating the Capacity Report and then continues.",
+    "candidate_actions": [
+      "Accessing the Share Drive",
+      "Retrieving the Capacity Report",
+      "Attending the Forum",
+      "Verifying Performance Issues",
+      "Archiving the Report on the Shared Network Drive",
+      "Reviewing the Report",
+      "Highlighting any issues",
+      "Attending the Forum",
+      "Raising any issues",
+      "Creating the Capacity Report"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Accessing the Share Drive",
+          "Retrieving the Capacity Report",
+          "Attending the Forum",
+          "Verifying Performance Issues"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Archiving the Report on the Shared Network Drive",
+          "Reviewing the Report and highlighting any issues",
+          "Attending the Forum",
+          "Raising any issues"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Creating the Capacity Report",
+          "Continuation Placeholder"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Accessing the Share Drive",
+        "Retrieving the Capacity Report"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Archiving the Report on the Shared Network Drive",
+            "Accessing the Share Drive",
+            "Creating the Capacity Report"
+          ],
+          "picked": "Accessing the Share Drive",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Accessing the Share Drive"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Retrieving the Capacity Report"
+          ],
+          "picked": "Retrieving the Capacity Report",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Accessing the Share Drive",
+            "Retrieving the Capacity Report"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Attending the Forum"
+          ],
+          "picked": "Attending the Forum",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1846892286,
+    "eval_mode": "predicted",
+    "procedure_text": "For Firemen: The process begins with gathering information on a road accident, followed by assisting and evacuating the victims. Once the victims have been assisted and evacuated, the process comes to an end. For Hospitals: The process starts with receiving information on a road accident, and then proceeds to receiving and treating the victims. Once the victims have been received and treated, the process concludes.",
+    "candidate_actions": [
+      "Gathering information on a road accident",
+      "Assisting and evacuating the victims",
+      "Receiving information on a road accident",
+      "Receiving and treating the victims"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Gathering Information on a Road Accident",
+          "Assisting and Evacuating the Victims"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Receiving Information on a Road Accident",
+          "Receiving and Treating the Victims"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Gathering Information on a Road Accident",
+        "Assisting and Evacuating the Victims"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Gathering Information on a Road Accident",
+            "Receiving Information on a Road Accident"
+          ],
+          "picked": "Gathering information on a road accident",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Gathering information on a road accident"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Assisting and Evacuating the Victims"
+          ],
+          "picked": "Assisting and evacuating the victims",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1134338388,
+    "eval_mode": "predicted",
+    "procedure_text": "To apply for a loan, start by submitting a loan application. After submitting the application, review the loan paperwork. Check if the loan value is greater than $1000. If it is not, evaluate the risk. If it is, the process ends. Check again if the loan value is greater than $1000. If it is not, evaluate the risk. If it is, the process ends. Once the risk is evaluated, proceed to approve the loan. After approving the loan, receive the money. Finally, the process ends.",
+    "candidate_actions": [
+      "Submit a loan application",
+      "Review the loan paperwork",
+      "Evaluate the risk",
+      "Check again if the loan value is greater than $1000",
+      "Approve the loan",
+      "Receive the money"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Submit a loan application",
+          "Review the loan paperwork"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Submit a loan application",
+          "Review the loan paperwork",
+          "Check if the loan value is greater than $1000",
+          "Evaluate the risk",
+          "Approve the loan",
+          "Receive the money"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 1,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Submit a loan application",
+        "Review the loan paperwork",
+        "Check if the loan value is greater than $1000",
+        "Evaluate the risk",
+        "Approve the loan",
+        "Receive the money"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Submit a loan application"
+          ],
+          "picked": "Submit a loan application",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Submit a loan application"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Review the loan paperwork"
+          ],
+          "picked": "Review the loan paperwork",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Submit a loan application",
+            "Review the loan paperwork"
+          ],
+          "conditions_active": [
+            [
+              "Loan value is greater than $1000"
+            ],
+            [
+              "Loan value is not greater than $1000"
+            ]
+          ],
+          "valid_options": [
+            "Check if the loan value is greater than $1000"
+          ],
+          "picked": "Check again if the loan value is greater than $1000",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Submit a loan application",
+            "Review the loan paperwork",
+            "Check again if the loan value is greater than $1000"
+          ],
+          "conditions_active": [
+            [
+              "Loan value is not greater than $1000"
+            ]
+          ],
+          "valid_options": [
+            "Evaluate the risk"
+          ],
+          "picked": "Evaluate the risk",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Submit a loan application",
+            "Review the loan paperwork",
+            "Check again if the loan value is greater than $1000",
+            "Evaluate the risk"
+          ],
+          "conditions_active": [
+            [
+              "Loan value is not greater than $1000"
+            ]
+          ],
+          "valid_options": [
+            "Approve the loan"
+          ],
+          "picked": "Approve the loan",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Submit a loan application",
+            "Review the loan paperwork",
+            "Check again if the loan value is greater than $1000",
+            "Evaluate the risk",
+            "Approve the loan"
+          ],
+          "conditions_active": [
+            [
+              "Loan value is not greater than $1000"
+            ]
+          ],
+          "valid_options": [
+            "Receive the money"
+          ],
+          "picked": "Receive the money",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 777696104,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, fill out the Urgent Record Request form along with the invoice. Once completed, place it in the designated outbox. From there, the form will be processed between 11am and 3pm. After this time frame, it should be taken to the master data entry department. Within 24 hours, the form will be finalized and the record will be completed. This marks the end of the process.",
+    "candidate_actions": [
+      "Fill out the Urgent Record Request form along with the invoice",
+      "Place it in the designated outbox",
+      "Processed between 11am and 3pm",
+      "Take it to the master data entry department",
+      "The form will be finalized and the record will be completed"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Fill out the Urgent Record Request form along with the invoice",
+          "Place it in the designated outbox",
+          "The form will be processed between 11am and 3pm",
+          "Take it to the master data entry department",
+          "The form will be finalized",
+          "The record will be completed"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Fill out the Urgent Record Request form along with the invoice",
+        "Place it in the designated outbox",
+        "The form will be processed between 11am and 3pm",
+        "Take it to the master data entry department",
+        "The form will be finalized"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Fill out the Urgent Record Request form along with the invoice"
+          ],
+          "picked": "Fill out the Urgent Record Request form along with the invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Fill out the Urgent Record Request form along with the invoice"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Place it in the designated outbox"
+          ],
+          "picked": "Place it in the designated outbox",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Fill out the Urgent Record Request form along with the invoice",
+            "Place it in the designated outbox"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "The form will be processed between 11am and 3pm"
+          ],
+          "picked": "Processed between 11am and 3pm",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Fill out the Urgent Record Request form along with the invoice",
+            "Place it in the designated outbox",
+            "Processed between 11am and 3pm"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Take it to the master data entry department"
+          ],
+          "picked": "Take it to the master data entry department",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Fill out the Urgent Record Request form along with the invoice",
+            "Place it in the designated outbox",
+            "Processed between 11am and 3pm",
+            "Take it to the master data entry department"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "The form will be finalized"
+          ],
+          "picked": "The form will be finalized and the record will be completed",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Fill out the Urgent Record Request form along with the invoice",
+            "Place it in the designated outbox",
+            "Processed between 11am and 3pm",
+            "Take it to the master data entry department",
+            "The form will be finalized and the record will be completed"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "The record will be completed"
+          ],
+          "picked": "The form will be finalized and the record will be completed",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1906145213,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, start by reviewing supplier data. The step \"Review supplier data\" involves accessing the data object \"Phase-out rules\". This step generates the data object \"Phase-out indicator\". The step \"Review supplier data\" requires accessing the data object \"Phase-out rules\". Once the supplier master data is marked for phase-out, the process comes to an end. For SEN, initiate the process by 1 year and then proceed to review the supplier hierarchy. The step \"Review supplier hierarchy\" produces the data object \"Hierarchy update indicator\". This step requires accessing the data object \"Hierarchy rules\". The step \"Review supplier hierarchy\" requires accessing the data object \"Hierarchy rules\". Once the supplier master data is marked for hierarchy update, the process concludes. Lastly, for SEN, start the process by 1 year and then review the ownership. The step \"Review ownership\" requires accessing the data object \"Ownership rules\". This step generates the data object \"Ownership update indicator\". The step \"Review ownership\" requires accessing the data object \"Ownership rules\". Once the supplier master data is marked for hierarchy update, the process comes to an end.",
+    "candidate_actions": [
+      "Review supplier data",
+      "1 year",
+      "Review supplier hierarchy",
+      "Review ownership"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Review supplier data",
+          "Phase-out indicator"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "1 year",
+          "Review ownership",
+          "Ownership update indicator"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "1 year",
+          "Review supplier hierarchy",
+          "Hierarchy update indicator"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Review supplier data"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Review supplier data",
+            "1 year"
+          ],
+          "picked": "Review supplier data",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Review supplier data"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Phase-out indicator"
+          ],
+          "picked": "1 year",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 931543946,
+    "eval_mode": "predicted",
+    "procedure_text": "At the start, there is a task called myUserTask. If this task is \"myScriptTask\", then the process should continue. However, if it is \"mySendTask\", then it should move on to the task called myReceiveTask. Simultaneously, the following steps should be completed: MyServiceTask, MyManualTask, and myCallActivity.myReceiveTask. After that, the process should move to myCollapsedSubprocess.myCollapsedSubprocess and then to Expanded subprocess. Finally, the process comes to an end. If there is an Expanded subprocess, then the process also ends there.",
+    "candidate_actions": [
+      "myUserTask",
+      "myReceiveTask",
+      "MyServiceTask",
+      "MyManualTask",
+      "myCallActivity.myReceiveTask",
+      "myCollapsedSubprocess.myCollapsedSubprocess",
+      "Expanded subprocess"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "myUserTask",
+          "myCallActivity.myReceiveTask",
+          "MyManualTask",
+          "MyServiceTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "myUserTask",
+          "myCallActivity.myReceiveTask",
+          "MyServiceTask",
+          "MyManualTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "myUserTask",
+          "MyManualTask",
+          "myCallActivity.myReceiveTask",
+          "MyServiceTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "myUserTask",
+          "MyManualTask",
+          "MyServiceTask",
+          "myCallActivity.myReceiveTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "myUserTask",
+          "myReceiveTask",
+          "myCallActivity.myReceiveTask",
+          "MyManualTask",
+          "MyServiceTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 5,
+        "path": [
+          "myUserTask",
+          "myReceiveTask",
+          "myCallActivity.myReceiveTask",
+          "MyServiceTask",
+          "MyManualTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 6,
+        "path": [
+          "myUserTask",
+          "myReceiveTask",
+          "MyManualTask",
+          "myCallActivity.myReceiveTask",
+          "MyServiceTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 7,
+        "path": [
+          "myUserTask",
+          "myReceiveTask",
+          "MyManualTask",
+          "MyServiceTask",
+          "myCallActivity.myReceiveTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 8,
+        "path": [
+          "myUserTask",
+          "myReceiveTask",
+          "MyServiceTask",
+          "myCallActivity.myReceiveTask",
+          "MyManualTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 9,
+        "path": [
+          "myUserTask",
+          "myReceiveTask",
+          "MyServiceTask",
+          "MyManualTask",
+          "myCallActivity.myReceiveTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 10,
+        "path": [
+          "myUserTask",
+          "MyServiceTask",
+          "myCallActivity.myReceiveTask",
+          "MyManualTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      },
+      {
+        "branch": 11,
+        "path": [
+          "myUserTask",
+          "MyServiceTask",
+          "MyManualTask",
+          "myCallActivity.myReceiveTask",
+          "myCollapsedSubprocess.myCollapsedSubprocess",
+          "Expanded subprocess"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "myUserTask"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "myUserTask"
+          ],
+          "picked": "myUserTask",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "myUserTask"
+          ],
+          "conditions_active": [
+            [
+              "myScriptTask"
+            ],
+            [
+              "mySendTask"
+            ]
+          ],
+          "valid_options": [
+            "MyManualTask",
+            "myReceiveTask",
+            "myCallActivity.myReceiveTask",
+            "MyServiceTask"
+          ],
+          "picked": "myReceiveTask",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1872722494,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, the user should start by uploading an image. After that, they should search for the image. Once they have found the image, they can select it. After selecting the image, they should proceed to upload it. Once the image has been successfully uploaded, the process will come to an end.",
+    "candidate_actions": [
+      "uploading an image",
+      "search for the image",
+      "select it",
+      "upload it"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Upload an Image",
+          "Search for the Image",
+          "Select It",
+          "Upload It"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": null,
+      "match_type": "off_path",
+      "completed_trajectory": [],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Upload an Image"
+          ],
+          "picked": "uploading an image",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1039694467,
+    "eval_mode": "predicted",
+    "procedure_text": "To start the SSP process, begin by receiving the invoice. Once the invoice is received, categorize it by staff member. After categorizing the invoice, proceed to forward it. Once the invoice has been forwarded, it can be processed. At 10 AM on the workday, put the invoices in the collection box. At the same time, collect the invoice from the outbox. After collecting the invoice, enter the data in SAP. Once the data is entered, forward the invoice for validation. Pay attention to the step \"Forward invoice for validation\" and ensure it is done every hour. After the invoice is validated, proceed to process the payment. Once the payment is processed, archive the invoice. Finally, when the invoice process is completed, the entire process comes to an end.",
+    "candidate_actions": [
+      "Receive the invoice",
+      "Categorize it by staff member",
+      "Forward it",
+      "Process it",
+      "Put the invoices in the collection box",
+      "Collect the invoice from the outbox",
+      "Enter the data in SAP",
+      "Forward invoice for validation",
+      "Validate the invoice",
+      "Process the payment",
+      "Archive the invoice"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Receive the invoice",
+          "Categorize it by staff member",
+          "Forward it",
+          "Process it",
+          "Collect the invoice from the outbox",
+          "Enter the data in SAP",
+          "Forward invoice for validation",
+          "Validate the invoice",
+          "Process the payment",
+          "Archive the invoice",
+          "Invoice process completed",
+          "Put the invoices in the collection box"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Receive the invoice",
+          "Categorize it by staff member",
+          "Forward it",
+          "Process it",
+          "Put the invoices in the collection box",
+          "Collect the invoice from the outbox",
+          "Enter the data in SAP",
+          "Forward invoice for validation",
+          "Validate the invoice",
+          "Process the payment",
+          "Archive the invoice",
+          "Invoice process completed"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 1,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Receive the invoice",
+        "Categorize it by staff member",
+        "Forward it",
+        "Process it",
+        "Put the invoices in the collection box",
+        "Collect the invoice from the outbox",
+        "Enter the data in SAP",
+        "Forward invoice for validation",
+        "Validate the invoice",
+        "Process the payment",
+        "Archive the invoice"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receive the invoice"
+          ],
+          "picked": "Receive the invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Receive the invoice"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Categorize it by staff member"
+          ],
+          "picked": "Categorize it by staff member",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Forward it"
+          ],
+          "picked": "Forward it",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Process it"
+          ],
+          "picked": "Process it",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday"
+            ],
+            [
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Collect the invoice from the outbox",
+            "Put the invoices in the collection box"
+          ],
+          "picked": "Put the invoices in the collection box",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it",
+            "Put the invoices in the collection box"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday",
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Collect the invoice from the outbox"
+          ],
+          "picked": "Collect the invoice from the outbox",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 7,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it",
+            "Put the invoices in the collection box",
+            "Collect the invoice from the outbox"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday",
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Enter the data in SAP"
+          ],
+          "picked": "Enter the data in SAP",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 8,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it",
+            "Put the invoices in the collection box",
+            "Collect the invoice from the outbox",
+            "Enter the data in SAP"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday",
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Forward invoice for validation"
+          ],
+          "picked": "Forward invoice for validation",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 9,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it",
+            "Put the invoices in the collection box",
+            "Collect the invoice from the outbox",
+            "Enter the data in SAP",
+            "Forward invoice for validation"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday",
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Validate the invoice"
+          ],
+          "picked": "Validate the invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 10,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it",
+            "Put the invoices in the collection box",
+            "Collect the invoice from the outbox",
+            "Enter the data in SAP",
+            "Forward invoice for validation",
+            "Validate the invoice"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday",
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Process the payment"
+          ],
+          "picked": "Process the payment",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 11,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it",
+            "Put the invoices in the collection box",
+            "Collect the invoice from the outbox",
+            "Enter the data in SAP",
+            "Forward invoice for validation",
+            "Validate the invoice",
+            "Process the payment"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday",
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Archive the invoice"
+          ],
+          "picked": "Archive the invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 12,
+          "completed_before": [
+            "Receive the invoice",
+            "Categorize it by staff member",
+            "Forward it",
+            "Process it",
+            "Put the invoices in the collection box",
+            "Collect the invoice from the outbox",
+            "Enter the data in SAP",
+            "Forward invoice for validation",
+            "Validate the invoice",
+            "Process the payment",
+            "Archive the invoice"
+          ],
+          "conditions_active": [
+            [
+              "At 10 AM on the workday",
+              "At the same time"
+            ]
+          ],
+          "valid_options": [
+            "Invoice process completed"
+          ],
+          "picked": "Receive the invoice",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1776703899,
+    "eval_mode": "predicted",
+    "procedure_text": "For Club Administrators: To start, please log in. When logging in, make sure to read from the database. If you want to view teams, you can continue with the process. However, if you want to add a new team, you can also continue with the process. In addition, if you want to view medical incidents, you can continue with the process. Similarly, if you want to add medical incidents, you can continue with the process. Lastly, if you want to edit club details, you can continue with the process. The process will end after these steps.",
+    "candidate_actions": [
+      "Log in",
+      "Read from the database",
+      "View teams",
+      "Add a new team",
+      "View medical incidents",
+      "Add medical incidents",
+      "Edit club details"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Log in",
+          "Read from the database",
+          "Add a new team"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Log in",
+          "Read from the database",
+          "Add medical incidents"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Log in",
+          "Read from the database",
+          "Edit club details"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Log in",
+          "Read from the database",
+          "View medical incidents"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "Log in",
+          "Read from the database",
+          "View teams"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 4,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Log in",
+        "Read from the database",
+        "View teams"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Log in"
+          ],
+          "picked": "Log in",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Log in"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Read from the database"
+          ],
+          "picked": "Read from the database",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Log in",
+            "Read from the database"
+          ],
+          "conditions_active": [
+            [
+              "Add a new team"
+            ],
+            [
+              "Add medical incidents"
+            ],
+            [
+              "Edit club details"
+            ],
+            [
+              "View medical incidents"
+            ],
+            [
+              "View teams"
+            ]
+          ],
+          "valid_options": [
+            "Add a new team",
+            "Add medical incidents",
+            "View teams",
+            "View medical incidents",
+            "Edit club details"
+          ],
+          "picked": "View teams",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 551229960,
+    "eval_mode": "predicted",
+    "procedure_text": "For Company 1, the process starts with A1. Simultaneously, complete the steps B1 and C1 until the process ends. On the other hand, for Company 2, the process begins with A2, followed by B2, then C2, and finally, the process ends.",
+    "candidate_actions": [
+      "A1",
+      "B1",
+      "C1",
+      "A2",
+      "B2",
+      "C2"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "A1",
+          "B1",
+          "C1"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "A1",
+          "C1",
+          "B1"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "A2",
+          "B2",
+          "C2"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "A1",
+        "B1",
+        "C1"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "A1",
+            "A2"
+          ],
+          "picked": "A1",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "A1"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "C1",
+            "B1"
+          ],
+          "picked": "B1",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "A1",
+            "B1"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "C1"
+          ],
+          "picked": "C1",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 584548180,
+    "eval_mode": "predicted",
+    "procedure_text": "For Fensterteilproduktion: The process starts at 1. Station, then moves to 2. Station, followed by 3. Station. After that, it proceeds to 4. and 5. Station, then to 8. Station, 9. Station, 11. Station, 12. Station, 13. Station, 14. Station, and finally 15. Station. The process concludes at this point.",
+    "candidate_actions": [
+      "1. Station",
+      "2. Station",
+      "3. Station",
+      "4. Station",
+      "5. Station",
+      "8. Station",
+      "9. Station",
+      "11. Station",
+      "12. Station",
+      "13. Station",
+      "14. Station",
+      "15. Station"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "1. Station",
+          "2. Station",
+          "3. Station",
+          "4. Station",
+          "5. Station",
+          "8. Station",
+          "9. Station",
+          "11. Station",
+          "12. Station",
+          "13. Station",
+          "14. Station",
+          "15. Station"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "1. Station",
+        "2. Station",
+        "3. Station",
+        "4. Station",
+        "5. Station",
+        "8. Station",
+        "9. Station"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "1. Station"
+          ],
+          "picked": "1. Station",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "1. Station"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "2. Station"
+          ],
+          "picked": "2. Station",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "1. Station",
+            "2. Station"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "3. Station"
+          ],
+          "picked": "3. Station",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "1. Station",
+            "2. Station",
+            "3. Station"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "4. Station"
+          ],
+          "picked": "4. Station",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "1. Station",
+            "2. Station",
+            "3. Station",
+            "4. Station"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "5. Station"
+          ],
+          "picked": "5. Station",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "1. Station",
+            "2. Station",
+            "3. Station",
+            "4. Station",
+            "5. Station"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "8. Station"
+          ],
+          "picked": "8. Station",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 7,
+          "completed_before": [
+            "1. Station",
+            "2. Station",
+            "3. Station",
+            "4. Station",
+            "5. Station",
+            "8. Station"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "9. Station"
+          ],
+          "picked": "9. Station",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 8,
+          "completed_before": [
+            "1. Station",
+            "2. Station",
+            "3. Station",
+            "4. Station",
+            "5. Station",
+            "8. Station",
+            "9. Station"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "11. Station"
+          ],
+          "picked": "1. Station",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1882355741,
+    "eval_mode": "predicted",
+    "procedure_text": "To initiate the Drop-off tech process, begin by being notified about refill exceeded. After that, have a discussion with the doctor. Following the discussion, check the outcome. If the doctor approves, update IS about the doctor's approval. However, if the doctor declines, update IS about the doctor's declination. In the case where the doctor cannot be reached, check with the customer if they want to apply for an additional refill. If the doctor approves, update IS about the doctor's approval. If the doctor approves again, update IS about the doctor's approval. On the other hand, if the doctor declines, update IS about the doctor's declination. If the doctor cannot be reached, check with the customer if they want to apply for an additional refill. After updating IS about the doctor's approval, the issue is resolved and the process ends. If the doctor's declination is updated, the script order is declined. If the script order is declined, the issue becomes un-resolvable and the process ends. If the customer answers \"No\", remove them from the callback list. However, if the customer answers \"Yes\", the issue resolution is delayed and the process ends. If the customer answers \"No\", remove them from the callback list. If the customer answers \"Yes\", the issue resolution is delayed and the process ends. Removing from the callback list leads to the script order being declined. The step \"Remove from callback list\" generates the data object \"Callback list\".",
+    "candidate_actions": [
+      "Be notified about refill exceeded",
+      "Have a discussion with the doctor",
+      "Check the outcome",
+      "Update IS about the doctor's approval",
+      "Update IS about the doctor's declination",
+      "Check with the customer if they want to apply for an additional refill",
+      "Remove them from the callback list",
+      "The issue is resolved",
+      "The script order is declined",
+      "The issue becomes un-resolvable",
+      "The issue resolution is delayed"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Be notified about refill exceeded",
+          "Have a discussion with the doctor",
+          "Check the outcome",
+          "Check with the customer if they want to apply for an additional refill"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Be notified about refill exceeded",
+          "Have a discussion with the doctor",
+          "Check the outcome",
+          "Check with the customer if they want to apply for an additional refill",
+          "Remove them from the callback list",
+          "Update IS about the doctor's declination"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Be notified about refill exceeded",
+          "Have a discussion with the doctor",
+          "Check the outcome",
+          "Update IS about the doctor's approval"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Be notified about refill exceeded",
+          "Have a discussion with the doctor",
+          "Check the outcome",
+          "Update IS about the doctor's declination"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 2,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Be notified about refill exceeded",
+        "Have a discussion with the doctor",
+        "Check the outcome",
+        "Update IS about the doctor's approval"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Be notified about refill exceeded"
+          ],
+          "picked": "Be notified about refill exceeded",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Be notified about refill exceeded"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Have a discussion with the doctor"
+          ],
+          "picked": "Have a discussion with the doctor",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Be notified about refill exceeded",
+            "Have a discussion with the doctor"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Check the outcome"
+          ],
+          "picked": "Check the outcome",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Be notified about refill exceeded",
+            "Have a discussion with the doctor",
+            "Check the outcome"
+          ],
+          "conditions_active": [
+            [
+              "Doctor approves"
+            ],
+            [
+              "Doctor cannot be reached"
+            ],
+            [
+              "Doctor declines"
+            ]
+          ],
+          "valid_options": [
+            "Check with the customer if they want to apply for an additional refill",
+            "Update IS about the doctor's approval",
+            "Update IS about the doctor's declination"
+          ],
+          "picked": "Update IS about the doctor's approval",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1098617549,
+    "eval_mode": "predicted",
+    "procedure_text": "For the TS - Administration Staff, the process begins with verifying applications. After verifying applications, the next step is to produce application packs. Once the application packs are produced, the process comes to an end.",
+    "candidate_actions": [
+      "Verify Applications",
+      "Produce Application Packs"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Verify Applications",
+          "Produce Application Packs"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Verify Applications",
+        "Produce Application Packs"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Verify Applications"
+          ],
+          "picked": "Verify Applications",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Verify Applications"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Produce Application Packs"
+          ],
+          "picked": "Produce Application Packs",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 2141871581,
+    "eval_mode": "predicted",
+    "procedure_text": "At first, Mark allocated a box on the Invoice Entry Form (IEF). After that, he logged into SAP and changed the status from 'parked' to validated. Finally, the process ends.",
+    "candidate_actions": [
+      "Allocated a box on the Invoice Entry Form (IEF)",
+      "Logged into SAP and changed the status from 'parked' to validated"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Allocated a box on the Invoice Entry Form (IEF)",
+          "Logged into SAP and changed the status from 'parked' to validated"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Allocated a box on the Invoice Entry Form (IEF)",
+        "Logged into SAP and changed the status from 'parked' to validated"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Allocated a box on the Invoice Entry Form (IEF)"
+          ],
+          "picked": "Allocated a box on the Invoice Entry Form (IEF)",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Allocated a box on the Invoice Entry Form (IEF)"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Logged into SAP and changed the status from 'parked' to validated"
+          ],
+          "picked": "Logged into SAP and changed the status from 'parked' to validated",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 648360551,
+    "eval_mode": "predicted",
+    "procedure_text": "For Buyers: To start the process, you need to first find a book and then visit Amazon.com. Once you are on Amazon.com, you can search for the desired book and get the search results. If you want to buy a new book, you can proceed to purchase it from Amazon.com. However, if you prefer to buy a used book, you need to select the desired one. After buying from Amazon.com, you will receive the new book and the process will end. On the other hand, if you choose to select a used book, you will need to login to the system. Once logged in, you can make the payment and receive confirmation. After confirmation, you will receive the used book and the process will end. For Amazon Marketplace: Initially, you will receive the search request. Upon receiving the request, you should return the search record and display the availability choices for used books. Once the choices are displayed, you can request login from the user. After the user logs in, they can proceed to the shopping cart. In the shopping cart, they need to confirm the payment and proceed to checkout. Once the checkout is complete, the process will end. For Sellers: To begin, you need to receive the payment. Upon receiving the payment, you can proceed to ship the book. Once the book is shipped, the process will end.",
+    "candidate_actions": [
+      "find a book",
+      "visit Amazon.com",
+      "search for the desired book",
+      "get the search results",
+      "proceed to purchase it from Amazon.com",
+      "select the desired one",
+      "login to the system",
+      "make the payment",
+      "receive confirmation",
+      "receive the new book",
+      "receive the used book",
+      "receive the search request",
+      "return the search record",
+      "display the availability choices for used books",
+      "request login from the user",
+      "proceed to the shopping cart",
+      "confirm the payment",
+      "proceed to checkout",
+      "receive the payment",
+      "ship the book"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "find a book",
+          "visit Amazon.com",
+          "search for the desired book",
+          "get the search results",
+          "proceed to purchase it from Amazon.com",
+          "receive the new book"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "find a book",
+          "visit Amazon.com",
+          "search for the desired book",
+          "get the search results",
+          "receive the search request",
+          "return the search record",
+          "display the availability choices for used books",
+          "request login from the user",
+          "login to the system",
+          "make the payment",
+          "receive confirmation",
+          "receive the used book"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "find a book",
+          "visit Amazon.com",
+          "search for the desired book",
+          "get the search results",
+          "select the desired one",
+          "login to the system",
+          "make the payment",
+          "receive confirmation",
+          "receive the used book"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "receive the payment",
+          "ship the book"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "find a book",
+        "visit Amazon.com",
+        "search for the desired book",
+        "get the search results",
+        "proceed to purchase it from Amazon.com",
+        "receive the new book"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "find a book",
+            "receive the payment"
+          ],
+          "picked": "find a book",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "find a book"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "visit Amazon.com"
+          ],
+          "picked": "visit Amazon.com",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "find a book",
+            "visit Amazon.com"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "search for the desired book"
+          ],
+          "picked": "search for the desired book",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "find a book",
+            "visit Amazon.com",
+            "search for the desired book"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "get the search results"
+          ],
+          "picked": "get the search results",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "find a book",
+            "visit Amazon.com",
+            "search for the desired book",
+            "get the search results"
+          ],
+          "conditions_active": [
+            [],
+            [
+              "buy a new book"
+            ],
+            [
+              "buy a used book"
+            ]
+          ],
+          "valid_options": [
+            "select the desired one",
+            "proceed to purchase it from Amazon.com",
+            "receive the search request"
+          ],
+          "picked": "proceed to purchase it from Amazon.com",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "find a book",
+            "visit Amazon.com",
+            "search for the desired book",
+            "get the search results",
+            "proceed to purchase it from Amazon.com"
+          ],
+          "conditions_active": [
+            [
+              "buy a new book"
+            ]
+          ],
+          "valid_options": [
+            "receive the new book"
+          ],
+          "picked": "receive the new book",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 232707351,
+    "eval_mode": "predicted",
+    "procedure_text": "At the start, the Customer encounters an issue. After that, the Customer proceeds to get a description of the problem. They check if they can handle the problem themselves by asking, \"Can I handle this on my own?\" If the answer is \"Yes,\" they proceed to explain the solution. However, if the answer is \"No,\" they send an email to the support system. They then check again if they can handle the problem themselves. If the answer is \"Yes,\" they explain the solution. If the answer is \"No,\" they send another email to the support system. Once the solution is explained, the process comes to an end. Additionally, they send an email to the support system and edit the first level ticket. Lastly, they send an email to the account manager and explain the solution.",
+    "candidate_actions": [
+      "Customer encounters an issue",
+      "Customer proceeds to get a description of the problem",
+      "Explain the solution",
+      "Send an email to the support system",
+      "Can I handle this on my own?",
+      "Edit the first level ticket",
+      "Send an email to the account manager"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Customer encounters an issue",
+          "Customer proceeds to get a description of the problem",
+          "Explain the solution"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Customer encounters an issue",
+          "Customer proceeds to get a description of the problem",
+          "Send an email to the support system",
+          "Edit the first level ticket",
+          "Send an email to the account manager",
+          "Explain the solution"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Customer encounters an issue",
+          "Customer proceeds to get a description of the problem",
+          "Send an email to the support system",
+          "Explain the solution"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Customer encounters an issue",
+        "Customer proceeds to get a description of the problem"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Customer encounters an issue"
+          ],
+          "picked": "Customer encounters an issue",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Customer encounters an issue"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Customer proceeds to get a description of the problem"
+          ],
+          "picked": "Customer proceeds to get a description of the problem",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Customer encounters an issue",
+            "Customer proceeds to get a description of the problem"
+          ],
+          "conditions_active": [
+            [
+              "No"
+            ],
+            [
+              "Yes"
+            ]
+          ],
+          "valid_options": [
+            "Send an email to the support system",
+            "Explain the solution"
+          ],
+          "picked": "Can I handle this on my own?",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 707873261,
+    "eval_mode": "predicted",
+    "procedure_text": "The process starts with Event Detection. After detecting the events, the next step is Event Categorization. If the event is categorized as \"Informational\", it is logged. If it is categorized as \"Warning\" or \"Exceptional\", it is also logged. The same logging process is repeated for each category. Once all the events are logged, the process ends. After logging the events, the previous occurrences are checked. Event Correlation is then performed. The execution of the event process is reviewed before the process ends.",
+    "candidate_actions": [
+      "Event Detection",
+      "Event Categorization",
+      "Log the events",
+      "Check the previous occurrences",
+      "Event Correlation",
+      "Review the execution of the event process"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Event Detection",
+          "Event Categorization",
+          "Log the events",
+          "Previous Occurrences are Checked",
+          "Event Correlation",
+          "The execution of the event process is reviewed"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Event Detection",
+          "Event Categorization",
+          "Log the events",
+          "Previous Occurrences are Checked",
+          "Event Correlation",
+          "The execution of the event process is reviewed",
+          "Log the events",
+          "Previous Occurrences are Checked",
+          "Event Correlation",
+          "The execution of the event process is reviewed"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Event Detection",
+          "Event Categorization",
+          "Log the events",
+          "Previous Occurrences are Checked",
+          "Event Correlation",
+          "The execution of the event process is reviewed",
+          "Log the events",
+          "Previous Occurrences are Checked",
+          "Event Correlation",
+          "The execution of the event process is reviewed",
+          "Log the events",
+          "Previous Occurrences are Checked",
+          "Event Correlation",
+          "The execution of the event process is reviewed"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Event Detection",
+        "Event Categorization",
+        "Log the events",
+        "Previous Occurrences are Checked",
+        "Event Correlation",
+        "The execution of the event process is reviewed"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Event Detection"
+          ],
+          "picked": "Event Detection",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Event Detection"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Event Categorization"
+          ],
+          "picked": "Event Categorization",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Event Detection",
+            "Event Categorization"
+          ],
+          "conditions_active": [
+            [
+              "Exceptional"
+            ],
+            [
+              "Informational"
+            ],
+            [
+              "Warning"
+            ]
+          ],
+          "valid_options": [
+            "Log the events"
+          ],
+          "picked": "Log the events",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Event Detection",
+            "Event Categorization",
+            "Log the events"
+          ],
+          "conditions_active": [
+            [
+              "Exceptional"
+            ],
+            [
+              "Informational"
+            ],
+            [
+              "Warning"
+            ]
+          ],
+          "valid_options": [
+            "Previous Occurrences are Checked"
+          ],
+          "picked": "Check the previous occurrences",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Event Detection",
+            "Event Categorization",
+            "Log the events",
+            "Check the previous occurrences"
+          ],
+          "conditions_active": [
+            [
+              "Exceptional"
+            ],
+            [
+              "Informational"
+            ],
+            [
+              "Warning"
+            ]
+          ],
+          "valid_options": [
+            "Event Correlation"
+          ],
+          "picked": "Event Correlation",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Event Detection",
+            "Event Categorization",
+            "Log the events",
+            "Check the previous occurrences",
+            "Event Correlation"
+          ],
+          "conditions_active": [
+            [
+              "Exceptional"
+            ],
+            [
+              "Informational"
+            ],
+            [
+              "Warning"
+            ]
+          ],
+          "valid_options": [
+            "The execution of the event process is reviewed"
+          ],
+          "picked": "Review the execution of the event process",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 7,
+          "completed_before": [
+            "Event Detection",
+            "Event Categorization",
+            "Log the events",
+            "Check the previous occurrences",
+            "Event Correlation",
+            "Review the execution of the event process"
+          ],
+          "conditions_active": [
+            [
+              "Exceptional"
+            ],
+            [
+              "Informational"
+            ],
+            [
+              "Informational",
+              "Exceptional"
+            ],
+            [
+              "Informational",
+              "Warning"
+            ],
+            [
+              "Warning"
+            ],
+            [
+              "Warning",
+              "Exceptional"
+            ]
+          ],
+          "valid_options": [
+            "Log the events"
+          ],
+          "picked": "Event Detection",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 2055166553,
+    "eval_mode": "predicted",
+    "procedure_text": "At the start, we need to check the invoice compliance. This step involves accessing the data object called \"Invoice + Entry Form\". If the invoice is found to be non-compliant, the process will come to an end. On the other hand, if the invoice is compliant, the process will also come to an end. If the invoice is non-compliant, the process will again come to an end. Similarly, if the invoice is compliant, the process will come to an end.",
+    "candidate_actions": [
+      "Check the invoice compliance"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Check the invoice compliance"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Check the invoice compliance"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Check the invoice compliance"
+          ],
+          "picked": "Check the invoice compliance",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1404960705,
+    "eval_mode": "predicted",
+    "procedure_text": "At the start, check the stock availability. If it is \"Accepted\", proceed to confirm the order. If it is \"Rejected\", then reject the order. After that, if the order is \"Accepted\", confirm it. If it is \"Rejected\", then reject it. At the same time, complete the following steps: ship the goods and send the invoice. The process ends.",
+    "candidate_actions": [
+      "check the stock availability",
+      "confirm the order",
+      "reject the order",
+      "confirm it",
+      "reject it",
+      "ship the goods",
+      "send the invoice"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Check the stock availability",
+          "Confirm the order"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Check the stock availability",
+          "Reject the order"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Check the stock availability",
+        "Confirm the order"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Check the stock availability"
+          ],
+          "picked": "check the stock availability",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "check the stock availability"
+          ],
+          "conditions_active": [
+            [
+              "Accepted"
+            ],
+            [
+              "Rejected"
+            ]
+          ],
+          "valid_options": [
+            "Reject the order",
+            "Confirm the order"
+          ],
+          "picked": "confirm the order",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 543495877,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, we start by receiving the purchase request. Once the purchase request is received, we proceed to prepare it. After preparing the purchase request, we move on to obtaining the goods. Once the goods are obtained, we proceed to pay the invoice. Upon payment of the invoice, the purchase is considered completed and the process comes to an end.",
+    "candidate_actions": [
+      "Receiving the purchase request",
+      "Prepare it",
+      "Obtaining the goods",
+      "Pay the invoice",
+      "Purchase is considered completed"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Receive the purchase request",
+          "Prepare it",
+          "Obtaining the goods",
+          "Pay the invoice",
+          "Purchase is considered completed"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Receive the purchase request",
+        "Prepare it",
+        "Obtaining the goods",
+        "Pay the invoice",
+        "Purchase is considered completed"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receive the purchase request"
+          ],
+          "picked": "Receiving the purchase request",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Receiving the purchase request"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Prepare it"
+          ],
+          "picked": "Prepare it",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Receiving the purchase request",
+            "Prepare it"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Obtaining the goods"
+          ],
+          "picked": "Obtaining the goods",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Receiving the purchase request",
+            "Prepare it",
+            "Obtaining the goods"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Pay the invoice"
+          ],
+          "picked": "Pay the invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Receiving the purchase request",
+            "Prepare it",
+            "Obtaining the goods",
+            "Pay the invoice"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Purchase is considered completed"
+          ],
+          "picked": "Purchase is considered completed",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 202853421,
+    "eval_mode": "predicted",
+    "procedure_text": "The loan request is initially created and sent to the Oracle database. This step produces a data object called \"loan request\". After the loan request is created and sent to the Oracle database, it is then converted into assignments. These assignments are then entered directly into a tablet along with data and inspection details. This step produces a data object called \"Assignments\". The data and inspection details are directly entered into the tablet, and then the Oracle database is synchronized with the Inspectors' tablet. This step produces a data object called \"Inspectors' data\". Finally, the process ends after the Oracle database is synchronized with the Inspectors' tablet.",
+    "candidate_actions": [
+      "The loan request is initially created and sent to the Oracle database",
+      "It is then converted into assignments",
+      "These assignments are then entered directly into a tablet along with data and inspection details",
+      "The Oracle database is synchronized with the Inspectors' tablet"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Create and send the loan request to the Oracle database",
+          "Convert it into assignments",
+          "Enter the assignments directly into a tablet along with data and inspection details",
+          "Synchronize the Oracle database with the Inspectors' tablet"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Create and send the loan request to the Oracle database",
+        "Convert it into assignments",
+        "Enter the assignments directly into a tablet along with data and inspection details",
+        "Synchronize the Oracle database with the Inspectors' tablet"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Create and send the loan request to the Oracle database"
+          ],
+          "picked": "The loan request is initially created and sent to the Oracle database",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "The loan request is initially created and sent to the Oracle database"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Convert it into assignments"
+          ],
+          "picked": "It is then converted into assignments",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "The loan request is initially created and sent to the Oracle database",
+            "It is then converted into assignments"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Enter the assignments directly into a tablet along with data and inspection details"
+          ],
+          "picked": "These assignments are then entered directly into a tablet along with data and inspection details",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "The loan request is initially created and sent to the Oracle database",
+            "It is then converted into assignments",
+            "These assignments are then entered directly into a tablet along with data and inspection details"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Synchronize the Oracle database with the Inspectors' tablet"
+          ],
+          "picked": "The Oracle database is synchronized with the Inspectors' tablet",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 447368118,
+    "eval_mode": "predicted",
+    "procedure_text": "To initiate the process in MyPool, begin with MyStartEvent, followed by MyTaskOne.MyTaskOne, then MyTaskTwo.MyTaskTwo, and finally MyEndEvent. This will mark the completion of the process.",
+    "candidate_actions": [
+      "MyStartEvent",
+      "MyTaskOne.MyTaskOne",
+      "MyTaskTwo.MyTaskTwo",
+      "MyEndEvent"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "MyStartEvent",
+          "MyTaskOne.MyTaskOne",
+          "MyTaskTwo.MyTaskTwo",
+          "MyEndEvent"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "MyStartEvent",
+        "MyTaskOne.MyTaskOne",
+        "MyTaskTwo.MyTaskTwo",
+        "MyEndEvent"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "MyStartEvent"
+          ],
+          "picked": "MyStartEvent",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "MyStartEvent"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "MyTaskOne.MyTaskOne"
+          ],
+          "picked": "MyTaskOne.MyTaskOne",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "MyStartEvent",
+            "MyTaskOne.MyTaskOne"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "MyTaskTwo.MyTaskTwo"
+          ],
+          "picked": "MyTaskTwo.MyTaskTwo",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "MyStartEvent",
+            "MyTaskOne.MyTaskOne",
+            "MyTaskTwo.MyTaskTwo"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "MyEndEvent"
+          ],
+          "picked": "MyEndEvent",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1898177802,
+    "eval_mode": "predicted",
+    "procedure_text": "To start the process, begin with the Existing Position. Once that is done, move on to Identifying the established position. After Identifying the established position, proceed to Reviewing the Position Profile. When Reviewing the Position Profile, make sure to pay attention to the question \"What if you need to make changes?\". Once the Position Profile has been reviewed, it should be Verified. After Verifying the Position Profile, update it accordingly. Updating the Position Profile will result in a data object called \"Position Profile\". Additionally, Identify the advertising medium to be used. When Updating the Position Profile, consider whether it needs to be updated every time. Once the advertising medium has been identified, send it for approvals. After sending it for approvals, wait for the receipt of all approvals. When sending it for approvals, consider what needs to be sent and to whom. If it is applicable, discuss the advertising requirements with the manager. If not, continue with the process. The process will end at this point.",
+    "candidate_actions": [
+      "Existing Position",
+      "Identifying the established position",
+      "Reviewing the Position Profile",
+      "Verified",
+      "update it accordingly",
+      "Identify the advertising medium to be used",
+      "send it for approvals",
+      "wait for the receipt of all approvals",
+      "discuss the advertising requirements with the manager"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Existing Position",
+          "Identifying the established position",
+          "Reviewing the Position Profile",
+          "Verified",
+          "Updating the Position Profile",
+          "Identify the advertising medium to be used",
+          "send it for approvals",
+          "wait for the receipt of all approvals"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Existing Position",
+          "Identifying the established position",
+          "Reviewing the Position Profile",
+          "Verified",
+          "Updating the Position Profile",
+          "Identify the advertising medium to be used",
+          "send it for approvals",
+          "wait for the receipt of all approvals",
+          "discuss the advertising requirements with the manager"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Existing Position",
+        "Identifying the established position",
+        "Reviewing the Position Profile",
+        "Verified"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Existing Position"
+          ],
+          "picked": "Existing Position",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Existing Position"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Identifying the established position"
+          ],
+          "picked": "Identifying the established position",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Existing Position",
+            "Identifying the established position"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Reviewing the Position Profile"
+          ],
+          "picked": "Reviewing the Position Profile",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Existing Position",
+            "Identifying the established position",
+            "Reviewing the Position Profile"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Verified"
+          ],
+          "picked": "Verified",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Existing Position",
+            "Identifying the established position",
+            "Reviewing the Position Profile",
+            "Verified"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Updating the Position Profile"
+          ],
+          "picked": "update it accordingly",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1774189467,
+    "eval_mode": "predicted",
+    "procedure_text": "To start off, the first step is to Register Claim. After that, we need to Register Claim again and then Evaluate Damage. When it comes to the \"Register Claim\" step, it is important to note that it is Performed by Susan. As for the \"Evaluate Damage\" step, it is Performed by Harry or Kelly. However, if the claim is considered \"complex\", then we need to Check History. In the case of a \"simple\" claim, we also need to Check History. Once we have checked the history, we proceed to Phone Garage. When checking the history, it is Mike who performs the task. Additionally, for the Phone Garage step, it is also Mike who takes care of it. If the next step is to Execute Payment, then the process comes to an end. On the other hand, if the request is to Reject, then the process also ends.",
+    "candidate_actions": [
+      "Register Claim",
+      "Register Claim",
+      "Evaluate Damage",
+      "Check History",
+      "Phone Garage",
+      "Execute Payment",
+      "Reject"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Register Claim",
+          "Register Claim",
+          "Evaluate Damage",
+          "Check History",
+          "Phone Garage",
+          "Execute Payment"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Register Claim",
+          "Register Claim",
+          "Evaluate Damage",
+          "Check History",
+          "Phone Garage",
+          "Reject"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": null,
+      "match_type": "off_path",
+      "completed_trajectory": [],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Register Claim"
+          ],
+          "picked": "Register Claim",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1966386373,
+    "eval_mode": "predicted",
+    "procedure_text": "At the start, the system makes a call, referred to as System call 1. If the probability is \"70%\", the next step is Actor step 1. However, if the probability is \"30%\", the next step is Actor step 2. Following this, if the probability is \"70%\", the process proceeds to Actor step 1. On the other hand, if the probability is \"30%\", the process moves to Actor step 2. Once Actor step 1 is completed, the system makes another call, known as System call 2, and the process comes to an end. Similarly, after completing Actor step 2, the system makes a call called System call 3, and the process concludes.",
+    "candidate_actions": [
+      "System call 1",
+      "Actor step 1",
+      "Actor step 2",
+      "System call 2",
+      "System call 3"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "System call 1",
+          "Actor step 1",
+          "System call 2"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "System call 1",
+          "Actor step 2",
+          "System call 3"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "System call 1",
+        "Actor step 1",
+        "System call 2"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "System call 1"
+          ],
+          "picked": "System call 1",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "System call 1"
+          ],
+          "conditions_active": [
+            [
+              "30%"
+            ],
+            [
+              "70%"
+            ]
+          ],
+          "valid_options": [
+            "Actor step 1",
+            "Actor step 2"
+          ],
+          "picked": "Actor step 1",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "System call 1",
+            "Actor step 1"
+          ],
+          "conditions_active": [
+            [
+              "70%"
+            ]
+          ],
+          "valid_options": [
+            "System call 2"
+          ],
+          "picked": "System call 2",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 46463794,
+    "eval_mode": "predicted",
+    "procedure_text": "For CVS - DATA ENTRY: At the beginning, put the receipt in the \"Dr. call\" bin. Throughout the shift, continue to put the receipt in the \"Dr. call\" bin randomly. If there is a need to send a fax to the doctor, do it randomly during the shift. Otherwise, if there is a need to call the doctor and ask about a refill, continue with the process. If the call goes unanswered, put the receipt in the \"Dr. call back\" bin. If there is a forward slash, then the process ends. If the call goes unanswered, put the receipt in the \"Dr. call back\" bin. If there is a forward slash, then the process ends. Finally, put the receipt in the \"Dr. call back\" bin randomly during the shift.",
+    "candidate_actions": [
+      "Put the receipt in the \"Dr. call\" bin",
+      "Continue to put the receipt in the \"Dr. call\" bin randomly",
+      "Send a fax to the doctor randomly during the shift",
+      "Call the doctor and ask about a refill",
+      "Put the receipt in the \"Dr. call back\" bin",
+      "Finally, put the receipt in the \"Dr. call back\" bin randomly during the shift"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Call the doctor and ask about a refill"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Call the doctor and ask about a refill",
+          "Put the receipt in the \"Dr. call back\" bin"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Call the doctor and ask about a refill",
+          "Put the receipt in the \"Dr. call back\" bin",
+          "Put the receipt in the \"Dr. call back\" bin"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Put the receipt in the \"Dr. call back\" bin"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Send a fax to the doctor"
+        ]
+      },
+      {
+        "branch": 5,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Send a fax to the doctor",
+          "Call the doctor and ask about a refill"
+        ]
+      },
+      {
+        "branch": 6,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Send a fax to the doctor",
+          "Call the doctor and ask about a refill",
+          "Put the receipt in the \"Dr. call back\" bin"
+        ]
+      },
+      {
+        "branch": 7,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Send a fax to the doctor",
+          "Call the doctor and ask about a refill",
+          "Put the receipt in the \"Dr. call back\" bin",
+          "Put the receipt in the \"Dr. call back\" bin"
+        ]
+      },
+      {
+        "branch": 8,
+        "path": [
+          "Put the receipt in the \"Dr. call\" bin",
+          "Send a fax to the doctor",
+          "Put the receipt in the \"Dr. call back\" bin"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Put the receipt in the \"Dr. call\" bin"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Put the receipt in the \"Dr. call\" bin"
+          ],
+          "picked": "Put the receipt in the \"Dr. call\" bin",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Put the receipt in the \"Dr. call\" bin"
+          ],
+          "conditions_active": [
+            [
+              "Finally"
+            ],
+            [
+              "If there is a need to send a fax to the doctor"
+            ],
+            [
+              "Otherwise, if there is a need to call the doctor and ask about a refill"
+            ]
+          ],
+          "valid_options": [
+            "Call the doctor and ask about a refill",
+            "Send a fax to the doctor",
+            "Put the receipt in the \"Dr. call back\" bin"
+          ],
+          "picked": "Put the receipt in the \"Dr. call\" bin",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1659222817,
+    "eval_mode": "predicted",
+    "procedure_text": "At first, the applications of external users are processed. After that, the statistics are updated. Finally, the process comes to an end.",
+    "candidate_actions": [
+      "Process the applications of external users",
+      "Update the statistics"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Process the applications of external users",
+          "Update the statistics"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Process the applications of external users",
+        "Update the statistics"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Process the applications of external users"
+          ],
+          "picked": "Process the applications of external users",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Process the applications of external users"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Update the statistics"
+          ],
+          "picked": "Update the statistics",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1948430901,
+    "eval_mode": "predicted",
+    "procedure_text": "To initiate the process, start by triggering the start_event. If the condition \"Notify_customer\" is met, the process will end with the status \"reservation_uncompleted\". However, if the condition \"Process_customer_request\" is met, the process will continue. Similarly, if the condition \"Book_hotel\" is met, the process will continue. In addition, if the condition \"Book_flight\" is met, the process will continue. Likewise, if the condition \"Book_car\" is met, the process will continue. After that, proceed with arranging the online payment. At the same time, complete the following steps simultaneously: Register_payment and Send_tickets_to_customer. It is important to note that the step \"Send_tickets_to_customer\" requires accessing the data object \"Customer_address\". Once the reservation is completed, the process will end.",
+    "candidate_actions": [
+      "trigger the start_event",
+      "reservation_uncompleted",
+      "Process_customer_request",
+      "Book_hotel",
+      "Book_flight",
+      "Book_car",
+      "arranging the online payment",
+      "Register_payment",
+      "Send_tickets_to_customer",
+      "reservation completed"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "start_event",
+          "Arrange the online payment",
+          "Register_payment",
+          "Send_tickets_to_customer"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "start_event",
+          "Arrange the online payment",
+          "Send_tickets_to_customer",
+          "Register_payment"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "start_event",
+          "Notify_customer"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "start_event"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "start_event"
+          ],
+          "picked": "trigger the start_event",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "trigger the start_event"
+          ],
+          "conditions_active": [
+            [
+              "Book_car"
+            ],
+            [
+              "Book_flight"
+            ],
+            [
+              "Book_hotel"
+            ],
+            [
+              "Notify_customer"
+            ],
+            [
+              "Process_customer_request"
+            ]
+          ],
+          "valid_options": [
+            "Arrange the online payment",
+            "Notify_customer"
+          ],
+          "picked": "Process_customer_request",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 1937940471,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin with the Desktop Support Services, the first step is to review the virtual request in order to collect the asset. During the review of the virtual request, it is important to note that the system admin will receive a ticket in the ResolveIT queue. After reviewing the virtual request, the next step is to collect the asset. Once the asset is collected, it should be stored in a secured storage area. In the secured storage area, it is necessary to verify the model number of the asset. If the asset is classified as \"Standard\", it should be left in the secured storage area for future deployment. However, if it is classified as \"Nonstandard\", the hard drive should be wiped using DOD software. After deciding what to do with the asset, the virtual request can be closed. If the asset is to be left in the secured storage area for future deployment, the virtual request is closed. On the other hand, if the hard drive is wiped with DOD software, the asset is left in the secured storage area for disposal by the asset team. Once the virtual request is closed, the process ends. If an employee needs to return equipment, they should start the process by indicating that they have spare equipment for return. Then, they should open a virtual request to return the asset. After opening the virtual request, they will receive an email confirming the closure of the virtual request. This indicates that the equipment has been successfully returned and the process comes to an end.",
+    "candidate_actions": [
+      "Review the virtual request",
+      "Collect the asset",
+      "Store it in a secured storage area",
+      "Verify the model number of the asset",
+      "Leave it in the secured storage area for future deployment",
+      "Wipe the hard drive using DOD software",
+      "Leave the asset in the secured storage area for disposal by the asset team",
+      "Close the virtual request",
+      "indicating that they have spare equipment for return",
+      "open a virtual request to return the asset",
+      "receive an email confirming the closure of the virtual request"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Indicating that they have spare equipment for return",
+          "Open a virtual request to return the asset",
+          "Receive an email confirming the closure of the virtual request"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Review the virtual request",
+          "System admin will receive a ticket in the ResolveIT queue",
+          "Collect the asset",
+          "Store it in a secured storage area",
+          "Verify the model number of the asset",
+          "Leave it in the secured storage area for future deployment",
+          "Close the virtual request"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Review the virtual request",
+          "System admin will receive a ticket in the ResolveIT queue",
+          "Collect the asset",
+          "Store it in a secured storage area",
+          "Verify the model number of the asset",
+          "Wipe the hard drive using DOD software",
+          "Leave the asset in the secured storage area for disposal by the asset team",
+          "Close the virtual request"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 1,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Review the virtual request"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Indicating that they have spare equipment for return",
+            "Review the virtual request"
+          ],
+          "picked": "Review the virtual request",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Review the virtual request"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "System admin will receive a ticket in the ResolveIT queue"
+          ],
+          "picked": "Collect the asset",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 604474930,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, start by receiving the application. At the same time, complete the following steps: determine the income-to-payment ratio and request the credit score. Once the credit score is received, calculate the credit risk. If the credit risk is \"NOK\", then reject the loan and end the process. Otherwise, if the credit risk is \"ok\", then approve the loan and end the process. If the credit risk is \"NOK\", then reject the loan and end the process. Determine the approval. Otherwise, if the credit risk is \"ok\", then approve the loan and end the process.",
+    "candidate_actions": [
+      "Receive the application",
+      "Determine the income-to-payment ratio",
+      "Request the credit score",
+      "Receive the credit score",
+      "Calculate the credit risk",
+      "Reject the loan",
+      "Approve the loan",
+      "Determine the approval"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Receive the application",
+          "Determine the income-to-payment ratio",
+          "Request the credit score",
+          "Calculate the credit risk",
+          "Approve the loan"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Receive the application",
+          "Determine the income-to-payment ratio",
+          "Request the credit score",
+          "Calculate the credit risk",
+          "Determine the approval"
+        ]
+      },
+      {
+        "branch": 2,
+        "path": [
+          "Receive the application",
+          "Determine the income-to-payment ratio",
+          "Request the credit score",
+          "Calculate the credit risk",
+          "Reject the loan"
+        ]
+      },
+      {
+        "branch": 3,
+        "path": [
+          "Receive the application",
+          "Request the credit score",
+          "Determine the income-to-payment ratio",
+          "Calculate the credit risk",
+          "Approve the loan"
+        ]
+      },
+      {
+        "branch": 4,
+        "path": [
+          "Receive the application",
+          "Request the credit score",
+          "Determine the income-to-payment ratio",
+          "Calculate the credit risk",
+          "Determine the approval"
+        ]
+      },
+      {
+        "branch": 5,
+        "path": [
+          "Receive the application",
+          "Request the credit score",
+          "Determine the income-to-payment ratio",
+          "Calculate the credit risk",
+          "Reject the loan"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "off_path",
+      "matched_branch": 0,
+      "match_type": "prefix",
+      "completed_trajectory": [
+        "Receive the application",
+        "Determine the income-to-payment ratio",
+        "Request the credit score"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receive the application"
+          ],
+          "picked": "Receive the application",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Receive the application"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Determine the income-to-payment ratio",
+            "Request the credit score"
+          ],
+          "picked": "Determine the income-to-payment ratio",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Receive the application",
+            "Determine the income-to-payment ratio"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Request the credit score"
+          ],
+          "picked": "Request the credit score",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Receive the application",
+            "Determine the income-to-payment ratio",
+            "Request the credit score"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Calculate the credit risk"
+          ],
+          "picked": "Receive the credit score",
+          "is_valid": false,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 332700704,
+    "eval_mode": "predicted",
+    "procedure_text": "At first, perform Something. After that, proceed to do something else. Finally, the process comes to an end.",
+    "candidate_actions": [
+      "Perform Something",
+      "Proceed to do something else"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Something",
+          "Do Something Else"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Something",
+        "Do Something Else"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Something"
+          ],
+          "picked": "Perform Something",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Perform Something"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Do Something Else"
+          ],
+          "picked": "Proceed to do something else",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 640321487,
+    "eval_mode": "predicted",
+    "procedure_text": "To begin the process, start with the Incoming Order and then proceed to Check Availability. If the question \"Is the Item Available?\" receives a positive response, proceed to Send the Item. However, if the response is negative, move on to Procure the Item. After checking the availability of the item again, if it is indeed available, proceed to Send the Item. If not, continue with the Procurement process. Once the Item is sent, move on to Process Payment. In case the Item needs to be procured, it should be sent before proceeding with the Payment process. Finally, once the Payment is processed, the entire process comes to an end.",
+    "candidate_actions": [
+      "Incoming Order",
+      "Check Availability",
+      "Check the availability of the item again",
+      "Procure the Item",
+      "Send the Item",
+      "Process Payment"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Incoming Order",
+          "Check Availability",
+          "Procure the Item",
+          "Send the Item",
+          "Process Payment"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Incoming Order",
+          "Check Availability",
+          "Send the Item",
+          "Process Payment"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 1,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Incoming Order",
+        "Check Availability",
+        "Send the Item",
+        "Process Payment"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Incoming Order"
+          ],
+          "picked": "Incoming Order",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Incoming Order"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Check Availability"
+          ],
+          "picked": "Check Availability",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Incoming Order",
+            "Check Availability"
+          ],
+          "conditions_active": [
+            [
+              "No"
+            ],
+            [
+              "Yes"
+            ]
+          ],
+          "valid_options": [
+            "Send the Item",
+            "Procure the Item"
+          ],
+          "picked": "Send the Item",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Incoming Order",
+            "Check Availability",
+            "Send the Item"
+          ],
+          "conditions_active": [
+            [
+              "Yes"
+            ]
+          ],
+          "valid_options": [
+            "Process Payment"
+          ],
+          "picked": "Process Payment",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 2145109330,
+    "eval_mode": "predicted",
+    "procedure_text": "For IDES Europe AG, the process begins with creating a purchase order. After creating the purchase order, the next step is to select a supplier. Once the supplier is selected, the purchase order is sent. After sending the purchase order, the goods receipt is obtained. The stock level of the material is then updated based on the goods receipt. Additionally, an invoice is received. Once the stock level is updated, the process comes to an end. Finally, the payment is sent, marking the end of the process.",
+    "candidate_actions": [
+      "Create a purchase order",
+      "Select a supplier",
+      "Send the purchase order",
+      "Obtain the goods receipt",
+      "Update the stock level of the material",
+      "Receive an invoice",
+      "Send the payment"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Create a purchase order",
+          "Select a supplier",
+          "Send the purchase order",
+          "Obtain the goods receipt",
+          "Update the stock level of the material",
+          "Receive an invoice",
+          "Send the payment"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 0,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Create a purchase order",
+        "Select a supplier",
+        "Send the purchase order",
+        "Obtain the goods receipt",
+        "Update the stock level of the material",
+        "Receive an invoice",
+        "Send the payment"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Create a purchase order"
+          ],
+          "picked": "Create a purchase order",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Create a purchase order"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Select a supplier"
+          ],
+          "picked": "Select a supplier",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Create a purchase order",
+            "Select a supplier"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Send the purchase order"
+          ],
+          "picked": "Send the purchase order",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Create a purchase order",
+            "Select a supplier",
+            "Send the purchase order"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Obtain the goods receipt"
+          ],
+          "picked": "Obtain the goods receipt",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 5,
+          "completed_before": [
+            "Create a purchase order",
+            "Select a supplier",
+            "Send the purchase order",
+            "Obtain the goods receipt"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Update the stock level of the material"
+          ],
+          "picked": "Update the stock level of the material",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 6,
+          "completed_before": [
+            "Create a purchase order",
+            "Select a supplier",
+            "Send the purchase order",
+            "Obtain the goods receipt",
+            "Update the stock level of the material"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Receive an invoice"
+          ],
+          "picked": "Receive an invoice",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 7,
+          "completed_before": [
+            "Create a purchase order",
+            "Select a supplier",
+            "Send the purchase order",
+            "Obtain the goods receipt",
+            "Update the stock level of the material",
+            "Receive an invoice"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Send the payment"
+          ],
+          "picked": "Send the payment",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  },
+  {
+    "file_index": 710921086,
+    "eval_mode": "predicted",
+    "procedure_text": "For the Admin Officer, the process begins by checking the SLA. Once the SLA has been checked, the due date is calculated and written on the Invoice Entry Form. If the question \"Urgent?\" is answered with \"Yes\", a red stamp is placed on the Invoice Entry Form. However, if the answer is \"No\", the form is forwarded to the Data Entry Staff and the process ends. This step is repeated again, checking the urgency and placing a red stamp if necessary. Finally, the Invoice Entry Form is forwarded to the Data Entry Staff and the process comes to an end.",
+    "candidate_actions": [
+      "Check the SLA",
+      "Calculate the due date and write it on the Invoice Entry Form",
+      "Place a red stamp on the Invoice Entry Form",
+      "Forward the Invoice Entry Form to the Data Entry Staff"
+    ],
+    "branches": [
+      {
+        "branch": 0,
+        "path": [
+          "Check the SLA",
+          "Calculate the due date and write it on the Invoice Entry Form",
+          "Forward the Invoice Entry Form to the Data Entry Staff"
+        ]
+      },
+      {
+        "branch": 1,
+        "path": [
+          "Check the SLA",
+          "Calculate the due date and write it on the Invoice Entry Form",
+          "Place a red stamp on the Invoice Entry Form",
+          "Forward the Invoice Entry Form to the Data Entry Staff"
+        ]
+      }
+    ],
+    "rollout": {
+      "status": "completed",
+      "matched_branch": 1,
+      "match_type": "exact",
+      "completed_trajectory": [
+        "Check the SLA",
+        "Calculate the due date and write it on the Invoice Entry Form",
+        "Place a red stamp on the Invoice Entry Form",
+        "Forward the Invoice Entry Form to the Data Entry Staff"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "completed_before": [],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Check the SLA"
+          ],
+          "picked": "Check the SLA",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 2,
+          "completed_before": [
+            "Check the SLA"
+          ],
+          "conditions_active": [
+            []
+          ],
+          "valid_options": [
+            "Calculate the due date and write it on the Invoice Entry Form"
+          ],
+          "picked": "Calculate the due date and write it on the Invoice Entry Form",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 3,
+          "completed_before": [
+            "Check the SLA",
+            "Calculate the due date and write it on the Invoice Entry Form"
+          ],
+          "conditions_active": [
+            [
+              "Urgent? = No"
+            ],
+            [
+              "Urgent? = Yes"
+            ]
+          ],
+          "valid_options": [
+            "Forward the Invoice Entry Form to the Data Entry Staff",
+            "Place a red stamp on the Invoice Entry Form"
+          ],
+          "picked": "Place a red stamp on the Invoice Entry Form",
+          "is_valid": true,
+          "scores": {}
+        },
+        {
+          "step": 4,
+          "completed_before": [
+            "Check the SLA",
+            "Calculate the due date and write it on the Invoice Entry Form",
+            "Place a red stamp on the Invoice Entry Form"
+          ],
+          "conditions_active": [
+            [
+              "Urgent? = Yes"
+            ]
+          ],
+          "valid_options": [
+            "Forward the Invoice Entry Form to the Data Entry Staff"
+          ],
+          "picked": "Forward the Invoice Entry Form to the Data Entry Staff",
+          "is_valid": true,
+          "scores": {}
+        }
+      ]
+    }
+  }
+]
