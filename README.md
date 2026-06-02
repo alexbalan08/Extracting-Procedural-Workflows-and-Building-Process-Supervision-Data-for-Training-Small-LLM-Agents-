@@ -43,29 +43,30 @@ can provide such service with good accuracy
 ### Agent Configurations
 Four methods, each adding one layer so we could properly isolate the effects of each added component:
 
-| Method | What it gets | 
+| Method | What it gets | All methods include the previous components by default
 |--------|-------------|
 | M1: Bare Llama | Just the procedure text 
 | M2: Llama + Actions | + extracted action list 
-| M3: Ensemble | + PRM blend (α=0.9) + extracted action list 
-| M4: Agentic Ensemble | + graph tool when uncertain + extracted action list|
+| M3: Ensemble | + PRM blend (α=0.9) 
+| M4: Agentic Ensemble | + graph tool when uncertain |
 
 We show that extraction quality is the bottleneck, not the agent via experiemnts.
 
 Zero hallucinations from Method 2 onward so we finally achieve a desired outcome by combining both planning
 agents and extraction agent into one unified method(vs 35.4% for bare Llama).
 
-## Key Findings
+## Some interesting findings
 
-- **Extraction quality is the bottleneck.** Agent on gold graphs: 98%. Same agent on extracted graphs: 55%. Fix the extraction, fix the agent.
-- **Less training data can be better.** The deduplicated PRM (43% less data) outperforms the full one on the ensemble config (+8.2% completion on gold).
-- **You don't need a massive model.** An 8B model with a LoRA adapter, combined with the right pipeline components, gets the job done.
-- **Each component matters.** Action list eliminates hallucinations. PRM improves planning. Graph tool helps at gateways. Remove any one and performance drops.
+- **Extraction quality is the bottleneck.** we need better quality extraction, agents for procedures following perform really well if the correct information is passed to them via tool-use.
+- **Less training data can be better.** The deduplicated PRM (43% less data) outperforms the full one on the ensemble config
+- **You don't need a massive and expensive  model.** A mix of 8B models, with a specialized LoRA adapter on top, combined with the right pipeline components, could even outperform a SOTA black-box model - maybe we show this in the future :).
+- **Each component matters.** Action list eliminates hallucinations. PRM improves planning. Graph tool helps probably at gateways
 
 ## Dataset
-Built on [PAGED](https://github.com/HLR/PAGED) — 489 test procedures covering business processes, 
-medical workflows, and operational procedures. Gold workflow graphs generated from the dataset's 
-SequenceFlow representation.
+Built on [PAGED](https://github.com/HLR/PAGED) 
+PAGED: A Benchmark for Procedural Graphs Extraction from Documents, 
+Weihong Du and Wenrui Liao and Hongru Liang and Wenqiang Lei
+2024
 
 ## My Trained Models
 
