@@ -54,7 +54,7 @@ M1: Bare Llama  Just the procedure text
 
 M2: Llama + Actions  + extracted action list 
 
-M3: Ensemble  + PRM blend (α=0.9) 
+M3: Ensemble  + PRM blend (heavly using the specialized PRM in the mix) 
 
 M4: Agentic Ensemble  + graph tool when uncertain 
 
