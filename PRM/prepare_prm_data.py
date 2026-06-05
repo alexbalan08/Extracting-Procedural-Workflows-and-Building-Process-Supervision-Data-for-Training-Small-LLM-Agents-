@@ -102,24 +102,43 @@ def build_prm_record(procedure: str, available_actions: list[str],
     }
 
 
-def main():
-    with open(PRM_DATA_PATH, encoding="utf-8") as f:
-        traces = json.load(f)
-
-    with open(PREDICTIONS_PATH, encoding="utf-8") as f:
-        predictions = json.load(f)
-
-    #build a lookup from file_index to the full flat list of action names
-    #we use the extracted workflow not ground truth on purpose — the end-to-end
-    #pipeline (including the extractor) is what gets evaluated
+#build a lookup from file_index to the full flat list of action names
+#we use the extracted workflow not ground truth on purpose — the end-to-end
+#pipeline (including the extractor) is what gets evaluated
+def build_action_lists(predictions: list[dict]) -> dict[int, list[str]]:
     action_lists = {}
     for pred in predictions:
-        fidx = pred["file_index"]
         wf = pred.get("workflow") or {}
-        action_lists[fidx] = [a["name"] for a in wf.get("actions", [])]
+        action_lists[pred["file_index"]] = [a["name"] for a in wf.get("actions", [])]
+    return action_lists
 
-    kept   = 0
-    dropped = 0
+
+#the (file_index, steps_so_far, candidate) of every step a positive trace labels Yes.
+#a negative whose first-wrong step has the same key is an unlearnable contradiction (the identical
+#prompt is a valid Yes on another path), so we drop it — branches that share a prefix and a valid
+#next action are indistinguishable to the PRM, which never sees the gateway condition that separates them
+def _positive_keys(traces: list[dict], action_lists: dict[int, list[str]]) -> set:
+    keys = set()
+    for trace in traces:
+        detail = trace.get("corruption_detail")
+        if detail and "first_wrong_step" in detail:
+            continue  # negative trace
+        if not action_lists.get(trace["file_index"]):
+            continue
+        steps = trace["steps"]
+        for i in range(len(steps)):
+            prefix = tuple(s["action"] for s in steps[:i])
+            keys.add((trace["file_index"], prefix, steps[i]["action"]))
+    return keys
+
+
+#expand trace-level records into step-level SFT examples, dropping any over MAX_TOKENS.
+#returns (examples, kept, dropped, contradictions). shared by the dedup variant so the rules stay in one place.
+def expand_to_sft(traces: list[dict], predictions: list[dict]) -> tuple[list[dict], int, int, int]:
+    action_lists = build_action_lists(predictions)
+    positive_keys = _positive_keys(traces, action_lists)
+
+    kept = dropped = contradictions = 0
     examples = []
 
     for trace in traces:
@@ -148,11 +167,14 @@ def main():
         for i in indices_to_emit:
             step         = steps[i]
             steps_so_far = [s["action"] for s in steps[:i]]
-            candidate    = step["action"]
-            label        = step["label"]
+
+            #drop No examples that contradict a Yes elsewhere (same procedure, history, candidate)
+            if step["label"] == 0 and (fidx, tuple(steps_so_far), step["action"]) in positive_keys:
+                contradictions += 1
+                continue
 
             record = build_prm_record(
-                procedure, available, steps_so_far, candidate, label,
+                procedure, available, steps_so_far, step["action"], step["label"],
                 step_index=i, corruption_type=corruption_type, corruption_detail=corruption_detail,
             )
 
@@ -161,6 +183,18 @@ def main():
                 kept += 1
             else:
                 dropped += 1
+
+    return examples, kept, dropped, contradictions
+
+
+def main():
+    with open(PRM_DATA_PATH, encoding="utf-8") as f:
+        traces = json.load(f)
+
+    with open(PREDICTIONS_PATH, encoding="utf-8") as f:
+        predictions = json.load(f)
+
+    examples, kept, dropped, contradictions = expand_to_sft(traces, predictions)
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         for ex in examples:
@@ -174,7 +208,7 @@ def main():
     n_no_plain     = n_no - n_no_explained
 
     print(f"Traces processed : {len(traces)}")
-    print(f"Step examples    : kept={kept}  dropped={dropped}")
+    print(f"Step examples    : kept={kept}  dropped={dropped}  contradictions_filtered={contradictions}")
     print(f"  Yes (correct)        : {n_yes}")
     print(f"  No  (wrong)          : {n_no}")
     print(f"    with explanation   : {n_no_explained}")

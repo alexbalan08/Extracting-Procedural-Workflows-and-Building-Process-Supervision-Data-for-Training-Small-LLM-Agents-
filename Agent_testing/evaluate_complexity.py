@@ -9,20 +9,16 @@
 #  python evaluate_complexity.py
 
 
-import contextlib
-import csv
-import io
 import json
 from pathlib import Path
 
-from runner import load_cases
 from evaluate_traces import (
     METHODS,
     ENSEMBLE_CANONICAL_SUFFIX,
     SMALL_PRM_MARKER,
     _compute_metrics,
-    _parse_method,
 )
+from eval_common import load_actions_lookup, parse_method, print_table, write_csv
 
 
 _HERE = Path(__file__).parent
@@ -62,19 +58,14 @@ def _bin_of(v: int, low_max: int, mid_max: int) -> str:
 
 
 def main():
-    with contextlib.redirect_stdout(io.StringIO()):
-        cases = load_cases(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
-    actions_lookup = {}
-    for c in cases:
-        actions_lookup[(c.file_index, "predicted")] = c.pred_action_names
-        actions_lookup[(c.file_index, "gold")]      = c.gold_action_names
+    actions_lookup = load_actions_lookup(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
 
     complexity = _load_complexity(DEFAULT_HELD_OUT)
 
     #collect canonical inference files — same filters as evaluate_traces.py
     runs = []
     for path in sorted(RESULTS_DIR.glob("inference_*.json")):
-        method = _parse_method(path.name)
+        method = parse_method(path.name, METHODS)
         if method is None:
             continue
         if path.name.endswith(SMALL_PRM_MARKER):
@@ -107,18 +98,15 @@ def main():
 
     for rows, fname in [(rows_actions, "complexity_actions.csv"),
                         (rows_gateways, "complexity_gateways.csv")]:
-        out_csv = RESULTS_DIR / fname
-        with open(out_csv, "w", newline="", encoding="utf-8") as f:
-            w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-            w.writeheader()
-            w.writerows(rows)
+        write_csv(RESULTS_DIR / fname, rows)
 
+    table_keys = ["method", "graph", "bin", "n", "step_valid_%", "completed_%"]
     print()
     print(f"=== Stratified by # of actions  (low ≤ {act_low}, mid ≤ {act_mid}, high > {act_mid}) ===")
-    _print_table(rows_actions)
+    print_table(rows_actions, table_keys)
     print()
     print(f"=== Stratified by # of gateways (low ≤ {gw_low}, mid ≤ {gw_mid}, high > {gw_mid}) ===")
-    _print_table(rows_gateways)
+    print_table(rows_gateways, table_keys)
     print(f"\nWrote complexity_actions.csv and complexity_gateways.csv to {RESULTS_DIR}")
 
 
@@ -148,22 +136,6 @@ def _stratify(runs, complexity, dim_name, low_max, mid_max, actions_lookup):
                              0 if r["graph"] == "predicted" else 1,
                              bin_order[r["bin"]]))
     return rows
-
-
-def _print_table(rows):
-    keys = ["method", "graph", "bin", "n", "step_valid_%", "completed_%"]
-    widths = [max(len(k), max(len(_fmt(r[k])) for r in rows)) for k in keys]
-    line = " | ".join(k.ljust(w) for k, w in zip(keys, widths))
-    print(line)
-    print("-" * len(line))
-    for r in rows:
-        print(" | ".join(_fmt(r[k]).ljust(w) for k, w in zip(keys, widths)))
-
-
-def _fmt(v) -> str:
-    if isinstance(v, float):
-        return f"{v:.1f}"
-    return str(v)
 
 
 if __name__ == "__main__":

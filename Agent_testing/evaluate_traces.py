@@ -6,13 +6,10 @@
 #  python evaluate_traces.py
 
 
-import contextlib
-import csv
-import io
 import json
 from pathlib import Path
 
-from runner import load_cases
+from eval_common import load_actions_lookup, parse_method, print_table, write_csv
 
 
 _HERE = Path(__file__).parent
@@ -45,14 +42,6 @@ def _classify_pick(picked: str, action_names: list[str]) -> str:
         if nl == pl or nl in pl or pl.startswith(nl):
             return "snapped"
     return "invented"
-
-
-def _parse_method(filename: str) -> str | None:
-    base = filename[len("inference_"):]
-    for m in METHODS:
-        if base.startswith(m + "_"):
-            return m
-    return None
 
 
 #aggregates one inference file into the metric row we print
@@ -104,18 +93,11 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
 
 
 def main():
-    #load_cases prints a "Loaded N cases" line we don't need here, swallow it
-    with contextlib.redirect_stdout(io.StringIO()):
-        cases = load_cases(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
-    #cache action names per (file_index, mode) so llama_bare (no candidate_actions stored) works
-    actions_lookup = {}
-    for c in cases:
-        actions_lookup[(c.file_index, "predicted")] = c.pred_action_names
-        actions_lookup[(c.file_index, "gold")]      = c.gold_action_names
+    actions_lookup = load_actions_lookup(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
 
     rows = []
     for path in sorted(RESULTS_DIR.glob("inference_*.json")):
-        method = _parse_method(path.name)
+        method = parse_method(path.name, METHODS)
         if method is None:
             continue
         #small-PRM runs are reported in evaluate_lora.py, drop them from the main table
@@ -142,30 +124,15 @@ def main():
     rows.sort(key=lambda r: (METHODS.index(r["method"]), 0 if r["graph"] == "predicted" else 1))
 
     out_csv = RESULTS_DIR / "metrics.csv"
-    with open(out_csv, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        w.writerows(rows)
+    write_csv(out_csv, rows)
 
     #full metric names so the table reads on its own. tool_* columns are 0 outside agentic_ensemble.
     keys = ["method", "graph", "procedures",
             "step_valid_%", "first_step_valid_%", "completed_%",
             "avg_steps_to_offpath", "invented_%",
             "tool_fired_%"]
-    widths = [max(len(k), max(len(_fmt(r.get(k, ""))) for r in rows)) for k in keys]
-
-    line = " | ".join(k.ljust(w) for k, w in zip(keys, widths))
-    print(line)
-    print("-" * len(line))
-    for r in rows:
-        print(" | ".join(_fmt(r[k]).ljust(w) for k, w in zip(keys, widths)))
+    print_table(rows, keys)
     print(f"\nWrote {out_csv}")
-
-
-def _fmt(v) -> str:
-    if isinstance(v, float):
-        return f"{v:.1f}"
-    return str(v)
 
 
 if __name__ == "__main__":

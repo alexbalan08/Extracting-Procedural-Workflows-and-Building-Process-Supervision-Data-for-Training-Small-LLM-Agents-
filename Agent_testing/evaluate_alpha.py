@@ -5,15 +5,12 @@
 
 
 
-import contextlib
-import csv
-import io
 import json
 import re
 from pathlib import Path
 
-from runner import load_cases
 from evaluate_traces import _compute_metrics
+from eval_common import load_actions_lookup, print_table, write_csv
 
 
 _HERE = Path(__file__).parent
@@ -29,16 +26,15 @@ def _parse_alpha(filename: str) -> str:
 
 
 def main():
-    with contextlib.redirect_stdout(io.StringIO()):
-        cases = load_cases(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
-    actions_lookup = {}
-    for c in cases:
-        actions_lookup[(c.file_index, "predicted")] = c.pred_action_names
-        actions_lookup[(c.file_index, "gold")]      = c.gold_action_names
+    actions_lookup = load_actions_lookup(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
 
     rows = []
     for path in sorted(RESULTS_DIR.glob("inference_ensemble_*.json")):
         if path.name.startswith("inference_agentic_ensemble"):
+            continue
+        #the small-PRM variant is its own comparison (evaluate_lora.py); skip so it doesn't
+        #show up as a second alpha=0.90 row here
+        if path.name.endswith("_small.json"):
             continue
         alpha_str = _parse_alpha(path.name)
         if not alpha_str:
@@ -48,8 +44,6 @@ def main():
         if not traces:
             continue
 
-        if len(traces) != 5:
-            continue
         graph = traces[0].get("eval_mode", "predicted")
         rows.append({
             "graph": graph,
@@ -62,32 +56,15 @@ def main():
         print(f"No inference_ensemble_*.json files found in {RESULTS_DIR}")
         return
 
-
     rows.sort(key=lambda r: (0 if r["graph"] == "predicted" else 1, float(r["alpha"])))
 
     out_csv = RESULTS_DIR / "alpha_sweep.csv"
-    with open(out_csv, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        w.writerows(rows)
+    write_csv(out_csv, rows)
 
-    
-    #only the columns we need
-    keys = ["alpha", "step_valid_%", "completed_%"]
-    widths = [max(len(k), max(len(_fmt(r.get(k, ""))) for r in rows)) for k in keys]
-
-    line = " | ".join(k.ljust(w) for k, w in zip(keys, widths))
-    print(line)
-    print("-" * len(line))
-    for r in rows:
-        print(" | ".join(_fmt(r[k]).ljust(w) for k, w in zip(keys, widths)))
+    #"procedures" makes the sample size explicit — the quick sweep ran on fewer procedures than
+    #the canonical alpha=0.90 point, so the rows are not all measured over the same n
+    print_table(rows, ["alpha", "graph", "procedures", "step_valid_%", "completed_%"])
     print(f"\nWrote {out_csv}")
-
-
-def _fmt(v) -> str:
-    if isinstance(v, float):
-        return f"{v:.1f}"
-    return str(v)
 
 
 if __name__ == "__main__":

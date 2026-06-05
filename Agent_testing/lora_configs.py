@@ -69,7 +69,7 @@ def _build_configs():
 def main():
     configs = _build_configs()
     print(f"Running {len(configs)} configurations (big PRM vs small PRM, plus the non-PRM baselines).")
-    print(f"Skipping any whose output file already exists.\n")
+    print("Skipping any whose output file already exists.\n")
 
     n_failed = 0
     for i, (method, graph, adapter) in enumerate(configs, 1):

@@ -17,14 +17,14 @@ TRACES_PATH = _HERE / "prm_training_data.json"
 SFT_PATH = _HERE / "prm_sft_train.jsonl"
 
 
-def _load_traces() -> list[dict]:
-    with open(TRACES_PATH, encoding="utf-8") as f:
+def _load_traces(path: Path) -> list[dict]:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def _load_sft() -> list[dict]:
+def _load_sft(path: Path) -> list[dict]:
     records = []
-    with open(SFT_PATH, encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
@@ -59,7 +59,7 @@ def step_level_balance(sft_records: list[dict]) -> None:
 
 def corruption_distribution(traces: list[dict]) -> None:
     types = Counter(t.get("corruption_type") for t in traces)
-    print(f"\n--- 2. Corruption-type distribution ---")
+    print("\n--- 2. Corruption-type distribution ---")
     for ctype, n in types.most_common():
         label = ctype if ctype is not None else "(none — positive trace)"
         print(f"  {label:25s} : {n:5d}  {_pct(n, len(traces))}  {_bar(n, len(traces))}")
@@ -73,13 +73,13 @@ def near_duplicates(traces: list[dict]) -> None:
         seq = tuple(s["action"] for s in t.get("steps", []))
         keys[(t["file_index"], seq)] += 1
     n_dup_traces = sum(n for n in keys.values() if n > 1)
-    print(f"\n--- 3. Near-duplicate traces")
+    print("\n--- 3. Near-duplicate traces")
     print(f"  duplicates : {_pct(n_dup_traces, len(traces))} of all traces")
 
 
 def main():
-    traces = _load_traces()
-    sft = _load_sft()
+    traces = _load_traces(TRACES_PATH)
+    sft = _load_sft(SFT_PATH)
     print(f"Loaded {len(traces)} traces from {TRACES_PATH.name}")
     print(f"Loaded {len(sft)} SFT examples from {SFT_PATH.name}")
 

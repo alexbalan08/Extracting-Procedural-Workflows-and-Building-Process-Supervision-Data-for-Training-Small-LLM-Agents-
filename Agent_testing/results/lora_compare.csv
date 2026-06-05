@@ -1,0 +1,9 @@
+method,graph,prm,file,procedures,step_valid_%,first_step_valid_%,completed_%,avg_steps_to_offpath,invented_%,tool_fired_%
+agentic_ensemble,predicted,big,inference_agentic_ensemble_predicted_alpha0.90_t0.45_m0.20.json,49,88.71794871794872,93.87755102040816,55.10204081632653,2.727272727272727,0.0,83.07692307692308
+agentic_ensemble,predicted,small,inference_agentic_ensemble_predicted_alpha0.90_t0.45_m0.20_small.json,49,88.42105263157895,91.83673469387755,55.10204081632653,2.590909090909091,0.0,82.63157894736842
+agentic_ensemble,gold,big,inference_agentic_ensemble_gold_alpha0.90_t0.45_m0.20.json,49,99.57805907172995,97.95918367346938,97.95918367346938,0.0,0.0,83.96624472573839
+agentic_ensemble,gold,small,inference_agentic_ensemble_gold_alpha0.90_t0.45_m0.20_small.json,49,99.13419913419914,97.95918367346938,95.91836734693878,1.0,0.0,83.11688311688312
+ensemble,predicted,big,inference_ensemble_predicted_alpha0.90.json,49,86.88524590163935,93.87755102040816,51.02040816326531,2.0833333333333335,0.0,0.0
+ensemble,predicted,small,inference_ensemble_predicted_alpha0.90_small.json,49,87.43169398907104,93.87755102040816,53.06122448979592,2.1739130434782608,0.0,0.0
+ensemble,gold,big,inference_ensemble_gold_alpha0.90.json,49,92.57425742574257,97.95918367346938,69.38775510204081,2.2,0.0,0.0
+ensemble,gold,small,inference_ensemble_gold_alpha0.90_small.json,49,94.47236180904522,97.95918367346938,77.55102040816327,2.6363636363636362,0.0,0.0

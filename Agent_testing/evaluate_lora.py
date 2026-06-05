@@ -8,14 +8,11 @@
 #reads inference_*.json files produced by lora_configs.py. each row carries a
 #"prm" column showing which adapter the agent used (big / small).
 
-import contextlib
-import csv
-import io
 import json
 from pathlib import Path
 
-from runner import load_cases
 from evaluate_traces import _compute_metrics
+from eval_common import load_actions_lookup, parse_method, print_table, write_csv
 
 
 _HERE = Path(__file__).parent
@@ -36,14 +33,6 @@ AGENTIC_BIG_SUFFIX    = "_alpha0.90_t0.45_m0.20.json"
 AGENTIC_SMALL_SUFFIX  = "_alpha0.90_t0.45_m0.20_small.json"
 
 
-def _parse_method(filename: str) -> str | None:
-    base = filename[len("inference_"):]
-    for m in METHODS:
-        if base.startswith(m + "_"):
-            return m
-    return None
-
-
 def _is_canonical(method: str, filename: str) -> bool:
     if method == "ensemble":
         return filename.endswith(ENSEMBLE_BIG_SUFFIX) or filename.endswith(ENSEMBLE_SMALL_SUFFIX)
@@ -58,16 +47,11 @@ def _parse_prm_variant(filename: str) -> str:
 
 
 def main():
-    with contextlib.redirect_stdout(io.StringIO()):
-        cases = load_cases(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
-    actions_lookup = {}
-    for c in cases:
-        actions_lookup[(c.file_index, "predicted")] = c.pred_action_names
-        actions_lookup[(c.file_index, "gold")]      = c.gold_action_names
+    actions_lookup = load_actions_lookup(DEFAULT_HELD_OUT, DEFAULT_PREDICTIONS)
 
     rows = []
     for path in sorted(RESULTS_DIR.glob("inference_*.json")):
-        method = _parse_method(path.name)
+        method = parse_method(path.name, METHODS)
         if method is None or not _is_canonical(method, path.name):
             continue
         with open(path, encoding="utf-8") as f:
@@ -97,28 +81,13 @@ def main():
     ))
 
     out_csv = RESULTS_DIR / "lora_compare.csv"
-    with open(out_csv, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        w.writerows(rows)
+    write_csv(out_csv, rows)
 
     keys = ["method", "graph", "prm", "procedures",
             "step_valid_%", "first_step_valid_%", "completed_%",
             "avg_steps_to_offpath", "tool_fired_%"]
-    widths = [max(len(k), max(len(_fmt(r.get(k, ""))) for r in rows)) for k in keys]
-
-    line = " | ".join(k.ljust(w) for k, w in zip(keys, widths))
-    print(line)
-    print("-" * len(line))
-    for r in rows:
-        print(" | ".join(_fmt(r[k]).ljust(w) for k, w in zip(keys, widths)))
+    print_table(rows, keys)
     print(f"\nWrote {out_csv}")
-
-
-def _fmt(v) -> str:
-    if isinstance(v, float):
-        return f"{v:.1f}"
-    return str(v)
 
 
 if __name__ == "__main__":

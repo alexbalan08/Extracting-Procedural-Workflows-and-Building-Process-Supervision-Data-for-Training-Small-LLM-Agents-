@@ -15,11 +15,7 @@ import json
 import random
 from pathlib import Path
 
-from prepare_prm_data import (
-    MAX_TOKENS,
-    build_prm_record,
-    estimate_tokens,
-)
+from prepare_prm_data import expand_to_sft
 
 #fixed seed so the subsampled set is reproducible — matches the seed used in build_negatives.py
 _SEED = 42
@@ -66,60 +62,11 @@ def main():
     with open(TRACES_OUT, "w", encoding="utf-8") as f:
         json.dump(traces, f, indent=2, ensure_ascii=False)
 
-    #SFT expansion mirrors prepare_prm_data.py — comments copied for context
+    #SFT expansion is identical to prepare_prm_data.py — reuse it so the emit rules live in one place
     with open(PREDICTIONS_PATH, encoding="utf-8") as f:
         predictions = json.load(f)
 
-    #build a lookup from file_index to the full flat list of action names
-    #we use the extracted workflow not ground truth on purpose — the end-to-end
-    #pipeline (including the extractor) is what gets evaluated
-    action_lists = {}
-    for pred in predictions:
-        fidx = pred["file_index"]
-        wf = pred.get("workflow") or {}
-        action_lists[fidx] = [a["name"] for a in wf.get("actions", [])]
-
-    kept    = 0
-    dropped = 0
-    examples = []
-
-    for trace in traces:
-        fidx      = trace["file_index"]
-        procedure = trace["procedure"]
-        steps     = trace["steps"]
-
-        available = action_lists.get(fidx, [])
-        if not available:
-            dropped += len(steps)
-            continue
-
-        corruption_type   = trace.get("corruption_type")
-        corruption_detail = trace.get("corruption_detail")
-
-        #for corrupted traces, only emit the labeled-wrong step (one No example per trace)
-        #the leading Yes steps in a corrupted trace are byte-identical to the positive path's Yes steps
-        #for positive traces, emit every step as Yes (this is where all positives come from)
-        if corruption_detail and "first_wrong_step" in corruption_detail:
-            indices_to_emit = [corruption_detail["first_wrong_step"]]
-        else:
-            indices_to_emit = list(range(len(steps)))
-
-        for i in indices_to_emit:
-            step         = steps[i]
-            steps_so_far = [s["action"] for s in steps[:i]]
-            candidate    = step["action"]
-            label        = step["label"]
-
-            record = build_prm_record(
-                procedure, available, steps_so_far, candidate, label,
-                step_index=i, corruption_type=corruption_type, corruption_detail=corruption_detail,
-            )
-
-            if estimate_tokens(record) <= MAX_TOKENS:
-                examples.append(record)
-                kept += 1
-            else:
-                dropped += 1
+    examples, kept, dropped, contradictions = expand_to_sft(traces, predictions)
 
     #split into Yes/No and subsample the majority class down to the minority count
     #shuffle the final mix so positives and negatives are interleaved during training
@@ -143,7 +90,7 @@ def main():
         for ex in balanced:
             f.write(json.dumps(ex, ensure_ascii=False) + "\n")
 
-    print(f"Step examples    : kept={kept}  dropped={dropped}")
+    print(f"Step examples    : kept={kept}  dropped={dropped}  contradictions_filtered={contradictions}")
     print(f"  Yes (before balance) : {n_yes_before}")
     print(f"  No  (before balance) : {n_no_before}")
     print(f"  Yes (after balance)  : {len(yes)}")

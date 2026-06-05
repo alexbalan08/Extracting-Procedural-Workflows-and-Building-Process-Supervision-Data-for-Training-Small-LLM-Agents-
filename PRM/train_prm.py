@@ -29,7 +29,7 @@ from transformers import (
     BitsAndBytesConfig,
     Trainer,
     TrainingArguments,
-    DataCollatorForLanguageModeling,
+    DataCollatorForSeq2Seq,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
@@ -59,22 +59,35 @@ def load_and_tokenize(sft_path: Path, tokenizer) -> Dataset:
         for line in f:
             records.append(json.loads(line))
 
-    #apply the chat template so each record becomes a single formatted string
-    texts = []
-    for rec in records:
-        text = tokenizer.apply_chat_template(
-            rec["messages"],
-            tokenize=False,
-            add_generation_prompt=False,
-        )
-        texts.append(text)
-
-    #tokenize individually so each example is its own dict
-    #DataCollatorForLanguageModeling will pad batches and create labels automatically
+    #the PRM is read from a single answer token ("Yes"/"No"), so train ONLY on the assistant answer:
+    #tokenize the full conversation, then mask every prompt token (system+user+assistant header) to -100
+    #so the loss ignores it. without this the loss is dominated by hundreds of prompt tokens per answer.
     examples = []
-    for text in texts:
-        tok = tokenizer(text, truncation=True, max_length=MAX_SEQ_LENGTH)
-        examples.append({"input_ids": tok["input_ids"], "attention_mask": tok["attention_mask"]})
+    for rec in records:
+        messages = rec["messages"]
+        full_ids = tokenizer.apply_chat_template(
+            messages, tokenize=True, add_generation_prompt=False,
+        )
+        #same conversation minus the answer, ending at the assistant header — this is the prompt prefix
+        prompt_ids = tokenizer.apply_chat_template(
+            messages[:-1], tokenize=True, add_generation_prompt=True,
+        )
+
+        #defensively take only the genuinely shared prefix (guards against a tokenizer merging the
+        #header/answer boundary), so we never mask into the answer or leave prompt tokens unmasked
+        n_prompt = len(prompt_ids)
+        while n_prompt > 0 and full_ids[:n_prompt] != prompt_ids[:n_prompt]:
+            n_prompt -= 1
+
+        full_ids = full_ids[:MAX_SEQ_LENGTH]
+        n_prompt = min(n_prompt, len(full_ids))
+        labels = [-100] * n_prompt + full_ids[n_prompt:]
+
+        examples.append({
+            "input_ids": full_ids,
+            "attention_mask": [1] * len(full_ids),
+            "labels": labels,
+        })
     return Dataset.from_list(examples)
 
 
@@ -154,7 +167,8 @@ def train(sft_data_path=None, output_dir=None, model_cfg=None, lora_cfg=None,
         model=model,
         args=training_args,
         train_dataset=dataset,
-        data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
+        #pads input_ids/attention_mask and pads labels with -100 (preserving our prompt masking)
+        data_collator=DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True),
     )
 
     #resume only if there's actually a checkpoint subdir — Path.exists() is True for an empty
