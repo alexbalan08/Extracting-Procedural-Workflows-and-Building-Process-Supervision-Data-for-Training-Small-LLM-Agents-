@@ -9,7 +9,7 @@
 #that we actually combine it with llama frozen next token proabbailtiies
 
 
-#!!this training script is entirelly generated with claude!! 
+#!!this training script is entirelly generated with claude!! giving the desired parameters
 
 try:
     from unsloth import FastLanguageModel

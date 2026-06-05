@@ -1,6 +1,9 @@
 #runs one of the four agents over the held-out procedures and saves the picked traces
 #we use this to manually compare the methods later
 
+
+
+#please run any of these the default parameters i included them already 
 #  python run_eval.py --method llama_bare
 #  python run_eval.py --method llama_actions
 #  python run_eval.py --method ensemble        --alpha 0.9
@@ -9,16 +12,18 @@
 
 
 
-#both modes validate against gold execution_states (ground truth).
-#  --graph predicted (default) → agent sees predicted graph; measures real deployment quality
-#  --graph gold            → agent sees gold graph; measures agent's ceiling
-#gap between gold and predicted = cost of extraction errors.
+#both modes validate against gold execution_states 
+#graph predicted agent sees predicted graph and it measures real deployment quality
+#graph gold agent sees gold graph andmeasure what theoretically the agent could do
+#gap between gold and predicted = cost of extraction errors
+
+#run those
 #  python run_eval.py --method ensemble --alpha 0.9 --graph predicted
 #  python run_eval.py --method ensemble --alpha 0.9 --graph gold
 
 
 #each loads its own model so run them sequentially
-#please use the parematers from here since i carefully tested and they are the best in practice
+#please use the parematers from here for best results since i carefully tested and they are the best in practice
 
 import argparse
 import json
@@ -61,9 +66,6 @@ def make_agent(method: str, alpha: float = 0.5, llm_temp: float = 1.0,
 
 
 def _prm_tag(adapter_path: Path) -> str:
-    #returns a short suffix encoding the PRM model variant so the output filename is unique.
-    #conventions: PRM/trained_model → "" (default, no tag), PRM/trained_model_small → "_small".
-    #any other adapter path uses the folder name minus the "trained_model_" prefix.
     name = adapter_path.name
     if name == "trained_model":
         return ""
@@ -89,12 +91,13 @@ def main():
                              "gold = agent also SEES the gold graph — measures agent ceiling. "
                              "predicted = agent sees the predicted graph — measures real deployment. "
                              "gap between gold and predicted = cost of extraction errors.")
-    #ensemble + agentic_ensemble knobs (ignored for the other methods)
+   
+
     parser.add_argument("--alpha", type=float, default=0.5,
                         help="Ensemble blend weight: 1.0=PRM only, 0.0=base Llama only (default 0.5)")
     parser.add_argument("--llm_temp", type=float, default=1.0,
                         help="Temperature applied to base Llama distribution before blending (default 1.0)")
-    #agentic_ensemble-only — gate the graph tool call
+    
     parser.add_argument("--tool_threshold", type=float, default=0.85,
                         help="Tool fires when top blended score is below this (default 0.85)")
     parser.add_argument("--tool_margin", type=float, default=0.2,
@@ -113,7 +116,7 @@ def main():
         cases = cases[: args.limit]
 
     give_candidates = args.method not in ("llama_bare", "openai_bare")
-    #(openai_actions / llama_actions both get candidates)
+    
     agent = make_agent(args.method, alpha=args.alpha, llm_temp=args.llm_temp,
                        tool_threshold=args.tool_threshold, tool_margin=args.tool_margin,
                        prm_adapter=args.prm_adapter, openai_model=args.openai_model)
@@ -128,7 +131,7 @@ def main():
 
     traces = run_inference(cases, agent, give_candidates=give_candidates, mode=args.graph)
 
-    #include graph mode + alpha + PRM variant (+ tool gates for method 4) so sweeps don't overwrite
+    
     suffix = f"_{args.graph}"
     if args.method == "ensemble":
         suffix += f"_alpha{args.alpha:.2f}"

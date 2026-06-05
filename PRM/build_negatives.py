@@ -1,19 +1,10 @@
 
-#Each records execution_states are split into individual execution paths
-#and converted to flat sequences of human-readable action names.
+#each execution_states are split into individual execution paths
+#and converted to flat sequences of human readable action names
 
-#we will do skip_action which drops an action and from that point we have label 0
-#swap_adjacent where we swap two consecutive actions
-#premature_stop just fiish faster all steps are correct but can_terminate will be null
-#repeat_completed replaces a step with a previously completed action — teaches the PRM not to score
-#  already-done actions highly (failure mode seen in held-out: PRM picks the very first action again at step 2)
-#wrong_start replaces the very first action with a wrong one — currently no corruption produces a step-0
-#  negative so the PRM defaults to ~0.99 confidence on every candidate at trajectory start
-#
-#wrong_branch (continue from a different branch at a split) was removed: it copies actions from another
-#  VALID path, so the (steps_so_far, candidate) it labels No is the exact same one another path labels
-#  Yes. with no gateway condition in the PRM's input the two are indistinguishable, so every such
-#  negative is an unlearnable contradiction. prepare_prm_data.py also filters any residual contradictions.
+
+#wrong_branch was removed in this code version please check an older version if you want to have it
+#i removed it since it creates me contradcitory data
 
 #we need to show the corruption type and the step so the traces are easy to follow by non experts humans
 
@@ -25,22 +16,12 @@ from collections import Counter
 from pathlib import Path
 
 
-#the extractor stores actions by ID internally but training traces need human readable names
-#this just builds a lookup dict so we can go from ID to name anywhere in the pipeline
 def build_action_map(workflow):
     return {a["id"]: a["name"] for a in workflow.get("actions", [])}
 
 
-#execution_states from the graph traversal contains ALL states from ALL branches in one list
-#this function separates them back into individual paths, one path per terminal state (can_terminate=True)
-#
-#a terminal's completed_actions = [a1, a2, ..., an] IS the full ordered action sequence of its path,
-#so we rebuild the chain depth by depth: the on-path state at depth k is the unique state whose
-#completed_actions == [a1..ak] AND whose available_next is [a_{k+1}] (the action that continues toward
-#this terminal). that available_next test is what separates branch siblings — at a split, two states
-#share the same completed_actions prefix but point to different next actions, and only one leads here.
-#(the old prefix+conditions-subset test couldn't tell siblings apart and absorbed states from the wrong
-#branch, producing positive paths with duplicated / out-of-order actions.)
+#at a split two states share the same completed_actions prefix but point to different next actions 
+#and each one will obsissively match to one path
 def split_into_paths(states):
 
     terminals = [s for s in states if s.get("can_terminate")]
@@ -63,11 +44,10 @@ def split_into_paths(states):
                 and set(s.get("conditions_met", [])) <= term_conds
             ]
             if not on_path:
-                #data doesn't let us cleanly reconstruct this terminal's path — skip it
                 ok = False
                 break
-            #if more than one upstream branch reaches this (prefix, next) point, take the state whose
-            #conditions are closest to the terminal's — keeps conditions_met monotonic along the path
+            #if more than one branch reaches this (prefix, next) point unlucky but still
+            #we will take the state whose conditions are closest to the terminal
             path.append(max(on_path, key=lambda s: len(s.get("conditions_met", []))))
 
         if ok:
@@ -79,8 +59,7 @@ def split_into_paths(states):
 
 
 
-#state_0: completed=[],                        conditions={}
-#state_1: completed=["action_1"],              conditions={}
+
 #state_2: completed=["action_1","action_2"],   conditions={"approved"}
 #produces: [{"action":"verify document","label":1}, {"action":"approve payment","label":1,"condition_reached":["approved"]}]
 #we start at index 1 sicne 0 is always start node
@@ -155,7 +134,6 @@ def corrupt_swap_adjacent(steps):
 
 
 #replaces a step with an action that was already completed earlier in the same trace
-#cascades label=0 from that point on — the action is wrong and any continuation off this branch is also wrong
 #we need at least 3 steps so there is a valid pos with at least one different prior action to repeat
 def corrupt_repeat_completed(steps):
     if len(steps) < 3:
@@ -163,7 +141,9 @@ def corrupt_repeat_completed(steps):
 
     pos = random.randint(1, len(steps) - 1)
     prior_actions = [s["action"] for s in steps[:pos]]
-    #must pick a prior action that isn't already what this step is — otherwise it's not a corruption
+    
+
+    #pick candiate aleways different than an action in steps made
     candidates = [a for a in prior_actions if a != steps[pos]["action"]]
     if not candidates:
         return None
@@ -182,10 +162,9 @@ def corrupt_repeat_completed(steps):
     }
 
 
-#replaces step 0 with a wrong opening action — teaches the PRM to reject incorrect first steps
+#replaces step 0 with a wrong opening action it teaches the PRM to reject incorrect first steps
 #without this, history=empty has only positive examples in training data and the PRM scores every
-#candidate at ~0.99 at trajectory start (seen in held-out: all four candidates >0.99 at step 1)
-#we need the workflow's full action set so we can pick a non-first action to substitute in
+#candidate around 0.99 at start
 def corrupt_wrong_start(steps, all_action_names):
     if len(steps) < 2:
         return None
@@ -219,7 +198,7 @@ def corrupt_premature_stop(steps):
 
     stop_at = random.randint(2, len(steps) - 1)
     corrupted = copy.deepcopy(steps[:stop_at])
-    #last step gets label=0 as a "wrong termination" signal for step-level PRM training
+    #last step gets label 0 as usual since it s early termantion
     corrupted[-1]["label"] = 0
 
     return corrupted, {
@@ -268,8 +247,7 @@ def main():
             if not steps:
                 continue
 
-            # ── positive ──
-            #deepcopy so any later corruption on the same steps list doesnt mutate the positive
+            
             all_examples.append({
                 "file_index":        record["file_index"],
                 "procedure":         record["procedure_text"],
@@ -280,10 +258,7 @@ def main():
                 "corruption_detail": None,
             })
 
-            # ── negatives ──
-            #we attempt every corruption type and skip any that return None (path too short)
-            #complete is True for all of them since each corrupted trace still reaches a terminal,
-            #just the wrong one (premature_stop and wrong_branch were dropped — see notes up top)
+           
             for _ in range(args.n_per_corruption):
                 attempts = [
                     ("skip_action",      corrupt_skip_action(steps)),

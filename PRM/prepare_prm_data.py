@@ -1,17 +1,18 @@
 
-#Converts prm_training_data.json into step-level SFT records for PRM training.
-#
-#Each trace is expanded into one training example per step:
-#  - steps_so_far: actions correctly completed before this step (empty at the start)
+#Converts prm_training_data.json into step-level SFT records for PRM training
+
+
+#each trace is expanded into one training example per step:
+#  - steps_so_far: actions correctly completed before this step 
 #  - candidate_next: the action being scored at this step
-#  - available_actions: all actions extracted from the workflow (always visible)
-#  - label: "Yes" (label=1) or "No" (label=0)
-#
-#At inference the agent starts with steps_so_far=[] and scores every remaining action
-#as a candidate, picking the one with highest P("Yes"). This repeats until the
-#procedure is complete.
-#
-#Token budget: we estimate tokens as total_chars // 4 and drop examples over MAX_TOKENS
+#  - available_actions: all actions extracted from the workflow which are always visible to PRM
+#  - label yes or no if it s correct action given history
+
+#At inference the agent starts with empty history and scores every remaining action
+#as a candidate, picking the one with highest P("Yes") and repeats until the procedure is complete.
+
+#we drop examples over MAX_TOKENS but this wont do anything since we dont surpass this it s just more for the future
+#if we expand out promompts
 #to stay within the 5120 context window used during training.
 
 import json
@@ -22,7 +23,7 @@ PRM_DATA_PATH    = _here / "prm_training_data.json"
 PREDICTIONS_PATH = _here.parent / "Extraction_results" / "extraction_predictions.json"
 OUTPUT_PATH      = _here / "prm_sft_train.jsonl"
 
-MAX_TOKENS = 4700  # 5120 max_seq_length minus chat template overhead and approximation buffer
+MAX_TOKENS = 4700  
 
 PRM_SYSTEM_PROMPT = (
     "You are a process reward model for procedural workflows. "
@@ -34,7 +35,6 @@ PRM_SYSTEM_PROMPT = (
 
 
 def estimate_tokens(record: dict) -> int:
-    #chars//4 = tokens approx.
     total_chars = sum(len(m["content"]) for m in record["messages"])
     return total_chars // 4
 
@@ -44,9 +44,7 @@ def generate_answer(label: int, step_index: int, corruption_type, corruption_det
         return "Yes"
 
     #at the first wrong step we add a brief deterministic explanation of the error type
-    #this is zero-cost (metadata already exists) and 100% accurate (not LLM-generated)
-    #at inference we only read the first token logit (Yes/No) so the explanation
-    #does not affect scoring — it only helps the model learn error patterns during training
+    #at inference we only read the first token logit (Yes/No) so the explanation does not affect scoring
     if corruption_detail and step_index == corruption_detail.get("first_wrong_step"):
         if corruption_type == "skip_action":
             return f"No. Error: skip_action. Action '{corruption_detail['skipped_action']}' was skipped."
@@ -67,14 +65,14 @@ def generate_answer(label: int, step_index: int, corruption_type, corruption_det
                     f"Procedure should begin with '{corruption_detail['correct_first']}', "
                     f"not '{corruption_detail['wrong_first']}'.")
 
-    #cascading errors after the first wrong step get a plain No
+    
     return "No"
 
 
 def build_prm_record(procedure: str, available_actions: list[str],
                      steps_so_far: list[str], candidate: str, label: int,
                      step_index: int = 0, corruption_type=None, corruption_detail=None) -> dict:
-    #steps_so_far is empty at the beginning of a procedure — the agent starts fresh
+    
     #as the procedure progresses, completed actions accumulate here
     if steps_so_far:
         steps_str = " → ".join(steps_so_far)
@@ -102,7 +100,7 @@ def build_prm_record(procedure: str, available_actions: list[str],
     }
 
 
-#build a lookup from file_index to the full flat list of action names
+
 #we use the extracted workflow not ground truth on purpose — the end-to-end
 #pipeline (including the extractor) is what gets evaluated
 def build_action_lists(predictions: list[dict]) -> dict[int, list[str]]:
@@ -113,10 +111,7 @@ def build_action_lists(predictions: list[dict]) -> dict[int, list[str]]:
     return action_lists
 
 
-#the (file_index, steps_so_far, candidate) of every step a positive trace labels Yes.
-#a negative whose first-wrong step has the same key is an unlearnable contradiction (the identical
-#prompt is a valid Yes on another path), so we drop it — branches that share a prefix and a valid
-#next action are indistinguishable to the PRM, which never sees the gateway condition that separates them
+
 def _positive_keys(traces: list[dict], action_lists: dict[int, list[str]]) -> set:
     keys = set()
     for trace in traces:
@@ -132,8 +127,7 @@ def _positive_keys(traces: list[dict], action_lists: dict[int, list[str]]) -> se
     return keys
 
 
-#expand trace-level records into step-level SFT examples, dropping any over MAX_TOKENS.
-#returns (examples, kept, dropped, contradictions). shared by the dedup variant so the rules stay in one place.
+#expand trace level records into step-level SFT examples
 def expand_to_sft(traces: list[dict], predictions: list[dict]) -> tuple[list[dict], int, int, int]:
     action_lists = build_action_lists(predictions)
     positive_keys = _positive_keys(traces, action_lists)
@@ -148,17 +142,16 @@ def expand_to_sft(traces: list[dict], predictions: list[dict]) -> tuple[list[dic
 
         available = action_lists.get(fidx, [])
         if not available:
-            #no workflow found for this file_index, skip
+            #skip if no workfloe found for this index
             dropped += len(steps)
             continue
 
         corruption_type   = trace.get("corruption_type")
         corruption_detail = trace.get("corruption_detail")
 
-        #for corrupted traces, only emit the labeled-wrong step (one No example per trace)
+        #for corrupted traces, only emit the labeled-wrong step so one example of no per trce
         #the leading Yes steps in a corrupted trace are byte-identical to the positive path's Yes steps
-        #emitting them duplicates positives and inflates dataset size for no signal
-        #for positive traces, emit every step as Yes (this is where all positives come from)
+        #for positive traces emit every step as Yes as usual 
         if corruption_detail and "first_wrong_step" in corruption_detail:
             indices_to_emit = [corruption_detail["first_wrong_step"]]
         else:
@@ -200,8 +193,7 @@ def main():
         for ex in examples:
             f.write(json.dumps(ex, ensure_ascii=False) + "\n")
 
-    #count answers — every negative now starts with "No. Error: ..." after cascade cut,
-    #so we match any answer beginning with "No" to capture both plain "No" and explained negatives
+
     n_yes = sum(1 for e in examples if e["messages"][-1]["content"] == "Yes")
     n_no  = sum(1 for e in examples if e["messages"][-1]["content"].startswith("No"))
     n_no_explained = sum(1 for e in examples if e["messages"][-1]["content"].startswith("No. Error: "))
