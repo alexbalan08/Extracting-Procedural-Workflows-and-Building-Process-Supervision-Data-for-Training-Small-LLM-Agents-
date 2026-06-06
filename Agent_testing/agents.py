@@ -1,9 +1,9 @@
-#Llama base is method 1, vanilla llama with no candidate list, free-form output.
-#Llama with access to extracted actions is method 2, vanilla llama given the candidate list, picks one.
+#Llama base is method 1, frozen llama with no candidate list, free form output.
+#Llama with access to extracted actions is method 2 base llama given the candidate list, picks one
 #a combined method between planner and llma agent is method 3, base llama plus the prm lora blended at inference.
-#method 4 is method 3 plus an agentic tool call: when the blended score is uncertain the agent looks
-#up the extracted graph (execution_states from held_out.json) to narrow candidates to the valid-next set
-#and re-picks. compare method 4 vs method 3 to measure what the graph tool adds.
+#method 4 is method 3 plus an agentic tool call when the blended score is uncertain the agent looks
+#up the extracted graph (execution_states from held_out.json made implicitly from the graphs) to narrow candidates to the valid-next set
+#and re-picks. compare method 4 vs method 3 to measure what the graph tool adds and it should add a lot
 
 
 
@@ -18,7 +18,7 @@ from runner import PlanningAgent
 DEFAULT_BASE_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 DEFAULT_PRM_ADAPTER = Path(__file__).parent.parent / "PRM" / "trained_model"
 
-#Same wording the PRM was trained on — see PRM/prepare_prm_data.py
+#Same wording the PRM was trained on
 PRM_SYSTEM_PROMPT = (
     "You are a process reward model for procedural workflows. "
     "Given a procedure description, the full list of available actions, "
@@ -29,16 +29,15 @@ PRM_SYSTEM_PROMPT = (
 
 
 #maps a free-form model output back to the closest candidate string
-#the model sometimes adds words or changes capitalisation so we substring-match first
 #then fall back to character similarity. picked is always one of the candidate_names
 def _best_candidate_match(response: str, candidates: list[str]) -> str:
     rl = response.lower().strip()
-    #substring match first — fast path when the model echoed the candidate
+   
     for c in candidates:
         cl = c.lower()
         if cl in rl or rl.startswith(cl):
             return c
-    #fall back to character-level similarity ratio
+  
     best, best_score = candidates[0], -1.0
     for c in candidates:
         score = SequenceMatcher(None, rl, c.lower()).ratio()
@@ -98,10 +97,9 @@ class _LlamaInstructBase(PlanningAgent):
         return self._tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
 
-#method 1 vanilla llama with no candidate list, free-form output
-#hardest condition since the model can say anything
+#method 1 
 class LlamaBareAgent(_LlamaInstructBase):
-    #predicted_states / id_to_name accepted for runner compatibility, only method 4 uses them
+    
     def pick(self, procedure_text, completed_names, candidate_names,
              predicted_states=None, id_to_name=None):
         self._load()
@@ -116,21 +114,21 @@ class LlamaBareAgent(_LlamaInstructBase):
             {"role": "system", "content": "You are a procedural workflow planner."},
             {"role": "user", "content": user},
         ])
-        #strip "Next action:" prefixes and quote/period decorations, keep only the first line
+        
         cleaned = re.sub(r"^[Nn]ext action:\s*", "", raw).strip(" \"'.")
         cleaned = cleaned.split("\n")[0].strip()
         return cleaned, {"raw_response": raw}
 
 
-#OpenAI baseline — same prompt and behaviour as LlamaBareAgent but routes the call
-#to the OpenAI API instead of the local llama. lets us cite a closed-source SOTA
-#model in the writeup as a reference point ("even gpt-5.4-mini at X% bare").
-#requires OPENAI_API_KEY in the environment (same as the extraction pipeline).
+#OpenAI baseline same prompt and behaviour as LlamaBareAgent but routes the call
+#to the OpenAI API instead of the local llama
+#requires OPENAI_API_KEY in the environment but we have it already from extractor
+
 class OpenAIBareAgent(PlanningAgent):
-    #default is large enough for reasoning models (gpt-5.5, o-series) which burn
-    #completion tokens internally on chain-of-thought before emitting the visible
-    #answer. 64 is fine for plain models but starves the reasoning ones.
-    def __init__(self, model: str = "gpt-5.4-mini", max_completion_tokens: int = 4000):
+    
+
+    #we need to increase max tokens by a lot gor gpt 5.5 since it s a reasoning model which lawasys produceds cot in the output before
+    def __init__(self, model: str = "gpt-5.5 ", max_completion_tokens: int = 4000):
         self.model = model
         self.max_completion_tokens = max_completion_tokens
         self._client = None
@@ -156,8 +154,8 @@ class OpenAIBareAgent(PlanningAgent):
             "What action should be done next? Reply with just the action name "
             "(a short phrase, no full sentences)."
         )
-        #temperature is intentionally not set — newer reasoning models (gpt-5.5, o1-style)
-        #reject any value other than the default 1. seed=42 gives best-effort determinism.
+        #temperature is intentionally not set bcs newer reasoning models (gpt-5.5)
+        #reject any value other than the default 1. seed=42 still
         response = self._client.chat.completions.create(
             model=self.model,
             messages=[
@@ -173,8 +171,7 @@ class OpenAIBareAgent(PlanningAgent):
         return cleaned, {"raw_response": raw}
 
 
-#method 2 vanilla llama given the candidate list, picks one entry
-#raw output is mapped back to a canonical candidate via _best_candidate_match
+#method 2 
 class LlamaActionsAgent(_LlamaInstructBase):
     def pick(self, procedure_text, completed_names, candidate_names,
              predicted_states=None, id_to_name=None):
@@ -201,9 +198,7 @@ class LlamaActionsAgent(_LlamaInstructBase):
         return matched, {"raw_response": raw}
 
 
-#OpenAI baseline given the candidate list — mirrors LlamaActionsAgent's prompt.
-#fair comparison vs the local pipeline: same closed action set, same picking task,
-#just routed through the OpenAI API instead of llama.
+#OpenAI baseline given the candidate list same as method 2 but with openai 
 class OpenAIActionsAgent(PlanningAgent):
     def __init__(self, model: str = "gpt-5.4-mini", max_completion_tokens: int = 4000):
         self.model = model
@@ -254,11 +249,8 @@ class OpenAIActionsAgent(PlanningAgent):
 #method 3 base llama 3.1 8b plus the prm lora ensembled for next-action picking
 #we load the base model once and attach the prm lora on top
 #for each candidate we score it twice on the same model
-#prm score with the lora ON gives yes/no logits softmaxed to P(yes)
-#llm score with the lora OFF (via peft disable_adapter) gives the mean log-prob of generating the candidate
 #we softmax-normalise each scorer over the candidate set then blend with weight alpha and pick argmax
-#alpha=1.0 is pure prm, alpha=0.0 is pure base llama, default 0.5 is equal blend
-#llm_temp flattens the base llama distribution if it gets too peaky on a single option
+#alpha=1.0 is pure prm, alpha=0.0 
 class EnsemblePlannerAgent(PlanningAgent):
     LLM_SYSTEM_PROMPT = (
         "You are a procedural workflow planner. "
@@ -269,7 +261,7 @@ class EnsemblePlannerAgent(PlanningAgent):
     def __init__(self, base_model: str = DEFAULT_BASE_MODEL,
                  adapter_path: Path = DEFAULT_PRM_ADAPTER,
                  system_prompt: str = PRM_SYSTEM_PROMPT,
-                 alpha: float = 0.5,
+                 alpha: float = 0.90,
                  llm_temp: float = 1.0):
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(f"alpha must be in [0, 1], got {alpha}")
@@ -314,8 +306,7 @@ class EnsemblePlannerAgent(PlanningAgent):
 
     def _score_prm(self, procedure: str, available: list[str],
                    completed: list[str], candidate: str) -> float:
-        #same prompt format as we used in prm training 
-        #lora must be ON for this call
+
         import torch
         steps_str = " → ".join(completed) if completed else "(none)"
         actions_str = " | ".join(available)
@@ -343,8 +334,8 @@ class EnsemblePlannerAgent(PlanningAgent):
 
     def _score_llm(self, procedure: str, completed: list[str],
                    candidate: str) -> float:
+        
         #length-normalised mean log-prob of the candidate string under the base llama
-        #lora is toggled OFF only for this forward pass via peft disable_adapter context
         import torch
         import torch.nn.functional as F
 
@@ -373,7 +364,7 @@ class EnsemblePlannerAgent(PlanningAgent):
         if len(cand_ids) == 0:
             return 0.0
         
-        #logits[i] predicts token i+1, so to score cand_ids[j] read logits at prompt_len+j-1
+     
         cand_logits = logits[prompt_len - 1 : -1]
         log_probs = F.log_softmax(cand_logits, dim=-1)
         chosen = log_probs[range(len(cand_ids)), cand_ids]
@@ -407,7 +398,7 @@ class EnsemblePlannerAgent(PlanningAgent):
 
         import numpy as np
         best_idx = int(np.argmax(final))
-        #keep raw and normalised scores per candidate for post-hoc analysis
+        #keep raw and normalised scores per candidate for manual inspection
         return candidate_names[best_idx], {
             "alpha":      self.alpha,
             "llm_temp":   self.llm_temp,
@@ -423,8 +414,7 @@ class EnsemblePlannerAgent(PlanningAgent):
 #we run the same prm + llama blend first. if the top blended score is below tool_threshold AND
 #the margin to runner-up is below tool_margin, we look up valid next actions in the predicted
 #execution_states (the extracted graph) and re-pick from that narrower set
-#this is what makes it agentic — the agent decides when it needs more info and consults the graph
-#tool_called is logged in info_dict so we can report how often the tool fired
+
 class AgenticEnsembleAgent(EnsemblePlannerAgent):
     def __init__(self, base_model: str = DEFAULT_BASE_MODEL,
                  adapter_path: Path = DEFAULT_PRM_ADAPTER,
@@ -439,7 +429,7 @@ class AgenticEnsembleAgent(EnsemblePlannerAgent):
 
     @staticmethod
     def _valid_next_from_graph(history_names, predicted_states, id_to_name):
-        #execution_states uses action ids, agent works in display names → translate both ways
+     
         if not predicted_states or not id_to_name:
             return None
         name_to_id = {v: k for k, v in id_to_name.items()}
@@ -456,7 +446,7 @@ class AgenticEnsembleAgent(EnsemblePlannerAgent):
             raise ValueError("AgenticEnsembleAgent requires a candidate list.")
         self._load()
 
-        #initial pass — score every candidate the same way method 3 does
+        #initial pass score every candidate the same way method 3 does
         prm_raw: list[float] = []
         llm_raw: list[float] = []
         for c in candidate_names:
@@ -487,8 +477,7 @@ class AgenticEnsembleAgent(EnsemblePlannerAgent):
             "margin":         margin,
         }
 
-        #tool gate — either condition trips the tool. fires when the agent is unsure
-        #(top score below threshold) OR when the top is too close to runner-up (small margin)
+        #tool call either condition activates when the agent is unsure
         gate_fires = (top_score < self.tool_threshold) or (margin < self.tool_margin)
         if not gate_fires:
             info["tool_called"] = False
@@ -503,12 +492,12 @@ class AgenticEnsembleAgent(EnsemblePlannerAgent):
         info["narrowed"] = narrowed
 
         if not narrowed or len(narrowed) == len(candidate_names):
-            #tool returned nothing useful (no matching state, or full list) — fall back to original pick
+            #tool returned nothing useful (no matching state, or full list) just fallback
             info["tool_useful"] = False
             return candidate_names[top_idx], info
 
-        #re-rank within the narrowed set by reusing the existing per-candidate scores
-        #(no need to re-score — the prm/llm scores per candidate don't depend on which other candidates exist)
+        #re-rank within the narrowed set by reusing the existing  scores
+        #no need to re score everything again since history andcompleted consitions are the same
         narrowed_indices = [i for i, c in enumerate(candidate_names) if c in narrowed]
         prm_n = [prm_raw[i] for i in narrowed_indices]
         llm_n = [llm_raw[i] for i in narrowed_indices]

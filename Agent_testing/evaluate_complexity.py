@@ -1,12 +1,5 @@
-#stratifies the main 4-method comparison by procedure complexity to answer
-#"do complex procedures fail more?". two complexity dimensions, each split into
-#three tertile bins (low / mid / high) over the 49 held-out procedures:
-#  - # of actions in the gold workflow (candidate-set size)
-#  - # of gateways in the gold workflow (decision-point count)
-#we reuse the same per-method-and-graph filter as evaluate_traces.py so this
-#table covers exactly the canonical 4 methods x 2 graphs at big PRM, alpha=0.9.
-#
-#  python evaluate_complexity.py
+#for an complexity validation in the report 
+#and to see where out failing happens the most 
 
 
 import json
@@ -28,7 +21,6 @@ DEFAULT_HELD_OUT = _HERE / "held_out.json"
 DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.json"
 
 
-#per-procedure complexity from the gold workflow — the "true" complexity, independent of extraction
 def _load_complexity(held_out_path: Path) -> dict[int, dict[str, int]]:
     with open(held_out_path, encoding="utf-8") as f:
         held_out = json.load(f)
@@ -42,7 +34,7 @@ def _load_complexity(held_out_path: Path) -> dict[int, dict[str, int]]:
     return out
 
 
-#tertile cutoffs over the actual distribution so the three bins hold roughly equal n
+
 def _tertile_cutoffs(values: list[int]) -> tuple[int, int]:
     sv = sorted(values)
     n = len(sv)
@@ -62,7 +54,7 @@ def main():
 
     complexity = _load_complexity(DEFAULT_HELD_OUT)
 
-    #collect canonical inference files — same filters as evaluate_traces.py
+    
     runs = []
     for path in sorted(RESULTS_DIR.glob("inference_*.json")):
         method = parse_method(path.name, METHODS)
@@ -82,7 +74,7 @@ def main():
         print("No canonical inference files found.")
         return
 
-    #tertile cutoffs computed once over the held-out set the inference files actually cover
+    
     file_indices = [tr["file_index"] for tr in runs[0][2]]
     act_vals = [complexity[fi]["n_actions"]  for fi in file_indices if fi in complexity]
     gw_vals  = [complexity[fi]["n_gateways"] for fi in file_indices if fi in complexity]

@@ -1,9 +1,8 @@
-#reads the inference_*.json files in results/ and prints per-method-and-graph metrics.
-#the gap between a method's "predicted" row (agent sees predicted graph) and its "gold" row
-#(agent sees gold graph) tells us how much extraction noise costs that method —
+#the gap between a method's "predicted" row (agent sees predicted graph) and its gold row
+#(agent sees gold graph) tells us how much extraction noise costs that method 
 #both rows are validated against ground truth.
 
-#  python evaluate_traces.py
+
 
 
 import json
@@ -19,20 +18,18 @@ RESULTS_DIR = _HERE / "results"
 DEFAULT_HELD_OUT = _HERE / "held_out.json"
 DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.json"
 
-#longest first so "agentic_ensemble" matches before "ensemble"
+
 METHODS = ["agentic_ensemble", "ensemble",
            "llama_actions", "openai_actions",
            "llama_bare",    "openai_bare"]
 
-#only the canonical config of each method shows up in the main table.
-#ensemble alpha sweeps live in evaluate_alpha.py; big-vs-small PRM comparison lives in
+
 #evaluate_lora.py. here we keep only the canonical big-PRM run at alpha=0.90.
 ENSEMBLE_CANONICAL_SUFFIX = "_alpha0.90.json"
 SMALL_PRM_MARKER = "_small.json"
 
 
-#mirror runner._resolve_picked_id rules so we know whether a pick was already a real action,
-#fuzzy-matched to one (snapped), or unmatchable (invented). only meaningful for llama_bare.
+#this is useful only for the llama bare which produces free form output 
 def _classify_pick(picked: str, action_names: list[str]) -> str:
     if picked in action_names:
         return "exact"
@@ -44,7 +41,6 @@ def _classify_pick(picked: str, action_names: list[str]) -> str:
     return "invented"
 
 
-#aggregates one inference file into the metric row we print
 def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
     n_proc = len(traces)
     total_steps = valid_steps = 0
@@ -57,7 +53,7 @@ def _compute_metrics(traces: list[dict], actions_lookup: dict) -> dict:
     for tr in traces:
         rollout = tr["rollout"]
         steps = rollout.get("steps", [])
-        #candidate_actions is None for llama_bare, fall back to active-graph actions
+        
         actions = tr.get("candidate_actions") or actions_lookup[(tr["file_index"], tr["eval_mode"])]
 
         for i, s in enumerate(steps):
@@ -100,10 +96,10 @@ def main():
         method = parse_method(path.name, METHODS)
         if method is None:
             continue
-        #small-PRM runs are reported in evaluate_lora.py, drop them from the main table
+        
         if path.name.endswith(SMALL_PRM_MARKER):
             continue
-        #ensemble alpha sweep is reported separately — only keep the canonical alpha here
+        
         if method == "ensemble" and ENSEMBLE_CANONICAL_SUFFIX not in path.name:
             continue
         with open(path, encoding="utf-8") as f:
@@ -120,13 +116,13 @@ def main():
         print(f"No inference_*.json files found in {RESULTS_DIR}")
         return
 
-    #group by method, predicted before gold so the extraction-cost gap reads top-to-bottom per pair
+    
     rows.sort(key=lambda r: (METHODS.index(r["method"]), 0 if r["graph"] == "predicted" else 1))
 
     out_csv = RESULTS_DIR / "metrics.csv"
     write_csv(out_csv, rows)
 
-    #full metric names so the table reads on its own. tool_* columns are 0 outside agentic_ensemble.
+    
     keys = ["method", "graph", "procedures",
             "step_valid_%", "first_step_valid_%", "completed_%",
             "avg_steps_to_offpath", "invented_%",

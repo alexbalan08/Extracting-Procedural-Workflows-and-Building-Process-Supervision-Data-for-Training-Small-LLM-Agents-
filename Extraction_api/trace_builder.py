@@ -1,11 +1,3 @@
-"""
-Converts extracted workflow JSON to the graph format expected by path_enumeration.py,
-then runs the deterministic path enumeration to build execution states for PRM training.
-
-The extracted workflow uses: actions (id, name, successors) + gateways (id, type, branches).
-The path_enumeration uses:  nodes dict + outgoing/incoming adjacency lists.
-This module bridges the two.
-"""
 
 import sys
 from collections import defaultdict
@@ -15,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from Procedures_schema.path_enumeration import enumerate_paths, build_execution_states
 
 
-# map extracted type strings back to the internal type codes used by path_enumeration
+#the types od gateways we can have
 _GATEWAY_TYPE_MAP = {
     'exclusive': 'XOR',
     'parallel': 'AND',
@@ -44,10 +36,10 @@ def workflow_to_graph(workflow):
     incoming = defaultdict(list)
     rid_to_id = {}
 
-    # virtual start node — no text, just a dispatch point
+    #virtual start node with no actual text
     nodes[_START_RID] = {'type': 'StartNode', 'NodeText': '', 'agent': ''}
 
-    # action nodes
+    #action nodes
     for a in actions:
         nodes[a['id']] = {
             'type': 'Activity',
@@ -56,7 +48,7 @@ def workflow_to_graph(workflow):
         }
         rid_to_id[a['id']] = a['id']
 
-    # gateway nodes
+    #gateway nodes
     for g in gateways:
         nodes[g['id']] = {
             'type': _GATEWAY_TYPE_MAP.get(g['type'], 'XOR'),
@@ -64,20 +56,20 @@ def workflow_to_graph(workflow):
             'agent': '',
         }
 
-    # edges: virtual start → first actions
+    #edges virtual start action
     for a in actions:
         if 'start' in a.get('predecessors', []):
             outgoing[_START_RID].append((a['id'], ''))
             incoming[a['id']].append((_START_RID, ''))
 
-    # edges: action → successors (no condition on these edges — conditions live on gateway branches)
+    #edges for actions for the succesor list
     for a in actions:
         for s in a.get('successors', []):
             if s in nodes:
                 outgoing[a['id']].append((s, ''))
                 incoming[s].append((a['id'], ''))
 
-    # edges: gateway → branches
+    #edges between gateays and nodes
     end_counter = 0
     for g in gateways:
         for b in g.get('branches', []):
@@ -93,6 +85,20 @@ def workflow_to_graph(workflow):
                 nodes[end_rid] = {'type': 'EndNode', 'NodeText': '', 'agent': ''}
                 outgoing[g['id']].append((end_rid, cond))
                 incoming[end_rid].append((g['id'], cond))
+
+    #edge case: if no gateways point from start connect start to all orphan actions to ensure they're included in paths
+    for g in gateways:
+        if 'start' in (g.get('incoming_from') or []) and not incoming.get(g['id']):
+            outgoing[_START_RID].append((g['id'], ''))
+            incoming[g['id']].append((_START_RID, ''))
+
+    if not outgoing.get(_START_RID):
+        for rid, node in nodes.items():
+            if rid == _START_RID or node['type'] in ('StartNode', 'EndNode'):
+                continue
+            if not incoming.get(rid):
+                outgoing[_START_RID].append((rid, ''))
+                incoming[rid].append((_START_RID, ''))
 
     return nodes, outgoing, incoming, rid_to_id, [_START_RID]
 
