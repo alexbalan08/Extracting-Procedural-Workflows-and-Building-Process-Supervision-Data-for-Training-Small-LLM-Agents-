@@ -247,7 +247,7 @@ if ss.workflow:
             "Compare with gold graph", value=True,
             help="Show the human-annotated gold graph next to the extracted one. "
                  "Differences between them are exactly the extraction errors the agent "
-                 "must cope with in 'predicted' mode.",
+                 "must work with in 'predicted' mode.",
         )
         if compare:
             g_actions = len(gold_wf.get("actions") or [])
@@ -271,10 +271,9 @@ if ss.workflow:
 
 # ---- human-in-the-loop labeling of the extracted graph (data flywheel)
 if ss.workflow:
-    with st.expander("✍️ Label this extraction (human-in-the-loop)"):
+    with st.expander("Label this extraction step by step (RLHF idea)"):
         st.caption("Mark each extracted action correct or wrong, optionally giving the right "
-                   "name. Saves accumulate into a JSONL dataset for retraining. Defaults to "
-                   "'correct' — just flip the wrong ones.")
+                   "name. Saves accumulate into a JSONL file for retraining. ")
         _acts = ss.workflow.get("actions") or []
         _gws = ss.workflow.get("gateways") or []
         _kp = f"ext_{ss.source_name}_{ss.file_index}"
@@ -348,9 +347,7 @@ if ss.workflow:
                 "Graph the agent sees", ["predicted", "gold"],
                 help="Which graph the agent uses as input.\n"
                      "• predicted = the graph just extracted in Step 2 — real deployment quality.\n"
-                     "• gold = the human-annotated graph — the agent's ceiling if extraction were perfect.\n"
-                     "Grading in Step 5 is always against gold; the gap between the two is the cost of "
-                     "extraction errors. (gold needs a held-out procedure.)",
+                     "• gold = the human-annotated graph — the agent's theoretical capability if extraction were perfect.\n",
             )
             if grade_mode == "gold" and ss.file_index is None:
                 st.caption("⚠️ gold needs a held-out procedure; will use predicted.")
@@ -376,8 +373,8 @@ if ss.workflow:
                 "tool margin", 0.0, 1.0, 0.20, 0.05,
                 disabled=cfg["key"] != "agentic",
                 help="M4 only. The graph tool also fires when the gap between the top two "
-                     "candidates is BELOW this value — i.e. a close call between options "
-                     "(typically at a gateway). Higher = the tool fires more often.",
+                     "candidates is BELOW this value -  "
+                     "Higher = the tool fires more often.",
             )
         openai_model_agent = st.text_input(
             "OpenAI model (for OpenAI configs)", value="gpt-5.4-mini",
@@ -385,8 +382,8 @@ if ss.workflow:
         ) if cfg["openai"] else "gpt-5.4-mini"
 
         if cfg["gpu"]:
-            st.info("ℹ️ This config loads Llama-3.1-8B (4-bit) + PRM LoRA — runs on your GPU box, "
-                    "not on the Mac. Record the video there, or use **Replay saved run** here.")
+            st.info("ℹ️ This config loads Llama-3.1-8B (4-bit) + PRM LoRA — runs on your local GPU, "
+                    "CUDA is required.")
 
         if st.button("Run agent", type="primary"):
             try:
@@ -468,16 +465,16 @@ if ss.rollout:
     st.divider()
     st.header("Step 5 · Final trajectory vs " + ("gold" if ss.has_gold else "extracted graph"))
     if not ss.has_gold:
-        st.caption("No gold for this procedure — grading against the agent's own extracted graph. "
-                   "Pick a held-out procedure in Step 1 for true gold grading.")
+        st.caption("No gold for this procedure — validating against the agent's own extracted graph. "
+                   "Pick a held-out procedure in Step 1 for validation against gold workflow.")
     step_ui.render_trajectory(ss.rollout, ss.branches or [], ss.has_gold)
 
 
 # ---- human-in-the-loop labeling of the agent's decisions (process supervision)
 if ss.rollout:
-    with st.expander("✍️ Label the agent's decisions (process supervision)"):
-        st.caption("Mark each step's picked action correct or wrong. Pre-filled from the "
-                   "automatic on-path / off-path check — just correct where you disagree.")
+    with st.expander("Label the agent's decisions (RLHF idea)"):
+        st.caption("Mark each step's picked action correct or wrong. "
+                   "— just correct where you disagree.")
         _steps = ss.rollout.get("steps") or []
         _rkp = f"roll_{ss.source_name}_{ss.file_index}"
         with st.form(_rkp):
@@ -487,7 +484,7 @@ if ss.rollout:
                 _s1, _s2, _s3 = st.columns([1, 4, 3])
                 _s1.markdown(f"**#{_s['step']}**")
                 _s2.markdown(f"picked: `{_s.get('picked')}`")
-                _s2.caption("auto: ✅ on-path" if _auto else "auto: ❌ off-path")
+                _s2.caption("validation against gold workflow: ✅ on-path" if _auto else "validation against gold workflow: ❌ off-path")
                 _hl = _s3.radio("label", ["correct", "wrong"], index=0 if _auto else 1,
                                 horizontal=True, key=f"sl_{_rkp}_{_s['step']}",
                                 label_visibility="collapsed")
@@ -510,9 +507,9 @@ if ss.rollout:
 
 # =================================================================== DATASET
 st.divider()
-st.header("Labeled dataset · data flywheel")
-st.caption("Every save above is appended to demo/annotations/labeled_data.jsonl — a growing, "
-           "retrain-ready corpus built with near-zero manual effort.")
+st.header("Label daceisions · data flywheel")
+st.caption("Every save above is appended to labeled_data.jsonl — to simply add, "
+           "RLHF signals with concrete explanations to further improve data flywheel concept.")
 _sm = ANN.summary()
 _d1, _d2, _d3, _d4, _d5 = st.columns(5)
 _d1.metric("Records", _sm["records"])
@@ -521,7 +518,7 @@ _d3.metric("Action labels", _sm["action_labels"])
 _d4.metric("Rollout recs", _sm["rollout_records"])
 _d5.metric("Step labels", _sm["step_labels"])
 _bytes = ANN.raw_bytes()
-st.download_button("⬇️ Download dataset (JSONL)", data=_bytes,
+st.download_button("Download dataset (JSON)", data=_bytes,
                    file_name="labeled_data.jsonl", mime="text/plain",
                    disabled=not _bytes)
 if _bytes:

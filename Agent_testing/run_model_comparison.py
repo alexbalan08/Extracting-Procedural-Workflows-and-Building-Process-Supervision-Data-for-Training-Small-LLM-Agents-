@@ -94,6 +94,7 @@ DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.jso
 #transformers, so the existing _LlamaInstructBase._generate works for all of them.
 MODELS = [
     "mistralai/Mistral-7B-Instruct-v0.3",
+    "mistralai/Mistral-NeMo-Instruct-2407",
     "Qwen/Qwen2.5-7B-Instruct",
     "Qwen/Qwen3-8B",
     QWEN3_REASONING_SENTINEL,        #Qwen 3 8B with thinking mode enabled
