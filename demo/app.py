@@ -1,4 +1,5 @@
-#this is out streamlit demo, mostly code generated with Claude Code
+#this is out streamlit demo, mostly code generated with Claude Code since this is basic streamlit functionality 
+
 
 
 from __future__ import annotations
@@ -9,7 +10,6 @@ import os
 import streamlit as st
 
 import agent_runner as AR
-import annotations as ANN
 import extraction as X
 import step_ui
 from pdf_utils import extract_text
@@ -22,7 +22,7 @@ ss = st.session_state
 ss.setdefault("procedure_text", "")
 ss.setdefault("pdf_meta", None)
 ss.setdefault("source_name", None)
-ss.setdefault("file_index", None)      # set when the text is a held-out procedure -> gold available
+ss.setdefault("file_index", None)      # set when the text is a held-out procedure gold available
 ss.setdefault("extraction", None)      # full result dict from Step 2
 ss.setdefault("workflow", None)        # the extracted JSON graph
 ss.setdefault("rollout", None)         # Step 4 rollout (live or replayed)
@@ -57,8 +57,7 @@ with st.sidebar:
         "2. **Extract workflow graph**\n"
         "3. Visualize graph\n"
         "4. Run planning agent\n"
-        "5. Visualize trajectory\n"
-        "6. Label & save dataset"
+        "5. Visualize trajectory"
     )
     st.divider()
     st.subheader("OpenAI")
@@ -71,7 +70,7 @@ with st.sidebar:
     )
     model = st.text_input("Extractor model", value="gpt-5.4-mini")
     st.divider()
-    st.caption("M3/M4  needs a CUDA GPU. On the Mac, use replay from a saved run")
+    st.caption("Needs a CUDA GPU and valid OpenAI key.")
 
 # =================================================================== STEP 1
 st.header("Step 1 · Get the procedure text")
@@ -79,9 +78,6 @@ st.header("Step 1 · Get the procedure text")
 source = st.radio(
     "Source", ["Upload PDF", "Paste text", "Pick held-out procedure (has gold)"],
     horizontal=True, label_visibility="collapsed",
-    help="Where the procedure text comes from. Upload/Paste = any new procedure (no gold "
-         "to grade against). Held-out = one of the 50 test procedures, which has a "
-         "human-annotated gold graph so Step 5 can grade the agent green/red.",
 )
 
 if source == "Upload PDF":
@@ -106,11 +102,7 @@ else:  # held-out picker — gives us gold for grading in Step 5
         st.error("No held_out.json found.")
     else:
         labels = {f"#{r['file_index']} · {r['n_actions']} actions · {r['preview']}": r["file_index"] for r in idx}
-        choice = st.selectbox(
-            "Held-out procedure", list(labels.keys()),
-            help="50 test procedures (shortest first). Label shows file index, action "
-                 "count, and a text preview. These come with gold graphs for grading.",
-        )
+        choice = st.selectbox("Held-out procedure", list(labels.keys()))
         if st.button("Load procedure", type="primary"):
             fi = labels[choice]
             rec = X.held_out_record(fi)
@@ -140,7 +132,8 @@ else:
 if ss.procedure_text:
     st.divider()
     st.header("Step 2 · Extract the workflow graph")
-    st.caption("Runs the real pipeline: 3-shot prompt → structural checker → LLM semantic checker → self-refine loop.")
+    st.caption("Runs the real pipeline: 5-shot prompt → structural checker → LLM semantic checker → self-refine loop"
+    ".")
 
     opt1, opt2, opt3 = st.columns(3)
     with opt1:
@@ -162,15 +155,11 @@ if ss.procedure_text:
         use_struct = st.toggle(
             "Structural checker", value=True,
             help="Fast rule-based validation of the graph: no standalone actions, gateways "
-                 "well-formed, edges point to real nodes, etc. Catches malformed JSON before "
+                 "well-formed, edges point to real nodes. Catches wrong JSON files before "
                  "the more expensive LLM critic runs.",
         )
 
-    go_live = st.button(
-        "Run extraction (live process)", type="primary",
-        help="Calls the real extraction pipeline live via OpenAI on the text above. "
-             "Needs an API key in the sidebar.",
-    )
+    go_live = st.button("Run extraction (live process)", type="primary")
 
     if go_live:
         key = api_key or env_key
@@ -247,7 +236,7 @@ if ss.workflow:
             "Compare with gold graph", value=True,
             help="Show the human-annotated gold graph next to the extracted one. "
                  "Differences between them are exactly the extraction errors the agent "
-                 "must work with in 'predicted' mode.",
+                 "must cope with in 'predicted' mode.",
         )
         if compare:
             g_actions = len(gold_wf.get("actions") or [])
@@ -269,121 +258,42 @@ if ss.workflow:
     else:
         _render(ss.workflow, "extracted graph")
 
-# ---- human-in-the-loop labeling of the extracted graph (data flywheel)
-if ss.workflow:
-    with st.expander("Label this extraction step by step (RLHF idea)"):
-        st.caption("Mark each extracted action correct or wrong, optionally giving the right "
-                   "name. Saves accumulate into a JSONL file for retraining. ")
-        _acts = ss.workflow.get("actions") or []
-        _gws = ss.workflow.get("gateways") or []
-        _kp = f"ext_{ss.source_name}_{ss.file_index}"
-        with st.form(_kp):
-            _action_labels = {}
-            for _a in _acts:
-                _c1, _c2, _c3 = st.columns([3, 2, 3])
-                _c1.markdown(f"**{_a.get('name', _a['id'])}**")
-                _lbl = _c2.radio("label", ["correct", "wrong"], horizontal=True,
-                                 key=f"al_{_kp}_{_a['id']}", label_visibility="collapsed")
-                _cor = _c3.text_input("corrected", value="", key=f"ac_{_kp}_{_a['id']}",
-                                      label_visibility="collapsed",
-                                      placeholder="corrected name (optional)")
-                _action_labels[_a["id"]] = {"name": _a.get("name"), "label": _lbl,
-                                            "corrected_name": _cor.strip() or None}
-            _gw_labels = {}
-            if _gws:
-                st.markdown("**Gateways / branches**")
-                for _g in _gws:
-                    _g1, _g2 = st.columns([3, 2])
-                    _g1.markdown(f"`{_g['id']}` ({_g.get('type')})")
-                    _gw_labels[_g["id"]] = _g2.radio("label", ["correct", "wrong"], horizontal=True,
-                                                     key=f"gl_{_kp}_{_g['id']}",
-                                                     label_visibility="collapsed")
-            _notes = st.text_area("Notes (optional)", key=f"an_{_kp}")
-            _saved = st.form_submit_button("💾 Save extraction labels", type="primary")
-        if _saved:
-            ANN.append_record({
-                "kind": "extraction_labels",
-                "source": ss.source_name,
-                "file_index": ss.file_index,
-                "has_gold": ss.file_index is not None,
-                "procedure_text": ss.procedure_text,
-                "workflow": ss.workflow,
-                "action_labels": _action_labels,
-                "gateway_labels": _gw_labels,
-                "notes": _notes.strip(),
-            })
-            _nw = sum(1 for _v in _action_labels.values() if _v["label"] == "wrong")
-            st.success(f"Saved · {len(_action_labels)} actions labeled ({_nw} marked wrong). "
-                       "Dataset updated below.")
-
 # =================================================================== STEP 4
 if ss.workflow:
     st.divider()
     st.header("Step 4 · Run the planning agent step by step")
 
-    exec_mode = st.radio(
-        "Execution", ["Live inference", "Replay saved run"], horizontal=True,
-        help="Live = run the chosen agent now (M3/M4 need a CUDA GPU). "
-             "Replay = step through a saved run from Agent_testing/results/ — same real "
-             "scores, works on any machine.",
-    )
+    exec_mode = st.radio("Execution", ["Live inference", "Replay saved run"], horizontal=True)
 
     if exec_mode == "Live inference":
-        cfg_label = st.selectbox(
-            "Agent configuration", list(AR.CONFIGS.keys()),
-            index=list(AR.CONFIGS.keys()).index("M4 · Agentic ensemble (+ graph tool)"),
-            help="The four ablation methods, each adding one layer:\n"
-                 "• M1 Llama bare — just the procedure text, free-form next action.\n"
-                 "• M2 Llama + actions — given the extracted action list, must pick one (kills hallucinations).\n"
-                 "• M3 Ensemble — blends the base Llama with the specialised PRM (the planning reward model).\n"
-                 "• M4 Agentic ensemble — M3 plus a graph tool the agent consults when unsure.\n"
-                 "OpenAI configs are frontier-model baselines for comparison.",
-        )
+        cfg_label = st.selectbox("Agent configuration", list(AR.CONFIGS.keys()),
+                                 index=list(AR.CONFIGS.keys()).index("M4 · Agentic ensemble (+ graph tool)"))
         cfg = AR.CONFIGS[cfg_label]
 
         p1, p2, p3, p4 = st.columns(4)
         with p1:
             grade_mode = st.selectbox(
                 "Graph the agent sees", ["predicted", "gold"],
-                help="Which graph the agent uses as input.\n"
-                     "• predicted = the graph just extracted in Step 2 — real deployment quality.\n"
-                     "• gold = the human-annotated graph — the agent's theoretical capability if extraction were perfect.\n",
+                help="predicted = the extracted graph (real deployment). gold needs a held-out procedure.",
             )
             if grade_mode == "gold" and ss.file_index is None:
                 st.caption("⚠️ gold needs a held-out procedure; will use predicted.")
                 grade_mode = "predicted"
         with p2:
-            alpha = st.slider(
-                "α (PRM weight)", 0.0, 1.0, 0.90, 0.05,
-                disabled=cfg["key"] not in ("ensemble", "agentic"),
-                help="Blend weight in  blended = α·PRM + (1−α)·LLM.\n"
-                     "α=1.0 → trust only the specialised PRM; α=0.0 → only the base Llama. "
-                     "Higher α leans on the trained reward model. (M3/M4 only.)",
-            )
+            alpha = st.slider("α (PRM weight)", 0.0, 1.0, 0.90, 0.05,
+                              disabled=cfg["key"] not in ("ensemble", "agentic"))
         with p3:
-            tool_threshold = st.slider(
-                "tool threshold", 0.0, 1.0, 0.45, 0.05,
-                disabled=cfg["key"] != "agentic",
-                help="M4 only. The graph tool fires when the top blended score is BELOW this "
-                     "value — i.e. the agent isn't confident about any candidate. "
-                     "Higher = the tool fires more often.",
-            )
+            tool_threshold = st.slider("tool threshold", 0.0, 1.0, 0.45, 0.05,
+                                       disabled=cfg["key"] != "agentic")
         with p4:
-            tool_margin = st.slider(
-                "tool margin", 0.0, 1.0, 0.20, 0.05,
-                disabled=cfg["key"] != "agentic",
-                help="M4 only. The graph tool also fires when the gap between the top two "
-                     "candidates is BELOW this value -  "
-                     "Higher = the tool fires more often.",
-            )
-        openai_model_agent = st.text_input(
-            "OpenAI model (for OpenAI configs)", value="gpt-5.4-mini",
-            help="Model name for the OpenAI baseline agents.",
-        ) if cfg["openai"] else "gpt-5.4-mini"
+            tool_margin = st.slider("tool margin", 0.0, 1.0, 0.20, 0.05,
+                                    disabled=cfg["key"] != "agentic")
+        openai_model_agent = st.text_input("OpenAI model (for OpenAI configs)", value="gpt-5.4-mini") \
+            if cfg["openai"] else "gpt-5.4-mini"
 
         if cfg["gpu"]:
-            st.info("ℹ️ This config loads Llama-3.1-8B (4-bit) + PRM LoRA — runs on your local GPU, "
-                    "CUDA is required.")
+            st.info("ℹ️ This config loads Llama-3.1-8B (4-bit) + PRM LoRA — runs on your GPU with CUDA, "
+                    "not on the Mac.")
 
         if st.button("Run agent", type="primary"):
             try:
@@ -413,12 +323,7 @@ if ss.workflow:
             # default to an agentic-ensemble predicted file if present
             default_i = next((i for i, f in enumerate(files)
                               if "agentic_ensemble_predicted" in f), 0)
-            rfile = st.selectbox(
-                "Saved run", files, index=default_i,
-                help="A pre-computed inference run. Filename encodes the method, mode "
-                     "(predicted/gold) and params, e.g. agentic_ensemble_predicted_"
-                     "alpha0.90_t0.45_m0.20. We load this procedure's record from it.",
-            )
+            rfile = st.selectbox("Saved run", files, index=default_i)
             if st.button("Load saved run", type="primary"):
                 rec = AR.load_replay(rfile, ss.file_index)
                 if rec is None:
@@ -447,11 +352,7 @@ if ss.rollout:
         with nav3:
             ss.step_ptr = st.slider("Step", 1, len(steps), ss.step_ptr + 1) - 1
         with nav4:
-            show_all = st.toggle(
-                "Show all steps", value=False,
-                help="Off = one step at a time (use Prev/Next/slider) — best for a live "
-                     "walkthrough. On = render every step stacked, for a scrollable overview.",
-            )
+            show_all = st.toggle("Show all steps", value=False)
 
         if show_all:
             for s in steps:
@@ -465,64 +366,6 @@ if ss.rollout:
     st.divider()
     st.header("Step 5 · Final trajectory vs " + ("gold" if ss.has_gold else "extracted graph"))
     if not ss.has_gold:
-        st.caption("No gold for this procedure — validating against the agent's own extracted graph. "
-                   "Pick a held-out procedure in Step 1 for validation against gold workflow.")
+        st.caption("No gold for this procedure — grading against the agent's own extracted graph. "
+                   "Pick a held-out procedure in Step 1 for true gold grading.")
     step_ui.render_trajectory(ss.rollout, ss.branches or [], ss.has_gold)
-
-
-# ---- human-in-the-loop labeling of the agent's decisions (process supervision)
-if ss.rollout:
-    with st.expander("Label the agent's decisions (RLHF idea)"):
-        st.caption("Mark each step's picked action correct or wrong. "
-                   "— just correct where you disagree.")
-        _steps = ss.rollout.get("steps") or []
-        _rkp = f"roll_{ss.source_name}_{ss.file_index}"
-        with st.form(_rkp):
-            _step_labels = []
-            for _s in _steps:
-                _auto = _s.get("is_valid", False)
-                _s1, _s2, _s3 = st.columns([1, 4, 3])
-                _s1.markdown(f"**#{_s['step']}**")
-                _s2.markdown(f"picked: `{_s.get('picked')}`")
-                _s2.caption("validation against gold workflow: ✅ on-path" if _auto else "validation against gold workflow: ❌ off-path")
-                _hl = _s3.radio("label", ["correct", "wrong"], index=0 if _auto else 1,
-                                horizontal=True, key=f"sl_{_rkp}_{_s['step']}",
-                                label_visibility="collapsed")
-                _step_labels.append({"step": _s["step"], "picked": _s.get("picked"),
-                                     "auto_is_valid": _auto, "human_label": _hl})
-            _rnotes = st.text_area("Notes (optional)", key=f"rn_{_rkp}")
-            _rsaved = st.form_submit_button("💾 Save decision labels", type="primary")
-        if _rsaved:
-            ANN.append_record({
-                "kind": "rollout_labels",
-                "source": ss.source_name,
-                "file_index": ss.file_index,
-                "has_gold": ss.has_gold,
-                "run_label": ss.run_label,
-                "procedure_text": ss.procedure_text,
-                "step_labels": _step_labels,
-                "completed_trajectory": ss.rollout.get("completed_trajectory"),
-            })
-            st.success(f"Saved · {len(_step_labels)} step decisions labeled. Dataset updated below.")
-
-# =================================================================== DATASET
-st.divider()
-st.header("Label daceisions · data flywheel")
-st.caption("Every save above is appended to labeled_data.jsonl — to simply add, "
-           "RLHF signals with concrete explanations to further improve data flywheel concept.")
-_sm = ANN.summary()
-_d1, _d2, _d3, _d4, _d5 = st.columns(5)
-_d1.metric("Records", _sm["records"])
-_d2.metric("Extraction recs", _sm["extraction_records"])
-_d3.metric("Action labels", _sm["action_labels"])
-_d4.metric("Rollout recs", _sm["rollout_records"])
-_d5.metric("Step labels", _sm["step_labels"])
-_bytes = ANN.raw_bytes()
-st.download_button("Download dataset (JSON)", data=_bytes,
-                   file_name="labeled_data.jsonl", mime="text/plain",
-                   disabled=not _bytes)
-if _bytes:
-    with st.expander("Recent saved records"):
-        for _r in ANN.load_all()[-10:][::-1]:
-            st.markdown(f"- `{_r.get('timestamp')}` · **{_r.get('kind')}** · "
-                        f"source: {_r.get('source')} · file_index: {_r.get('file_index')}")
