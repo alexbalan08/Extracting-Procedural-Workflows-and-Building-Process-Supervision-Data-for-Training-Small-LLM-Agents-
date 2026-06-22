@@ -300,8 +300,23 @@ if ss.workflow:
                 with st.spinner(f"Running {cfg_label}…"):
                     held = X.held_out_record(ss.file_index) if ss.file_index is not None else None
                     case, has_gold = AR.build_case(ss.extraction, ss.procedure_text, ss.file_index, held)
-                    agent = AR.make_agent(cfg["key"], alpha=alpha, tool_threshold=tool_threshold,
-                                          tool_margin=tool_margin, openai_model=openai_model_agent)
+                    #keep at most ONE gpu-resident agent across streamlit reruns. clicking the
+                    #same gpu config reuses it (no reload); switching to a different gpu config
+                    #evicts the previous one and frees its VRAM first, so two 4-bit base models
+                    #never coexist on the GPU (that double-load was the OOM source).
+                    cache_key = (cfg["key"], alpha, tool_threshold, tool_margin, openai_model_agent)
+                    if cfg["gpu"]:
+                        if ss.get("gpu_agent_key") != cache_key:
+                            AR.free_agent(ss.get("gpu_agent"))
+                            ss.gpu_agent = AR.make_agent(
+                                cfg["key"], alpha=alpha, tool_threshold=tool_threshold,
+                                tool_margin=tool_margin, openai_model=openai_model_agent)
+                            ss.gpu_agent_key = cache_key
+                        agent = ss.gpu_agent
+                    else:
+                        #openai agents hold no GPU memory — build fresh, nothing to cache/evict
+                        agent = AR.make_agent(cfg["key"], alpha=alpha, tool_threshold=tool_threshold,
+                                              tool_margin=tool_margin, openai_model=openai_model_agent)
                     rollout = AR.run_live(case, agent, mode=grade_mode,
                                           give_candidates=cfg["cands"])
                     ss.rollout = rollout
@@ -350,7 +365,14 @@ if ss.rollout:
             if st.button("Next ▶", disabled=ss.step_ptr >= len(steps) - 1):
                 ss.step_ptr = min(len(steps) - 1, ss.step_ptr + 1)
         with nav3:
-            ss.step_ptr = st.slider("Step", 1, len(steps), ss.step_ptr + 1) - 1
+            #selectbox works with any step count (including 1); st.slider requires min<max
+            #clamp ss.step_ptr in case the previous rollout had more steps than this one
+            ss.step_ptr = min(ss.step_ptr, len(steps) - 1)
+            ss.step_ptr = st.selectbox(
+                "Step", options=list(range(len(steps))),
+                format_func=lambda i: f"{i + 1} / {len(steps)}",
+                index=ss.step_ptr,
+            )
         with nav4:
             show_all = st.toggle("Show all steps", value=False)
 

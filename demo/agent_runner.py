@@ -40,6 +40,27 @@ CONFIGS: dict[str, dict] = {
 }
 
 
+def free_agent(agent) -> None:
+    """Release a GPU-resident agent's model (base + any LoRA) and reclaim VRAM.
+
+    Safe to call on None or on OpenAI agents (which hold no GPU memory)."""
+    if agent is None:
+        return
+    if getattr(agent, "_model", None) is not None:
+        try:
+            agent._model = None
+        except Exception:  # noqa: BLE001
+            pass
+    import gc
+    gc.collect()
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def make_agent(key: str, *, alpha: float = 0.90, tool_threshold: float = 0.45,
                tool_margin: float = 0.20, openai_model: str = "gpt-5.4-mini"):
     import agents as A

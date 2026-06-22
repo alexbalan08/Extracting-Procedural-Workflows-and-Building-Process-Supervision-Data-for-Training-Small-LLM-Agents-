@@ -57,15 +57,25 @@ class _LlamaInstructBase(PlanningAgent):
     def _load(self):
         if self._model is not None:
             return
+        import gc
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-        
+        #release whatever a previous agent left behind (esp. across streamlit reruns)
+        #before asking accelerate to plan a new device map. otherwise the new 4-bit
+        #model sees less free VRAM than expected and spills to CPU, which bnb refuses.
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
         bnb = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16,
+            #safety net: if VRAM still isn't enough for the whole model, let accelerate
+            #put the overflow layers on CPU (slow, but correct) instead of erroring out.
+            llm_int8_enable_fp32_cpu_offload=True,
         )
         print(f"Loading {self.model_name} (4-bit) ...")
         self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -278,19 +288,29 @@ class EnsemblePlannerAgent(PlanningAgent):
     def _load(self):
         if self._model is not None:
             return
+        import gc
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
         from peft import PeftModel
 
-        
+        #free any model a previous agent left on the GPU before accelerate plans this one,
+        #otherwise the new 4-bit base sees reduced free VRAM and spills layers to CPU,
+        #which bnb refuses without the offload flag below.
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
         bnb = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16,
+            #safety net: if VRAM still falls short, let overflow layers land on CPU
+            #(slow but correct) instead of erroring out.
+            llm_int8_enable_fp32_cpu_offload=True,
         )
         print(f"Loading: base={self.base_model}, adapter={self.adapter_path}")
-    
+
         self._tokenizer = AutoTokenizer.from_pretrained(str(self.adapter_path))
         if self._tokenizer.pad_token is None:
             self._tokenizer.pad_token = self._tokenizer.eos_token
