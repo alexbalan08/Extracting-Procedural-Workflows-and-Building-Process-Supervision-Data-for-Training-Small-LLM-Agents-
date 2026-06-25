@@ -21,6 +21,9 @@
 
 #then if all those metrics are good, then the reasoning traces will be correct as they re built deterministic from the graph extraction
 
+
+
+#comments are old in terms of number so use the results and pretty prints please
 import argparse
 import json
 from difflib import SequenceMatcher
