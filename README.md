@@ -10,7 +10,7 @@ and fine-tunes a small planner on top of Llama 3.1 8B that can actually execute 
 needs to be grounded in their own KB, be factual and never hallucinate. Relying on a black-box model would make training of specialized agents impossible, costs high and would make your
 organization fully-dependedt on the Big AI players - when they release a new model, your system would already be outdated. On top of this, literature showed us that gneral-purpose language model struggle with accurate planning - we need smaller, specialzied components trained for this.
 
-We compare our most advanced agentic method with GPT 5.5 combined with elements from our extraction pipeline and the results are surprising, we almost fully match the performance of the frotier model, with 8B parameters models. A proof we don't need more horsepower - "Aerodynamics are for people who can't build engines" by Enzo Ferrari ;)
+We compare our most advanced agentic method with GPT 5.5 combined with elements from our extraction pipeline and the results are surprising, we almost fully match the performance of the frotier model, with 8B parameters models. A proof we don't need more horsepower - "Aerodynamics are for people who can't build engines" by Enzo Ferrari seems to not be true;)
 
 
 ### Data Flywheel 
