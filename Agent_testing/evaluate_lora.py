@@ -1,12 +1,4 @@
-#dedicated comparison table for the two LoRA adapters (big = trained_model,
-#small = trained_model_small). only shows PRM-using methods — ensemble and
-#agentic_ensemble — because the non-PRM baselines (llama_bare, llama_actions)
-#don't depend on the adapter and so there's nothing to compare for them.
-#
-#  python evaluate_lora.py
-#
-#reads inference_*.json files produced by lora_configs.py. each row carries a
-#"prm" column showing which adapter the agent used (big / small).
+
 
 import json
 from pathlib import Path
@@ -22,11 +14,11 @@ DEFAULT_HELD_OUT = _HERE / "held_out.json"
 DEFAULT_PREDICTIONS = _ROOT / "Extraction_results" / "extraction_predictions.json"
 
 #longest first so "agentic_ensemble" matches before "ensemble".
-#non-PRM methods (llama_bare, llama_actions) are deliberately excluded — the LoRA
-#choice can't affect them, so they're not part of this comparison.
+#non-PRM methods are excluded since yeah makes no sense because they dont use the prm 
+
 METHODS = ["agentic_ensemble", "ensemble"]
 
-#filename suffixes that count as the canonical config for each method
+
 ENSEMBLE_BIG_SUFFIX   = "_alpha0.90.json"
 ENSEMBLE_SMALL_SUFFIX = "_alpha0.90_small.json"
 AGENTIC_BIG_SUFFIX    = "_alpha0.90_t0.45_m0.20.json"
@@ -42,7 +34,7 @@ def _is_canonical(method: str, filename: str) -> bool:
 
 
 def _parse_prm_variant(filename: str) -> str:
-    #"_small.json" filename suffix marks the dedup-data PRM; anything else is big.
+    #"_small.json" filename suffix marks the dedup  PRM anything else is rest
     return "small" if filename.endswith("_small.json") else "big"
 
 
@@ -71,8 +63,7 @@ def main():
         print(f"No canonical ensemble / agentic_ensemble files found in {RESULTS_DIR}")
         return
 
-    #group by method → graph → PRM. big before small so the row-to-row delta tells
-    #you what the small PRM cost or gained within each (method, graph) pair.
+ 
     _prm_order = {"big": 0, "small": 1}
     rows.sort(key=lambda r: (
         METHODS.index(r["method"]),

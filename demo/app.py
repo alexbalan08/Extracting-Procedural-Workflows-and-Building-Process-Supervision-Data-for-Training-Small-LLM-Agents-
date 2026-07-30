@@ -22,18 +22,18 @@ ss = st.session_state
 ss.setdefault("procedure_text", "")
 ss.setdefault("pdf_meta", None)
 ss.setdefault("source_name", None)
-ss.setdefault("file_index", None)      # set when the text is a held-out procedure gold available
-ss.setdefault("extraction", None)      # full result dict from Step 2
-ss.setdefault("workflow", None)        # the extracted JSON graph
-ss.setdefault("rollout", None)         # Step 4 rollout (live or replayed)
-ss.setdefault("branches", None)        # reference paths for grading
-ss.setdefault("has_gold", False)       # whether grading is vs true gold
-ss.setdefault("run_label", None)       # description of the config that produced rollout
+ss.setdefault("file_index", None)      
+ss.setdefault("extraction", None)      
+ss.setdefault("workflow", None)        
+ss.setdefault("rollout", None)         
+ss.setdefault("branches", None)        
+ss.setdefault("has_gold", False)       
+ss.setdefault("run_label", None)       
 ss.setdefault("step_ptr", 0)
 
 
 def reset_downstream():
-    """Any new text/extraction invalidates later steps."""
+    
     ss.extraction = None
     ss.workflow = None
     reset_rollout()
@@ -72,7 +72,7 @@ with st.sidebar:
     st.divider()
     st.caption("Needs a CUDA GPU and valid OpenAI key.")
 
-# =================================================================== STEP 1
+
 st.header("Step 1 · Get the procedure text")
 
 source = st.radio(
@@ -96,7 +96,7 @@ elif source == "Paste text":
         ss.source_name, ss.file_index = "pasted text", None
         reset_downstream()
 
-else:  # held-out picker — gives us gold for grading in Step 5
+else:  
     idx = X.held_out_index()
     if not idx:
         st.error("No held_out.json found.")
@@ -111,7 +111,7 @@ else:  # held-out picker — gives us gold for grading in Step 5
             ss.source_name, ss.file_index = f"held-out #{fi}", fi
             reset_downstream()
 
-# ---- show text
+
 if ss.procedure_text:
     meta = ss.pdf_meta or {}
     c1, c2, c3, c4 = st.columns(4)
@@ -128,7 +128,7 @@ if ss.procedure_text:
 else:
     st.info("Choose a source above to begin.")
 
-# =================================================================== STEP 2
+
 if ss.procedure_text:
     st.divider()
     st.header("Step 2 · Extract the workflow graph")
@@ -182,7 +182,7 @@ if ss.procedure_text:
                 st.error(f"Extraction failed: {type(e).__name__}: {e}")
 
 
-# ---- show extraction result
+
 if ss.extraction:
     r = ss.extraction
     wf = r.get("workflow") or {}
@@ -212,14 +212,14 @@ if ss.extraction:
 
     st.success("Graph extracted.")
 
-# =================================================================== STEP 3
+
 if ss.workflow:
     st.divider()
     st.header("Step 3 · Visualize the workflow graph")
     st.caption("Boxes = actions · diamonds = gateways (XOR/AND/OR) · green = start · "
                "edges follow the same construction the agent traverses.")
 
-    # gold graph is only available for held-out procedures
+   
     gold_wf = None
     if ss.file_index is not None:
         gold_rec = X.held_out_record(ss.file_index)
@@ -228,7 +228,7 @@ if ss.workflow:
     def _render(wf, title):
         try:
             st.graphviz_chart(workflow_to_dot(wf), use_container_width=True)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:  
             st.error(f"Could not render {title}: {type(e).__name__}: {e}")
 
     if gold_wf:
@@ -258,7 +258,7 @@ if ss.workflow:
     else:
         _render(ss.workflow, "extracted graph")
 
-# =================================================================== STEP 4
+
 if ss.workflow:
     st.divider()
     st.header("Step 4 · Run the planning agent step by step")
@@ -300,10 +300,7 @@ if ss.workflow:
                 with st.spinner(f"Running {cfg_label}…"):
                     held = X.held_out_record(ss.file_index) if ss.file_index is not None else None
                     case, has_gold = AR.build_case(ss.extraction, ss.procedure_text, ss.file_index, held)
-                    #keep at most ONE gpu-resident agent across streamlit reruns. clicking the
-                    #same gpu config reuses it (no reload); switching to a different gpu config
-                    #evicts the previous one and frees its VRAM first, so two 4-bit base models
-                    #never coexist on the GPU (that double-load was the OOM source).
+                    
                     cache_key = (cfg["key"], alpha, tool_threshold, tool_margin, openai_model_agent)
                     if cfg["gpu"]:
                         if ss.get("gpu_agent_key") != cache_key:
@@ -314,7 +311,7 @@ if ss.workflow:
                             ss.gpu_agent_key = cache_key
                         agent = ss.gpu_agent
                     else:
-                        #openai agents hold no GPU memory — build fresh, nothing to cache/evict
+                        
                         agent = AR.make_agent(cfg["key"], alpha=alpha, tool_threshold=tool_threshold,
                                               tool_margin=tool_margin, openai_model=openai_model_agent)
                     rollout = AR.run_live(case, agent, mode=grade_mode,
@@ -327,7 +324,7 @@ if ss.workflow:
             except Exception as e:  # noqa: BLE001
                 st.error(f"Agent run failed: {type(e).__name__}: {e}")
 
-    else:  # Replay saved run
+    else:  
         files = AR.list_result_files()
         if not files:
             st.error("No saved runs in Agent_testing/results/.")
@@ -335,7 +332,7 @@ if ss.workflow:
             st.warning("Replay needs a held-out procedure (so the saved record matches). "
                        "Pick one in Step 1.")
         else:
-            # default to an agentic-ensemble predicted file if present
+            
             default_i = next((i for i, f in enumerate(files)
                               if "agentic_ensemble_predicted" in f), 0)
             rfile = st.selectbox("Saved run", files, index=default_i)
@@ -350,13 +347,17 @@ if ss.workflow:
                     ss.run_label = f"{rfile} · replay"
                     ss.step_ptr = 0
 
-# ---- step-by-step viewer
+
 if ss.rollout:
     steps = ss.rollout.get("steps") or []
     st.caption(f"Showing: **{ss.run_label}**  ·  {len(steps)} steps")
     if not steps:
         st.warning("Rollout produced no steps (agent went off-path immediately or no candidates).")
     else:
+        # at-a-glance trajectory strip: one square per step (green = valid pick, red = off-path)
+        strip = "".join("🟩" if s.get("is_valid", False) else "🟥" for s in steps)
+        st.markdown(f"**Trajectory:** {strip}")
+        st.caption("🟩 valid next action · 🟥 off-path — one square = one step, left → right.")
         nav1, nav2, nav3, nav4 = st.columns([1, 1, 3, 2])
         with nav1:
             if st.button("◀ Prev", disabled=ss.step_ptr == 0):
@@ -365,8 +366,7 @@ if ss.rollout:
             if st.button("Next ▶", disabled=ss.step_ptr >= len(steps) - 1):
                 ss.step_ptr = min(len(steps) - 1, ss.step_ptr + 1)
         with nav3:
-            #selectbox works with any step count (including 1); st.slider requires min<max
-            #clamp ss.step_ptr in case the previous rollout had more steps than this one
+            
             ss.step_ptr = min(ss.step_ptr, len(steps) - 1)
             ss.step_ptr = st.selectbox(
                 "Step", options=list(range(len(steps))),
@@ -383,7 +383,7 @@ if ss.rollout:
         else:
             step_ui.render_step(steps[ss.step_ptr], steps[ss.step_ptr].get("is_valid", False))
 
-# =================================================================== STEP 5
+
 if ss.rollout:
     st.divider()
     st.header("Step 5 · Final trajectory vs " + ("gold" if ss.has_gold else "extracted graph"))

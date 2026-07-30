@@ -1,10 +1,3 @@
-"""PDF -> plain text for the demo app.
-
-Step 1 of the pipeline: take an uploaded PDF and recover the procedure text.
-We try PyMuPDF (fitz) first — it is fast and keeps reading order well — and
-fall back to pdfplumber if fitz is unavailable or returns nothing useful.
-Neither needs a network call or a GPU, so this runs live on the Mac.
-"""
 
 from __future__ import annotations
 
@@ -13,12 +6,11 @@ import re
 
 
 def _clean(text: str) -> str:
-    # collapse the ragged whitespace PDFs leave behind without destroying
-    # paragraph boundaries — extractors downstream read this as the procedure body
+    
     text = text.replace("\r", "\n")
-    # join hyphenated line breaks: "extrac-\ntion" -> "extraction"
+    
     text = re.sub(r"-\n(?=\w)", "", text)
-    # single newlines inside a paragraph -> space; keep blank-line paragraph breaks
+    
     text = re.sub(r"(?<!\n)\n(?!\n)", " ", text)
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -26,7 +18,7 @@ def _clean(text: str) -> str:
 
 
 def extract_text_pymupdf(data: bytes) -> tuple[str, list[str]]:
-    import fitz  # PyMuPDF
+    import fitz  
 
     pages: list[str] = []
     with fitz.open(stream=data, filetype="pdf") as doc:
@@ -46,7 +38,7 @@ def extract_text_pdfplumber(data: bytes) -> tuple[str, list[str]]:
 
 
 def extract_text(data: bytes) -> tuple[str, dict]:
-    """Return (cleaned_text, meta). meta records which parser won and page count."""
+    
     errors: dict[str, str] = {}
     for name, fn in (("pymupdf", extract_text_pymupdf), ("pdfplumber", extract_text_pdfplumber)):
         try:

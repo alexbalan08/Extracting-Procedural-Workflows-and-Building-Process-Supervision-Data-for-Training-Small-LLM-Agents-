@@ -1,10 +1,4 @@
-"""Step 3: render an extracted workflow as a Graphviz DOT graph.
 
-Edge construction mirrors Extraction_api/trace_builder.workflow_to_graph so the
-picture matches exactly what the agent traverses (virtual start, gateway branches
-with conditions, null-branch end nodes). Returns a DOT string for
-st.graphviz_chart — no system graphviz binary required.
-"""
 
 from __future__ import annotations
 
@@ -38,7 +32,7 @@ def workflow_to_dot(
         f'  "{_START}" [label="start", shape=ellipse, style=filled, fillcolor="#d8f5d0"];',
     ]
 
-    # action nodes
+    
     for a in actions:
         aid = a["id"]
         if aid in bad:
@@ -56,7 +50,7 @@ def workflow_to_dot(
             f'fillcolor="{fill}", color="{pen}"];'
         )
 
-    # gateway nodes
+    
     for g in gateways:
         gid = g["id"]
         gtype = _GATEWAY_LABEL.get(g.get("type", ""), "XOR")
@@ -67,18 +61,18 @@ def workflow_to_dot(
 
     node_ids = {a["id"] for a in actions} | {g["id"] for g in gateways}
 
-    # edges: virtual start -> first actions
+    
     for a in actions:
         if "start" in (a.get("predecessors") or []):
             lines.append(f'  "{_START}" -> "{a["id"]}";')
 
-    # edges: action -> successors
+    
     for a in actions:
         for s in a.get("successors") or []:
             if s in node_ids:
                 lines.append(f'  "{a["id"]}" -> "{s}";')
 
-    # edges: gateway -> branches (with condition labels); null branch -> end node
+   
     end_n = 0
     for g in gateways:
         for b in g.get("branches") or []:
@@ -93,9 +87,7 @@ def workflow_to_dot(
                 lines.append(f'  "{end_id}" [label="end", shape=ellipse, style=filled, fillcolor="#e8e8e8"];')
                 lines.append(f'  "{g["id"]}" -> "{end_id}"{cond_attr};')
 
-    # edges: virtual start -> entry gateways (mirrors trace_builder so the picture
-    # matches the graph the agent traverses). a gateway that opens the procedure
-    # ("start" in incoming_from) and is fed by nothing else gets a start edge.
+  
     fed: set[str] = set()
     for a in actions:
         fed.update(s for s in (a.get("successors") or []))
@@ -106,7 +98,7 @@ def workflow_to_dot(
         if "start" in (g.get("incoming_from") or []) and g["id"] not in fed:
             lines.append(f'  "{_START}" -> "{g["id"]}";')
             start_targets.append(g["id"])
-    # safety net: headless graph -> root start at every source node
+    
     if not start_targets:
         for n in sorted(node_ids):
             if n not in fed:

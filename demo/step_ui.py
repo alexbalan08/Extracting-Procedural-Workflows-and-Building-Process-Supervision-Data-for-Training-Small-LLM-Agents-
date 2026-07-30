@@ -1,4 +1,3 @@
-"""Rendering helpers for the agentic rollout (Steps 4 & 5)."""
 
 from __future__ import annotations
 
@@ -62,7 +61,7 @@ def render_step(step: dict, picked_is_gold_valid: bool) -> None:
     else:
         st.caption("This config produces a free-form / single pick (no per-candidate scores).")
 
-    # ---- graph tool (Method 4)
+   
     if "tool_called" in step:
         tool = step.get("tool") or {}
         if step["tool_called"]:
@@ -87,9 +86,9 @@ def render_step(step: dict, picked_is_gold_valid: bool) -> None:
                             "score", min_value=0.0, max_value=1.0, format="%.3f")},
                     )
         else:
-            st.info("🔧 Graph tool not triggered — agent was confident enough.")
+            st.info("Graph tool not triggered — agent was confident enough.")
 
-    # ---- the pick
+   
     valid_opts = step.get("valid_options") or []
     if picked_is_gold_valid:
         st.success(f"**Picked:** `{picked}`  ✅ on-path (a valid next action)")

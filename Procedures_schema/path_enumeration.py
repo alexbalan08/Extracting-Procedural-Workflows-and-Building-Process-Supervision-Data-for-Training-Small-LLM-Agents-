@@ -16,9 +16,6 @@ def is_join(rid, incoming):
 
 
 def find_matching_join(split_rid, nodes, outgoing, incoming):
-    """Find the join gateway that corresponds to a split gateway.
-    BFS from each branch to find the first common convergence node
-    that has multiple incoming edges."""
     branches_out = outgoing.get(split_rid, [])
     if len(branches_out) <= 1:
         return None
@@ -68,9 +65,6 @@ def find_matching_join(split_rid, nodes, outgoing, incoming):
 def enumerate_paths(nodes, outgoing, incoming, rid_to_id, start_rids):
 
     def _dfs(current_rid, path, conditions, visit_counts=None, stop_at=None):
-        """DFS to enumerate all valid execution paths from a given node.
-        Returns list of (path, conditions) tuples.
-        conditions: list of (condition_str, path_index) tuples."""
         if visit_counts is None:
             visit_counts = defaultdict(int)
 

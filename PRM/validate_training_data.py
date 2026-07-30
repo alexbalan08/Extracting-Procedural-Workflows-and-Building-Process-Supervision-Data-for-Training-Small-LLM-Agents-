@@ -67,7 +67,7 @@ def corruption_distribution(traces: list[dict]) -> None:
 
 def near_duplicates(traces: list[dict]) -> None:
     #key on (file_index, action sequence) — two traces with identical actions on the
-    #same procedure are duplicates regardless of labels or corruption metadata
+    #same procedure are duplicates no matter the label, in the end
     keys = Counter()
     for t in traces:
         seq = tuple(s["action"] for s in t.get("steps", []))

@@ -1,10 +1,4 @@
-"""Step 2 wrapper: run the real extraction pipeline on procedure text.
 
-Thin adapter around Extraction_api/extract_procedure.extract_workflow so the
-Streamlit app never has to know about the project's sys.path quirks. Also exposes
-the saved predictions / held-out gold so the demo can run fully offline when no
-API key is available.
-"""
 
 from __future__ import annotations
 
@@ -18,15 +12,13 @@ EXTRACTION_DIR = PROJECT_ROOT / "Extraction_api"
 DATA = PROJECT_ROOT / "Data" / "Processed"
 HELD_OUT_PATH = PROJECT_ROOT / "Agent_testing" / "held_out.json"
 
-# Extraction_api uses bare imports (from structural_checker import ...) that assume
-# its own folder is importable. No module names collide with Agent_testing (verified),
-# so adding it to sys.path is safe.
+
 if str(EXTRACTION_DIR) not in sys.path:
     sys.path.insert(0, str(EXTRACTION_DIR))
 
 
 def _extractor():
-    # imported lazily so the app starts even if openai isn't configured yet
+    
     import extract_procedure as ep
     from structural_checker import StructuralChecker
     from llm_checker import ReflexionMemory
@@ -66,7 +58,7 @@ def run_extraction(
     return result
 
 
-# --------------------------------------------------------------- offline data
+
 @lru_cache(maxsize=1)
 def _held_out() -> dict:
     if not HELD_OUT_PATH.exists():

@@ -1,15 +1,6 @@
-#one-button runner: covers EVERY configuration we want in the comparison table.
-#  - llama_bare       × {predicted, gold}                       = 2 runs (no PRM)
-#  - llama_actions    × {predicted, gold}                       = 2 runs (no PRM)
-#  - ensemble         × {predicted, gold} × {big, small} PRM    = 4 runs
-#  - agentic_ensemble × {predicted, gold} × {big, small} PRM    = 4 runs
-#  total: 12 runs.
-#
-#just press run — no CLI args. skips any config whose output file already exists,
-#so re-running is safe (picks up where it left off after a crash or interrupt).
-#
-#after it finishes:
-#  python evaluate_traces.py    # the full comparison table
+#this will evalauete all models we have on both big small confiruagraion 
+#after it finishes please run for the comaprison table
+#  python evaluate_traces.py   
 
 import subprocess
 import sys
@@ -24,17 +15,17 @@ RUN_EVAL = _HERE / "run_eval.py"
 BIG_ADAPTER   = _ROOT / "PRM" / "trained_model"
 SMALL_ADAPTER = _ROOT / "PRM" / "trained_model_small"
 
-#kept in sync with the canonical config used in the rest of the project
+#kept in sync with our best fidnings those are the defaults
 ALPHA          = 0.9
 TOOL_THRESHOLD = 0.45
 TOOL_MARGIN    = 0.2
 
-#methods that don't use the PRM at all — runs once, no adapter argument
+#wihout prm 
 NON_PRM_METHODS = ("llama_bare", "llama_actions")
 
 
 def _prm_tag(adapter: Path) -> str:
-    #mirror run_eval._prm_tag — keeps filenames in sync with the rest of the pipeline
+    
     name = adapter.name
     if name == "trained_model":
         return ""
@@ -102,9 +93,8 @@ def main():
 
         result = subprocess.run(cmd, cwd=str(_HERE))
         if result.returncode != 0:
-            #don't kill the whole batch if one config fails (e.g. GPU was momentarily busy).
-            #just move on; user can re-run the script later, the skip-existing logic will
-            #only re-attempt the configs whose output file is missing.
+            #don't kill the whole batch if one config fails just move on
+            #you can re-run the script later and pass over already done indexes
             print(f"  FAILED with exit code {result.returncode}. Continuing.")
             n_failed += 1
 

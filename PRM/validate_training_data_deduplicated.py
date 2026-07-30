@@ -1,8 +1,6 @@
 #same passes as validate_training_data.py but pointed at the deduplicated/balanced files
-#produced by prepare_prm_data_deduplicated.py. lets us sanity-check that the cleaning
-#actually flattened the duplicate rate and improved class balance.
-#
-#  python validate_training_data_deduplicated.py
+
+#we use this script to validate our sft data created to make sure we dont have duplications, etc 
 
 
 from pathlib import Path
